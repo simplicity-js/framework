@@ -1,0 +1,21 @@
+{
+  "all": true,
+  "check-coverage": true,
+  "include": [
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "**/*.spec.js",
+    "**/*.test.js"
+  ],
+  "reporter": [
+    "json",
+    "lcov",
+    "text-summary",
+    "clover"
+  ],
+  "branches": 0,
+  "lines": 0,
+  "functions": 0,
+  "statements": 0
+}

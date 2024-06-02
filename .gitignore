@@ -1,0 +1,15 @@
+# Coverage directory
+/coverage
+.nyc_output
+
+# Dependency directory
+node_modules
+
+
+# misc
+.env
+.data
+.DS_Store
+.markdown-viewer
+.logs
+.log

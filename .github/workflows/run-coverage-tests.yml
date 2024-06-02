@@ -1,0 +1,62 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        mongodb-version: ['5.0', '6.0']
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        # See mongodb enablement at: https://github.com/marketplace/actions/mongodb-in-github-actions#usage
+
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.10.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-port: 27017
+
+    - name: 'Create env file'
+      run: |
+          set -m
+          touch .env
+          echo "${{ secrets.ENV_FILE }}" > .env
+          cat .env
+    # https://stackoverflow.com/a/63350136/1743192
+    #
+    # The set -m fixes github actions CLI error: "no job control"
+    # See: https://stackoverflow.com/a/46829294/1743192
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check code standards
+      run: npm run lint
+
+    - name: Build
+      run: npm run build --if-present
+
+    - name: Gather coverage report
+      run: npm run test:coverage
+      #env:
+      #  CI: true
+        # https://docs.github.com/en/actions/learn-github-actions/variables

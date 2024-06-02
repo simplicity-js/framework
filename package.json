@@ -1,0 +1,42 @@
+{
+  "name": "audit-log-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test mocha src/\"{,/**/}*.spec.js\"",
+    "test:coverage": "nyc npm test",
+    "build": "npm install",
+    "serve": "node ./src/index.js",
+    "serve:watch": "nodemon ./src/index.js",
+    "commit": "git-cz",
+    "lint": "npx eslint src/**/*.js",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "keywords": [],
+  "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
+  "license": "Private",
+  "devDependencies": {
+    "chai": "5.1.1",
+    "commitizen": "4.3.0",
+    "cross-env": "7.0.3",
+    "cz-conventional-changelog": "3.3.0",
+    "eslint": "9.4.0",
+    "ghooks": "2.0.4",
+    "mocha": "10.4.0",
+    "nodemon": "3.1.2",
+    "nyc": "15.1.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    },
+    "ghooks": {
+      "pre-commit": "npm run lint && npm run test:coverage"
+    }
+  },
+  "engines": {
+    "node": ">=18.18.2",
+    "npm": ">=9.8.1"
+  }
+}
