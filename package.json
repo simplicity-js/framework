@@ -11,7 +11,8 @@
     "serve:watch": "nodemon ./src/index.js",
     "commit": "git-cz",
     "lint": "npx eslint src/**/*.js",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "timezone:set": "cross-env TZ='UTC'"
   },
   "keywords": [],
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
@@ -38,5 +39,9 @@
   "engines": {
     "node": ">=18.18.2",
     "npm": ">=9.8.1"
+  },
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "mongoose": "8.4.1"
   }
 }
