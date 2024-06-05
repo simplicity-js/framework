@@ -1,6 +1,5 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const fileSystem = require("./helpers/file-system");
 const test = process.argv[process.argv.length - 1]; // e.g.: --config, --config::get, etc.
 const runSingleTest = test.indexOf("--") > -1;
 const runMethodTest = test.indexOf("::") > -1;
@@ -17,11 +16,15 @@ if(runSingleTest) {
     .replace(/^-/, "").toLowerCase(); // strip off the `-` preceding the first CAPS letter
 
   const testFile = testDir + ".spec.js"; // append `.spec.js` to fully match the target file name
+  const dirPath  = path.join(__dirname, testDir);
+  const filePath = path.join(__dirname, testFile);
 
-  if(fileSystem.isDirectory(path.join(__dirname, testDir))) {
+  if(fs.existsSync(dirPath) && fs.lstatSync(dirPath).isDirectory()) {
     runTestFile(path.join(testDir, testFile));
-  } else if(fileSystem.isFile(path.join(__dirname, testFile))) {
+  } else if(fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
     runTestFile(testFile);
+  } else {
+    throw new Error(`Invalid test "${test.replace("--", "")}"`);
   }
 } else {
   testFiles.forEach(runTestFile);
