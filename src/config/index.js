@@ -1,12 +1,9 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const is = require("../helpers/is");
 const { deepClone } = require("../helpers/object");
 
-const app = require("./app");
-const database = require("./database");
-const logtail = require("./logtail");
-const redis = require("./redis");
-
-const config  = Object.assign({}, app, database, logtail, redis);
+const config = createConfigObject(__dirname);
 let appConfig = deepClone(config);
 
 module.exports = Object.freeze({
@@ -15,6 +12,24 @@ module.exports = Object.freeze({
   reset: resetConfig,
 });
 
+
+function createConfigObject(configDir) {
+  const config = {};
+  const configFiles = fs.readdirSync(configDir);
+  const exclusionFiles = ["config.spec", "index"];
+
+  for(let i = 0, len = configFiles.length; i < len; i++) {
+    const filename = path.basename(configFiles[i], ".js");
+
+    if(exclusionFiles.includes(filename)) {
+      continue;
+    }
+
+    config[filename] = require(`./${filename}`);
+  }
+
+  return config;
+}
 
 /**
  * @param {String} path (optional): the config key to retrieve.

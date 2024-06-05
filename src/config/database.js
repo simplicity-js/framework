@@ -1,18 +1,42 @@
 const env = require("../dotenv");
 
-const config = {
-  database: {
+module.exports = {
+  /*
+   * ---------------------------------
+   * Default Database Connection Name
+   * ---------------------------------
+   *
+   * The database connection to use as the default for database operations.
+   * This connection will be used unless another connection
+   * is explicitly specified when you execute a query.
+   */
+  default: env.DB_CONNECTION || "mongodb",
+
+  /*
+   * ---------------------
+   * Database Connections
+   * ---------------------
+   *
+   * The database connections defined for your application.
+   * An example configuration is provided for each supported database system.
+   * You're free to add / remove connections.
+   *
+   */
+  connections: {
     mongodb: {
       dsn      : env.DB_DSN,
       host     : env.DB_HOST,
-      port     : env.DB_PORT,
+      port     : Number(env.DB_PORT) || 27017,
       username : env.DB_USERNAME,
       password : env.DB_PASSWORD,
       dbName   : env.DB_DBNAME,
-      debug    : false,
+      debug    : isFalsy(env.DEBUG?.trim()?.toLowerCase()) ? false : true,
       exitOnConnectFail: true,
     },
   },
 };
 
-module.exports = config;
+
+function isFalsy(val) {
+  return [0, "0", false, "false", NaN, null, undefined, ""].includes(val);
+}
