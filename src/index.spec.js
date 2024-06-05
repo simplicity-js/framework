@@ -1,12 +1,18 @@
 /* eslint-env node, mocha */
 
-const { runTest: test } = require("./helpers/test-helper");
+const { chai } = require("./helpers/test-helper");
+
+let expect;
+
+before(async function() {
+  expect = (await chai()).expect;
+});
 
 
-describe("Index", function() {
-  it("should pass", function() {
-    test(function({ expect }) {
+module.exports = {
+  index: function index() {
+    it("should pass", function() {
       expect(true).to.equal(true);
     });
-  });
-});
+  }
+};

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha src/\"{,/**/}*.spec.js\"",
+    "test": "cross-env NODE_ENV=test mocha src/test-runner.js",
     "test:coverage": "nyc npm test",
     "build": "npm install",
     "serve": "node ./src/index.js",

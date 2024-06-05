@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { schema: auditLogSchema } = require("./audit-log-schema");
-const { generateProjection, virtualSchemaOptions } = require("./schema-helper");
+const { virtualSchemaOptions } = require("./schema-helper");
 
 const Schema = mongoose.Schema;
 const AuditLog = mongoose.model("AuditLog", auditLogSchema);

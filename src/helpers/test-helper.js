@@ -13,13 +13,5 @@ const chai = () => import("chai").then(chai => chai);
 
 
 module.exports = {
-  runTest,
+  chai,
 };
-
-function runTest(test) {
-  chai().then(function(chai) {
-    const { expect } = chai;
-
-    test({ expect });
-  });
-}

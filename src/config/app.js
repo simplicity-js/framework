@@ -11,6 +11,7 @@ const config = {
     apiVersion  : env.API_VERSION,
     debugKey    : env.DEBUG_KEY,
     timezone    : (env.TIMEZONE || "UTC").toUpperCase(),
+    rootDir     : path.resolve(path.dirname(__dirname), "..").replace(/\\/g, "/"),
   },
 };
 
