@@ -68,7 +68,7 @@ function setConfig(path, value) {
 
 function setObjectValue(obj, path, value) {
   // Credits: https://stackoverflow.com/a/65072147/1743192
-  const paths = path.split(".");
+  const paths = is.array(path) ? path : path.split(".");
   const inputObj = is.object(obj) ? { ...obj } : {};
 
   if(paths.length === 1) {
@@ -79,7 +79,7 @@ function setObjectValue(obj, path, value) {
 
   const [currPath, ...rest] = paths;
   const currentNode = inputObj[currPath];
-  const childNode = set(currentNode, rest, value);
+  const childNode = setObjectValue(currentNode, rest, value);
 
   inputObj[currPath] = childNode;
 

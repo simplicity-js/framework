@@ -10,8 +10,8 @@ before(async function() {
 });
 
 module.exports = {
-  get: function get() {
-    describe(".get(path, defaultValue)", function configGetSpec() {
+  get() {
+    describe(".get(path, defaultValue)", function configDotGet_Spec() {
       it("should return `path` config value if exists", function() {
         expect(config.get("database")).to.deep.equal({
           default: "mongodb",
@@ -41,6 +41,29 @@ module.exports = {
 
       it("should return `defaultValue` if no config exists for given `path`", function() {
         expect(config.get("host", "system")).to.equal("system");
+      });
+    });
+  },
+
+  set() {
+    describe(".set(path, value)", function configDotSet_Spec() {
+      it("should set new top-level config key if not exists", function() {
+        expect(config.get("host")).to.equal(undefined);
+
+        config.set("host", "system");
+
+        expect(config.get("host")).to.equal("system");
+      });
+
+      it("should set nested config key if not exists", function() {
+        expect(config.get("event")).to.equal(undefined);
+        expect(config.get("event.actor")).to.equal(undefined);
+
+        config.set("event.actor", "user");
+
+        expect(config.get("event")).to.be.an("object");
+        expect(config.get("event")).to.have.property("actor");
+        expect(config.get("event.actor")).to.equal("user");
       });
     });
   },
