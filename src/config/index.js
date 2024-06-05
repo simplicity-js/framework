@@ -1,12 +1,12 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const is = require("../helpers/is");
-const { deepClone } = require("../helpers/object");
+const { deepClone, freezeObject } = require("../helpers/object");
 
 const config = createConfigObject(__dirname);
 let appConfig = deepClone(config);
 
-module.exports = Object.freeze({
+module.exports = freezeObject({
   get: getConfig,
   set: setConfig,
   reset: resetConfig,

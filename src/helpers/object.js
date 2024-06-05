@@ -4,7 +4,8 @@ const is = require("./is");
 module.exports = {
   deepClone,
   deepEqual,
-  toPrimitive,
+  freezeObject,
+  //toPrimitive,
 };
 
 
@@ -85,6 +86,26 @@ function deepEqual(x, y) {
   }
 
   return false;
+}
+
+/**
+ * Deep (recursive) Object.freeze
+ */
+function freezeObject(o) {
+  Object.freeze(o);
+
+  if(o === null) {
+    return o;
+  }
+
+  Object.getOwnPropertyNames(o).forEach(function freezeRecursive(prop) {
+    if(o[prop] && ["function", "object"].includes(typeof o[prop]) &&
+      !Object.isFrozen(o[prop])) {
+      freezeObject(o[prop]);
+    }
+  });
+
+  return o;
 }
 
 function toPrimitive(obj) {
