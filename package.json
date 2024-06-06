@@ -17,6 +17,12 @@
   "keywords": [],
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
   "license": "Private",
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "express": "4.19.2",
+    "mongoose": "8.4.1",
+    "qs": "6.12.1"
+  },
   "devDependencies": {
     "chai": "5.1.1",
     "commitizen": "4.3.0",
@@ -24,9 +30,11 @@
     "cz-conventional-changelog": "3.3.0",
     "eslint": "9.4.0",
     "ghooks": "2.0.4",
+    "lodash": "4.17.21",
     "mocha": "10.4.0",
     "nodemon": "3.1.2",
-    "nyc": "15.1.0"
+    "nyc": "15.1.0",
+    "supertest": "7.0.0"
   },
   "config": {
     "commitizen": {
@@ -39,9 +47,5 @@
   "engines": {
     "node": ">=18.18.2",
     "npm": ">=9.8.1"
-  },
-  "dependencies": {
-    "dotenv": "16.4.5",
-    "mongoose": "8.4.1"
   }
 }
