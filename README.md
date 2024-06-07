@@ -104,7 +104,12 @@ All event objects contain the following attributes:
 ## Development
 
 ### Automated testing
+
+#### Testing all modules
 - Run all tests: `npm test`.
+- Run all tests with coverage report: `npm run test:coverage`.
+
+#### Testing individual modules and methods
 - Test a module: `npm test -- --<module_name>`.
   Example: `npm test -- --app`.
 
@@ -115,9 +120,21 @@ All event objects contain the following attributes:
   `Error: Not enough arguments following: config`
 
   Using `config::*` enables us to achieve our desired functionality.
-- Test a module method: `npm test -- --<module_name::<method_name>`.
+- Test a module's method: `npm test -- --<module_name::<method_name>`.
   Example: `npm test -- --config::get`.
-- Run all tests with coverage report: `npm run test:coverage`.
+- Test nested module method: `npm test -- --<directory>.<file_name>[::<method_name>]`.
+
+  Examples:
+    - Test the router (*src/framework/router.js* file) methods: `npm test -- --framework.router`.
+    - Test the `group` method of the router module: `npm test -- --framework.router::group`.
+
+#### Example tests
+```bash
+npm test -- --config                  // Test only methods of the config module (src/config.js)
+npm test -- --config::get             // Test only the get method of the config module
+npm test -- --framework.router        // Test only the methods of the router module (src/framework/router.js)
+npm test -- --framework.router::group // Test only the group method of the router
+```
 
 ### Committing and Pushing changes
 This project follows the [Conventional Commits Specification][commits] and uses [ESLint][eslint] for linting.

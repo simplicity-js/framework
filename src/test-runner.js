@@ -1,19 +1,29 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const test = process.argv[process.argv.length - 1]; // e.g.: --config, --config::get, etc.
-const runSingleTest = test.indexOf("--") > -1;
-const runMethodTest = test.indexOf("::") > -1;
-const allFiles = fs.readdirSync(__dirname, { recursive: true });
-const testFiles = allFiles.filter(file => path.basename(file).endsWith(".spec.js"));
-const indexEnd = runMethodTest ? test.indexOf("::") : test.length;
 
+/*
+ * Support specifying single file or single methods on the CLI for testing
+ * e.g.:
+ *   npm test -- --config           // Test only methods of the config module (src/config.js)
+ *   npm test -- --config::get      // Test only the get method of the config module
+ *   npm test -- --framework.router // Test only the methods of the router module (src/framework/router.js)
+ *   npm test -- --framework.router::group // Test only the group method of the router
+ */
+const test = process.argv[process.argv.length - 1];
+const singleFileTest = test.indexOf("--") > -1;
 
-if(runSingleTest) {
+if(singleFileTest) {
+  const singleMethodTest = test.indexOf("::") > -1;
+  const indexEnd = singleMethodTest ? test.indexOf("::") : test.length;
+
   const testDir = test
     .substring(0, indexEnd)           // strip away the `::` method call indicator
     .replace("--", "")                // strip off the `--` single test indicator
     .replace(/([A-Z])/g, "-$1")       // replace CAPS with their lowercase equivalent to match the target test file name
-    .replace(/^-/, "").toLowerCase(); // strip off the `-` preceding the first CAPS letter
+    .replace(/^-/, "").toLowerCase()  // strip off the `-` preceding the first CAPS letter
+    .split(".")                       // allow dot-separated directories (framework.router)
+    .filter(Boolean)                  // remove empty members (e.g. `framework...router`, instead of framework.router)
+    .join("/");                       // combine to form a directory path (framework.router => framework/router)
 
   const testFile = testDir + ".spec.js"; // append `.spec.js` to fully match the target file name
   const dirPath  = path.join(__dirname, testDir);
@@ -27,7 +37,9 @@ if(runSingleTest) {
     throw new Error(`Invalid test "${test.replace("--", "")}"`);
   }
 } else {
-  testFiles.forEach(runTestFile);
+  fs.readdirSync(__dirname, { recursive: true })
+    .filter(file => path.basename(file).endsWith(".spec.js"))
+    .forEach(runTestFile);
 }
 
 function runTestFile(testFile) {

@@ -1,10 +1,8 @@
 const createRouter = require("node-laravel-router").createRouter;
-const { copyMembers } = require("./lib/object");
 
-class Router {
+
+module.exports = class Router {
   constructor() {
-    copyMembers(createRouter(), this, { overwrite: true, bindSource: true });
+    return createRouter();
   }
-}
-
-module.exports = new Router();
+};

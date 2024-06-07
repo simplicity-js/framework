@@ -7,7 +7,8 @@ const bootstrap = require("./bootstrap");
 const config = require("./config");
 const container = require("./framework/container");
 const { copyMembers } = require("./framework/lib/object");
-const router = require("./framework/router");
+const Router = require("./framework/router");
+const router = new Router();
 const view = require("./framework/view");
 
 const allowedOrigins  = config.get("app.allowedOrigins");
@@ -52,7 +53,11 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
    *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
    *   - const value = req.app.resolve(dependencyKey)
    */
-  copyMembers(container, app, { overwrite: true, bindSource: true });
+  copyMembers(container, app, {
+    bindMethodsToSource: true,
+    skip: "constructor",
+    overwrite: true,
+  });
 
   /*
    * Disable the X-Powered-By header
