@@ -1,11 +1,12 @@
+const path = require("node:path");
 const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const config = require("./config");
 const router = require("./framework/router");
+const view = require("./framework/view");
 
-const app = express();
 const allowedOrigins  = config.get("app.allowedOrigins");
 const allowAllOrigins = allowedOrigins.includes("*");
 const corsOptions = {
@@ -21,17 +22,6 @@ const corsOptions = {
   allowedHeaders: config.get("app.allowedHeaders"),
 };
 
-app.set("trust proxy", 1);
-
-/*
- * Disable the X-Powered-By header
- */
-app.disable("x-powered-by");
-
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(cors(corsOptions));
-
 /**
  * @param {Function} webRoutes (optional): A function that takes a router instance
  *    and returns web routes.
@@ -39,16 +29,43 @@ app.use(cors(corsOptions));
  *    and returns API routes.
  * @return {Express}.
  */
-module.exports = function ({ webRoutes, apiRoutes }) {
+module.exports = function createApp({ webRoutes, apiRoutes }) {
+  const app = express();
+
+  /*
+   * Disable the X-Powered-By header
+   */
+  app.disable("x-powered-by");
+
+  /*
+   * View setup
+   */
+  app.set("views", path.join(__dirname, "views"));
+  app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
+
+  app.use(view.init);
+  app.use(express.static(path.join(__dirname, "public")));
+  app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
+  app.use(cors(corsOptions));
+
   /*
    * Setup Routing
    */
   if(typeof webRoutes === "function") {
-    router.group("/", (router) => webRoutes({ router }));
+    router.group("/", (router) => webRoutes({
+      router,
+      download: view.downloadFile,
+      view: view.viewFile,
+    }));
   }
 
   if(typeof apiRoutes === "function") {
-    router.group("/api", (router) => apiRoutes({ router }));
+    router.group("/api", (router) => apiRoutes({
+      router,
+      download: view.downloadFile,
+      view: view.viewFile,
+    }));
   }
 
   /*

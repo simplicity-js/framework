@@ -1,9 +1,24 @@
 const fs = require("node:fs");
+const path = require("node:path");
 
 module.exports = {
+  getCurrentFile,
   isDirectory,
   isFile,
 };
+
+function getCurrentFile() {
+  const e = new Error();
+  const regex = /\((.*):(\d+):(\d+)\)$/;
+  const match = regex.exec(e.stack.split("\n")[2]);
+
+  return {
+    file: match[1],
+    basename: path.basename(match[1]),
+    line: match[2],
+    column: match[3],
+  };
+}
 
 function isDirectory(path) {
   return pathExists(path) && pathInfo(path).isDirectory();

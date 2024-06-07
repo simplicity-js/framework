@@ -2,7 +2,7 @@
   "name": "audit-log-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha src/test-runner.js",
     "test:coverage": "nyc npm test",
@@ -24,8 +24,10 @@
     "dotenv": "16.4.5",
     "express": "4.19.2",
     "http-errors": "2.0.0",
+    "mime-types": "2.1.35",
     "mongoose": "8.4.1",
-    "node-laravel-router": "1.0.0"
+    "node-laravel-router": "1.0.0",
+    "pug": "3.0.3"
   },
   "devDependencies": {
     "chai": "5.1.1",

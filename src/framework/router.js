@@ -25,7 +25,6 @@ class Router {
      *
      * To get the class methods, we have to use Object.getOwnPropertyNames
      *
-     * I deliberately don't want to use proxy in lieu of two loops.
      */
 
     const routerMembers = Object.getOwnPropertyNames(Object.getPrototypeOf(router));
