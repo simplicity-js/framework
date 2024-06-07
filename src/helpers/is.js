@@ -1,6 +1,7 @@
 module.exports = {
   array      : isArray,
   empty      : isEmpty,
+  falsy      : isFalsy,
   "function" : isFunction,
   number     : isNumber,
   numeric    : isNumeric,
@@ -27,6 +28,10 @@ function isEmpty(data) {
   }
 
   return [0, null, false, NaN, undefined, ""].includes(data);
+}
+
+function isFalsy(val) {
+  return [0, "0", false, "false", NaN, null, undefined, ""].includes(val);
 }
 
 function isFunction(fn) {

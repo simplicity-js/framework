@@ -30,13 +30,7 @@ module.exports = {
       username : env.DB_USERNAME,
       password : env.DB_PASSWORD,
       dbName   : env.DB_DBNAME,
-      debug    : isFalsy(env.DEBUG?.trim()?.toLowerCase()) ? false : true,
       exitOnConnectFail: true,
     },
   },
 };
-
-
-function isFalsy(val) {
-  return [0, "0", false, "false", NaN, null, undefined, ""].includes(val);
-}

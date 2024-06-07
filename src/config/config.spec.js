@@ -14,7 +14,6 @@ const defaultDbConfig = {
       username : "",
       password : "",
       dbName   : "",
-      debug    : false,
       exitOnConnectFail: true,
     },
   },
