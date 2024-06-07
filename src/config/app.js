@@ -1,7 +1,7 @@
 const path = require("node:path");
 const env = require("../dotenv");
-const is = require("../helpers/is");
-const string = require("../helpers/string");
+const is = require("../framework/lib/is");
+const string = require("../framework/lib/string");
 
 const SPLIT_REGEX = /[\s+,;|]+/;
 

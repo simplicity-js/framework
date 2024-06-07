@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const is = require("../helpers/is");
-const { deepClone, freezeObject } = require("../helpers/object");
+const is = require("../framework/lib/is");
+const { deepClone, freezeObject } = require("../framework/lib/object");
 
 const config = createConfigObject(__dirname);
 let appConfig = deepClone(config);

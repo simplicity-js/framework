@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
 
-const { chai } = require("./helpers/test-helper");
+const { chai } = require("./lib/test-helper");
 
 let expect;
 

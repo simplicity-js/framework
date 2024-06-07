@@ -1,7 +1,7 @@
 const path = require("node:path");
 const mime = require("mime-types");
-const config = require("../config");
-const string = require("../helpers/string");
+const config = require("../../config"); // TO DO: use DI container to resolve config
+const string = require("./string");
 
 module.exports = {
   getMimeType,

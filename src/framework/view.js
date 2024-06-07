@@ -1,8 +1,8 @@
 const path = require("node:path");
-const { getMimeType, getResourceDir, getViewFileExtension } = require("./resource");
+const { getMimeType, getResourceDir, getViewFileExtension } = require("./lib/resource");
+
 
 let localRes;
-
 
 module.exports = {
   init(req, res, next) {

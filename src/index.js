@@ -1,7 +1,7 @@
 const http = require("http");
 const createApp = require("./app");
 const config = require("./config");
-const debug = require("./framework/debug");
+const debug = require("./framework/lib/debug");
 const initWebRoutes = require("./routes/web");
 const initApiRoutes = require("./routes/api");
 
