@@ -1,13 +1,80 @@
 const is = require("./is");
 
-
 module.exports = {
+  copyMembers,
   deepClone,
   deepEqual,
   freezeObject,
   //toPrimitive,
 };
 
+
+/**
+ * Copy properties and methods from a source to a destination object.
+ * @param {Object} source
+ * @param {Object} destination (optional)
+ * @param {Object} options (optional)
+ * @param {Boolean} [options.overwrite] (optional):
+ *    If true, overwrites the property in the desination if it already exists.
+ *    If false, bypass the property in the desintaion if it already exists.
+ *    The default is false.
+ * @param {Boolean} [options.bindSource] (optional):
+ *    Whether or not to bind method calls
+ *    to the source object (true) or the destination object (false)
+ *    The default is false.
+ * @return {Object}
+ */
+function copyMembers(source, destination, { overwrite, bindSource }) {
+  if(typeof destination === "undefined" || is.scalar(destination)) {
+    destination = {};
+  }
+
+  /*
+   * If the source object is an instance of a class,
+   * this will copy only its non-class members (this.*) defined in its constructor
+   * to the destination object.
+   */
+  for(const prop in source) {
+    if(Object.hasOwn(source, prop)) {
+      if(!Object.hasOwn(destination, prop) || overwrite) {
+        copy(prop);
+      }
+    }
+  }
+
+  /*
+   * If the source object is an instance of a class,
+   * this will copy its class members to the destination object.
+   *
+   * Using a for...in loop for(const prop in source) as we did above
+   * with either
+   *   - Object.hasOwnProperty.call(source, prop) or
+   *   - Object.hasOwn(source, prop)
+   * only gets us the source's non-class members
+   * because class members are not enumerable.
+   *
+   * To get the class members, we have to use Object.getOwnPropertyNames
+   */
+  const sourceMembers = Object.getOwnPropertyNames(Object.getPrototypeOf(source));
+
+  for(const prop of sourceMembers) {
+    if(!Object.hasOwn(destination, prop) || overwrite) {
+      copy(prop);
+    }
+  }
+
+  function copy(prop) {
+    if(typeof source[prop] === "function") {
+      if(bindSource) {
+        destination[prop] = source[prop].bind(source);
+      } else {
+        destination[prop] = source[prop].bind(destination);
+      }
+    } else {
+      destination[prop] = source[prop];
+    }
+  }
+}
 
 function deepClone(obj) {
 

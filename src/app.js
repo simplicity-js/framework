@@ -3,7 +3,10 @@ const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
+const bootstrap = require("./bootstrap");
 const config = require("./config");
+const container = require("./framework/container");
+const { copyMembers } = require("./framework/lib/object");
 const router = require("./framework/router");
 const view = require("./framework/view");
 
@@ -30,7 +33,26 @@ const corsOptions = {
  * @return {Express}.
  */
 module.exports = function createApp({ webRoutes, apiRoutes }) {
+  /*
+   * Our first action is to bootstrap (aka, register) the services.
+   * This way, any registered services are available to route handlers
+   * (via req.app.resolve(serviceName)) and other files.
+   */
+  bootstrap();
+
   const app = express();
+
+  /*
+   * Make the app a DI Container.
+   *
+   * This enables us to bind (register) and resolve (fetch) dependencies
+   * to and from the container from within middleware and route handlers
+   * using the app as follows:
+   *   - req.app.bindWithClass(dependencyKey, implementationClass, constructorParams)
+   *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
+   *   - const value = req.app.resolve(dependencyKey)
+   */
+  copyMembers(container, app, { overwrite: true, bindSource: true });
 
   /*
    * Disable the X-Powered-By header
