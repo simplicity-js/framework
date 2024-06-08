@@ -28,19 +28,26 @@ const corsOptions = {
 };
 
 /**
- * @param {Function} webRoutes (optional): A function that takes a router instance
- *    and returns web routes.
- * @param {Function} apiRoutes (optional): A function that takes a router instance
- *    and returns API routes.
- * @return {Express}.
+ * @param {Function} webRouter (optional): A function that takes an
+ *    options object and returns web routes.
+ * @param {Function} apiRouter (optional): A function that takes an
+ *    options object and returns API routes.
+ * @return {Object} An Express app instance.
  */
-module.exports = function createApp({ webRoutes, apiRoutes }) {
+module.exports = function createApp({ webRouter, apiRouter }) {
   /*
    * Our first action is to bootstrap (aka, register) the services.
    * This way, any registered services are available to route handlers
    * (via req.app.resolve(serviceName)) and other files.
    */
   bootstrap();
+
+  if(typeof webRouter !== "function" && typeof apiRouter !== "function") {
+    throw new Error(
+      "createApp 'options' object expects either or both of " +
+      "the following function members: `webRouter`, `apiRouter`."
+    );
+  }
 
   const app = express();
   const STATUS_CODES = Object.assign(Object.create(null), StatusCodes);
@@ -82,8 +89,8 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
   /*
    * Setup Routing
    */
-  if(typeof webRoutes === "function") {
-    router.group("/", (router) => webRoutes({
+  if(typeof webRouter === "function") {
+    router.group("/", (router) => webRouter({
       router,
       download: view.downloadFile,
       view: view.viewFile,
@@ -92,8 +99,8 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
     }));
   }
 
-  if(typeof apiRoutes === "function") {
-    router.group("/api", (router) => apiRoutes({
+  if(typeof apiRouter === "function") {
+    router.group("/api", (router) => apiRouter({
       router,
       download: view.downloadFile,
       view: view.viewFile,

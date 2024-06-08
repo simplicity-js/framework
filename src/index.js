@@ -2,8 +2,8 @@ const http = require("http");
 const createApp = require("./app");
 const config = require("./config");
 const debug = require("./framework/lib/debug");
-const initWebRoutes = require("./routes/web");
-const initApiRoutes = require("./routes/api");
+const webRouter = require("./routes/web");
+const apiRouter = require("./routes/api");
 
 const port = normalizePort(config.get("app.port"));
 
@@ -14,7 +14,7 @@ process.env.TZ = config.get("app.timezone");
 
 
 function startServer({ port, onError, onListening }) {
-  const app = createApp({ webRoutes: initWebRoutes, apiRoutes: initApiRoutes });
+  const app = createApp({ webRouter, apiRouter });
   const server = http.createServer(app);
 
   // Listen on provided port, on all network interfaces.
