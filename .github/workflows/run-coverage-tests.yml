@@ -29,17 +29,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
-    - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@1.10.0
-      with:
-        mongodb-version: ${{ matrix.mongodb-version }}
-        mongodb-port: 27017
-
     - name: 'Create env file'
       run: |
           set -m
           touch .env
-    #     echo "${{ secrets.ENV_FILE }}" > .env
           echo .env.example > .env
           cat .env
     # https://stackoverflow.com/a/63350136/1743192
