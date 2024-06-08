@@ -6,6 +6,7 @@ const createError = require("http-errors");
 const bootstrap = require("./bootstrap");
 const config = require("./config");
 const container = require("./framework/container");
+const { StatusCodes, StatusTexts } = require("./framework/http");
 const { convertBackSlashToForwardSlash } = require("./framework/lib/string");
 const Router = require("./framework/router");
 const view = require("./framework/view");
@@ -42,6 +43,8 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
   bootstrap();
 
   const app = express();
+  const STATUS_CODES = Object.assign(Object.create(null), StatusCodes);
+  const STATUS_TEXTS = Object.assign(Object.create(null), StatusTexts);
 
   /*
    * Make the app a DI Container.
@@ -84,6 +87,8 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
       router,
       download: view.downloadFile,
       view: view.viewFile,
+      STATUS_CODES,
+      STATUS_TEXTS,
     }));
   }
 
@@ -92,6 +97,8 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
       router,
       download: view.downloadFile,
       view: view.viewFile,
+      STATUS_CODES,
+      STATUS_TEXTS,
     }));
   }
 
