@@ -54,7 +54,7 @@ function isObject(data) {
 
 function isScalar(obj) {
   return (
-    !isArray(obj) && (typeof obj !== "object")
+    !isArray(obj) && !isFunction(obj) && !isObject(obj)
   );
 }
 

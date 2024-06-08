@@ -1,6 +1,7 @@
-const path = require("node:path");
-const { getMimeType, getResourceDir, getViewFileExtension } = require("./lib/resource");
+"use strict";
 
+const path = require("node:path");
+const { getResourceDir, getViewFilesExtension } = require("./lib/resource");
 
 let localRes;
 
@@ -38,15 +39,10 @@ module.exports = {
    */
   viewFile(filename, options) {
     const res = localRes;
-    const ext = getViewFileExtension();
+    const ext = getViewFilesExtension();
     const file = `${path.basename(filename, ext)}.${ext}`;
-    const { basePath = "views" } = options || {};
+    const { basePath = "views", ...viewVariables } = options || {};
 
-    return res.sendFile(file, {
-      root: getResourceDir(basePath),
-      headers: {
-        "Content-Type": getMimeType(file),
-      },
-    });
+    return res.render(`${getResourceDir(basePath)}/${file}`, viewVariables);
   },
 };

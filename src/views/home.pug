@@ -1,3 +1,6 @@
-<div>
-  Welcome to my simple framework-powered app!
-</div>
+extends layouts/layout
+
+block content
+
+  h1.page_title= pageTitle
+  p#welcome Welcome to #{appName} home page!

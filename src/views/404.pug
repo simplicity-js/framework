@@ -1,0 +1,10 @@
+extends layouts/layout
+
+block content
+
+  div
+    p Page not found!
+    a(href="/") Home
+
+    if err
+      p(class="errors")= err.stack

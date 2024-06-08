@@ -1,28 +1,11 @@
 const path = require("node:path");
-const mime = require("mime-types");
 const container = require("../container");
 const string = require("./string");
 
 module.exports = {
-  getMimeType,
   getResourceDir,
-  getViewFileExtension,
+  getViewFilesExtension,
 };
-
-
-function getMimeType(file) {
-  let type = mime.lookup(file);
-
-  if(!type) {
-    const extension = path.extname(file)?.substring(1)?.toLowerCase();
-
-    switch(extension) {
-    case "jade" :
-    case "pug"  : return "text/html";
-    default     : return type;
-    }
-  }
-}
 
 function getResourceDir(basePath) {
   const config = container.resolve("config");
@@ -32,7 +15,7 @@ function getResourceDir(basePath) {
   return string.convertBackSlashToForwardSlash(path.join(srcDir, basePath));
 }
 
-function getViewFileExtension() {
+function getViewFilesExtension() {
   const config = container.resolve("config");
 
   switch(config.get("app.viewTemplatesEngine")) {

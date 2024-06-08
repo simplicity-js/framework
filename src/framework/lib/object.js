@@ -1,101 +1,11 @@
 const is = require("./is");
 
 module.exports = {
-  copyMembers,
   deepClone,
   deepEqual,
   freezeObject,
   //toPrimitive,
 };
-
-
-/**
- * Copy properties and methods from a source to a destination object.
- * @param {Object} source
- * @param {Object} destination (optional)
- * @param {Object} options (optional)
- * @param {Boolean} [options.overwrite] (optional):
- *    If true, overwrites the property in the desination if it already exists.
- *    If false, bypass the property in the desintaion if it already exists.
- *    The default is false.
- * @param {Boolean} [options.bindMethodsToSource] (optional):
- *    Whether or not to bind method calls
- *    to the source object (true) or the destination object (false)
- *    The default is false.
- * @param {Array|String} [options.skip]: An array (or comma-separated list)
- *    of properties to skip during copying.
- * @return {Object}
- */
-function copyMembers(source, destination, options) {
-  options = options || {};
-
-  let { skip } = options;
-  const { overwrite, bindMethodsToSource } = options;
-
-  if(typeof destination === "undefined" || is.scalar(destination)) {
-    destination = {};
-  }
-
-  if(is.string(skip)) {
-    skip = skip.split(/\s*,\s*/g);
-  } else if(skip && is.array(skip)) {
-    skip = [].concat([skip]);
-  } else if(!skip) {
-    skip = [];
-  }
-
-  /*
-   * If the source object is an instance of a class,
-   * this will copy only its own (this.*) defined in its constructor
-   * to the destination object and ignore the non-class members
-   * (such as methods defined on the class)
-   */
-  for(const prop in source) {
-    copy(prop);
-  }
-
-  /*
-   * If the source object is an instance of a class,
-   * this will copy its class members (such as methods defined on the class)
-   * to the destination object.
-   *
-   * Using a for...in loop for(const prop in source) as we did above
-   * with either
-   *   - Object.hasOwnProperty.call(source, prop) or
-   *   - Object.hasOwn(source, prop)
-   * only gets us the source's non-class members
-   * because class members are not enumerable.
-   *
-   * To get the class members, we have to use Object.getOwnPropertyNames()
-   * on the router's class (returned by Object.getPrototypeOf())
-   */
-  const sourceMembers = Object.getOwnPropertyNames(Object.getPrototypeOf(source));
-
-  for(const prop of sourceMembers) {
-    copy(prop);
-  }
-
-  function copy(prop) {
-    /*
-     * If the property exists in the destination object
-     * and the config says we should not overwrite, skip copying.
-     * Or the prop is among the properties to ignore,
-     */
-    if((Object.hasOwn(destination, prop) && !overwrite) || skip.includes(prop)) {
-      return;
-    }
-
-    if(typeof source[prop] === "function") {
-      if(bindMethodsToSource) {
-        destination[prop] = source[prop].bind(source);
-      } else {
-        destination[prop] = source[prop].bind(destination);
-      }
-    } else {
-      destination[prop] = source[prop];
-    }
-  }
-}
 
 function deepClone(obj) {
 

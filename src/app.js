@@ -6,11 +6,11 @@ const createError = require("http-errors");
 const bootstrap = require("./bootstrap");
 const config = require("./config");
 const container = require("./framework/container");
-const { copyMembers } = require("./framework/lib/object");
+const { convertBackSlashToForwardSlash } = require("./framework/lib/string");
 const Router = require("./framework/router");
-const router = new Router();
 const view = require("./framework/view");
 
+const router = new Router();
 const allowedOrigins  = config.get("app.allowedOrigins");
 const allowAllOrigins = allowedOrigins.includes("*");
 const corsOptions = {
@@ -53,11 +53,11 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
    *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
    *   - const value = req.app.resolve(dependencyKey)
    */
-  copyMembers(container, app, {
-    bindMethodsToSource: true,
-    skip: "constructor",
-    overwrite: true,
-  });
+  for(const prop of ["bindWithClass", "bindWithFunction", "resolve"]) {
+    if(!(prop in app)) {
+      app[prop] = container[prop].bind(container);
+    }
+  }
 
   /*
    * Disable the X-Powered-By header
@@ -71,7 +71,7 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
 
   app.use(view.init);
-  app.use(express.static(path.join(__dirname, "public")));
+  app.use(express.static(convertBackSlashToForwardSlash(path.join(__dirname, "public"))));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(cors(corsOptions));
@@ -110,20 +110,20 @@ module.exports = function createApp({ webRoutes, apiRoutes }) {
    */
   // eslint-disable-next-line
   app.use((err, req, res, next) => {
+    const config = req.app.resolve("config");
+    const appName = config.get("app.name");
     const environment = req.app.get("env");
-    const response = {
-      error: true,
-      message: "The resource you're looking for does not exist",
-      code: err.status || 500,
-    };
-
-    res.status = response.code;
 
     if(environment === "development") {
-      response.errorStack = err.stack;
+      res.locals.err = err;
     }
 
-    return res.json(response);
+    return view.viewFile("404", {
+      appName,
+      pageTitle: "Not Found",
+      pageTagline: appName,
+      status: err.status || 500,
+    });
   });
 
   return app;
