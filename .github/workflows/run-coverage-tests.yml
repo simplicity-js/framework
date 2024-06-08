@@ -39,7 +39,8 @@ jobs:
       run: |
           set -m
           touch .env
-          echo "${{ secrets.ENV_FILE }}" > .env
+    #     echo "${{ secrets.ENV_FILE }}" > .env
+          echo .env.example > .env
           cat .env
     # https://stackoverflow.com/a/63350136/1743192
     #
