@@ -32,8 +32,7 @@ jobs:
     - name: 'Create env file'
       run: |
           set -m
-          touch .env
-          echo .env.example > .env
+          cp .env.example .env
           cat .env
     # https://stackoverflow.com/a/63350136/1743192
     #
