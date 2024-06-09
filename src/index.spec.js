@@ -107,6 +107,22 @@ module.exports = {
           });
         });
       });
+
+      it("should return a (custom) 404 error page if path does not exist", function(done) {
+        request(host)
+          .get("/iDontExist")
+          .expect(404)
+          .expect("Content-Type", "text/html; charset=utf-8")
+          .end((err, res) => {
+            if(err) {
+              return done(err);
+            }
+
+            expect(res.text).to.match(/<title>Not Found |/);
+            expect(res.text).to.match(/class="page-body"/);
+            done();
+          });
+      });
     });
   },
 };

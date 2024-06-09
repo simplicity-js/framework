@@ -127,16 +127,19 @@ module.exports = function createApp({ webRouter, apiRouter }) {
     const config = req.app.resolve("config");
     const appName = config.get("app.name");
     const environment = req.app.get("env");
+    const statusCode = err.status || 500;
 
-    if(environment === "development") {
+    if(["development", "test"].includes(environment)) {
       res.locals.err = err;
     }
+
+    res.status(statusCode);
 
     return view.viewFile("404", {
       appName,
       pageTitle: "Not Found",
       pageTagline: appName,
-      status: err.status || 500,
+      status: statusCode,
     });
   });
 
