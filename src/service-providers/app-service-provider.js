@@ -1,5 +1,5 @@
 const config = require("../config");
-const ServiceProvider = require("../framework/service-provider");
+const ServiceProvider = require("../framework/component/service-provider");
 
 
 /*

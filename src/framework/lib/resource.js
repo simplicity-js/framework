@@ -1,5 +1,5 @@
 const path = require("node:path");
-const container = require("../container");
+const container = require("../component/container");
 const string = require("./string");
 
 module.exports = {

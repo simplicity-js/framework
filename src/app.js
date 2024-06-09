@@ -5,11 +5,11 @@ const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const bootstrap = require("./bootstrap");
 const config = require("./config");
-const container = require("./framework/container");
-const { StatusCodes, StatusTexts } = require("./framework/http");
+const container = require("./framework/component/container");
+const { StatusCodes, StatusTexts } = require("./framework/component/http");
+const Router = require("./framework/component/router");
+const view = require("./framework/component/view");
 const { convertBackSlashToForwardSlash } = require("./framework/lib/string");
-const Router = require("./framework/router");
-const view = require("./framework/view");
 
 const router = new Router();
 const allowedOrigins  = config.get("app.allowedOrigins");

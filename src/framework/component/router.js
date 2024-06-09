@@ -1,3 +1,5 @@
+"use strict";
+
 const createRouter = require("node-laravel-router").createRouter;
 
 

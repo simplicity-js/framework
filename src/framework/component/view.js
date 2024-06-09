@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const { getResourceDir, getViewFilesExtension } = require("./lib/resource");
+const { getResourceDir, getViewFilesExtension } = require("../lib/resource");
 
 let localRes;
 

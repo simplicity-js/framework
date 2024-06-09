@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  * Credits: https://github.com/symfony/symfony/blob/7.2/src/Symfony/Component/HttpFoundation/Response.php
  */

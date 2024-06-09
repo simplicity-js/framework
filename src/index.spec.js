@@ -1,7 +1,7 @@
 /* eslint-env node, mocha */
 
 const request = require("supertest");
-const { StatusCodes, StatusTexts } = require("./framework/http");
+const { StatusCodes, StatusTexts } = require("./framework/component/http");
 const { chai } = require("./lib/test-helper");
 const server = require(".");
 

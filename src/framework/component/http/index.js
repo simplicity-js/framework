@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
   StatusCodes: require("./status-codes"),
   StatusTexts: require("./status-texts").statusTexts,

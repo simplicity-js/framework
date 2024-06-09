@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Create and export a Dependncy Injection Container
  */
