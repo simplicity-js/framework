@@ -222,6 +222,21 @@ module.exports = {
           assertRouteGroupOptions(options);
         }});
       });
+
+      it("should return an Express app that doubles as a DI Container", function() {
+        const app = createApp({ webRouter: function() {} });
+
+        const expressAppMethods = ["get", "listen", "set", "use"];
+        const diContainerMethods = ["bindWithClass", "bindWithFunction", "resolve"];
+
+        for(const method of expressAppMethods) {
+          expect(app).to.have.property(method).to.be.a("function");
+        }
+
+        for(const method of diContainerMethods) {
+          expect(app).to.have.property(method).to.be.a("function");
+        }
+      });
     });
   },
 };
