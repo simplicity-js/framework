@@ -4,6 +4,8 @@ module.exports = {
   deepClone,
   deepEqual,
   freezeObject,
+  getObjectValue,
+  setObjectValue,
   //toPrimitive,
 };
 
@@ -116,15 +118,58 @@ function freezeObject(o) {
   return o;
 }
 
-function toPrimitive(obj) {
-  let primitive = obj;
+/**
+ * Retrieve (nested) value from an object.
+ *
+ * @param {Object} obj: the object we want to retrieve a value from.
+ * @param {String} path (optional): the property to retrieve.
+ *   Nested properties can be comma-separated.
+ * @param {Mixed} defaultValue (optional): Value to return
+ *   if no value exists for the passed property.
+ * @return {Mixed}
+ *
+ */
+function getObjectValue(obj, path, defaultValue) {
+  // Cf. https://stackoverflow.com/q/54733539/1743192
+  // See also: https://stackoverflow.com/a/6491621/1743192
+  return path.split(".").reduce(function getObjectValueViaPath(a, c) {
+    return (a && a[c] ? a[c] : defaultValue);
+  }, obj);
+}
 
-  for(let type of [Boolean, Number, String]) {
-    if(obj instanceof type) {
-      primitive = type(obj);
-      break;
-    }
+/**
+ * Dynamically set object key/property.
+ * Overwrites previous key if exists.
+ *
+ * @param {Object} obj: the object to set the property on.
+ * @param {String} key: the property to set.
+ *   Nested keys can be comma-separated.
+ * @param {Mixed}: the value to set the property to.
+ */
+function setObjectValue(obj, path, value) {
+  // Credits: https://stackoverflow.com/a/65072147/1743192
+  const paths = is.array(path) ? path : path.split(".");
+  const inputObj = is.object(obj) ? { ...obj } : {};
+
+  if(paths.length === 1) {
+    inputObj[paths[0]] = value;
+
+    return inputObj;
   }
 
-  return primitive;
+  const [currPath, ...rest] = paths;
+  const currentNode = inputObj[currPath];
+  const childNode = setObjectValue(currentNode, rest, value);
+
+  inputObj[currPath] = childNode;
+
+  return inputObj;
+};
+
+function toPrimitive(obj) {
+  for(let type of [Boolean, Number, String]) {
+    if(obj instanceof type) {
+      return type(obj);
+    }
+  }
 }
