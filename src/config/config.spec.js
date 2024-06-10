@@ -8,13 +8,22 @@ const defaultDbConfig = {
   default: "mongodb",
   connections: {
     mongodb: {
-      dsn      : "",
+      url      : "",
       host     : "0.0.0.0",
       port     : 27017,
       username : "",
       password : "",
       dbName   : "",
       exitOnConnectFail: true,
+    },
+    mysql: {
+      url      : "",
+      host     : "0.0.0.0",
+      port     : 27017,
+      username : "",
+      password : "",
+      dbName   : "",
+      dbEngine : "mysql",
     },
   },
 };

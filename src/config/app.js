@@ -17,5 +17,5 @@ module.exports = {
   allowedHeaders : env.ALLOWED_HEADERS.split(SPLIT_REGEX).map(s => s.trim()),
   allowedMethods : env.ALLOWED_METHODS.split(SPLIT_REGEX).map(o => o.trim().toUpperCase()),
   allowedOrigins : env.ALLOWED_ORIGINS.split(SPLIT_REGEX).map(o => o.trim()),
-  viewTemplatesEngine: env.VIEW_TEMPLATE_ENGINE,
+  viewTemplatesEngine: env.VIEW_TEMPLATES_ENGINE,
 };

@@ -1,8 +1,7 @@
 const env = require("../dotenv");
 
 module.exports = {
-  client      : env.REDIS_CLIENT || "node-redis",
-  dsn         : env.REDIS_DSN,
+  url         : env.REDIS_URL,
   host        : env.REDIS_HOST,
   port        : env.REDIS_PORT,
   username    : env.REDIS_USERNAME,

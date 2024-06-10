@@ -1,10 +1,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const is = require("../framework/lib/is");
-const { deepClone, freezeObject } = require("../framework/lib/object");
+const {
+  freezeObject, getObjectValue, setObjectValue
+} = require("../framework/lib/object");
 
-const config = createConfigObject(__dirname);
-let appConfig = deepClone(config);
+const config = createConfigObject(__dirname, ["config.spec.js", "index.js"]);
+let appConfig = config;
 
 module.exports = freezeObject({
   get: getConfig,
@@ -13,22 +14,16 @@ module.exports = freezeObject({
 });
 
 
-function createConfigObject(configDir) {
-  const config = {};
-  const configFiles = fs.readdirSync(configDir);
-  const exclusionFiles = ["config.spec", "index"];
+function createConfigObject(configDir, filesToExclude = []) {
+  return (fs.readdirSync(configDir)
+    .filter(file => !filesToExclude.includes(file))
+    .map(file => path.basename(file, ".js"))
+    .reduce((config, filename) => {
+      config[filename] = require(`./${filename}`);
 
-  for(let i = 0, len = configFiles.length; i < len; i++) {
-    const filename = path.basename(configFiles[i], ".js");
-
-    if(exclusionFiles.includes(filename)) {
-      continue;
-    }
-
-    config[filename] = require(`./${filename}`);
-  }
-
-  return config;
+      return config;
+    }, {})
+  );
 }
 
 /**
@@ -39,19 +34,11 @@ function createConfigObject(configDir) {
  * @return {Mixed}
  *
  * Usage examples:
- *   1. Get `app` config object: config("app");
- *   2. Get timezone, return UTC if no timezone config found: config("app.timezone", "UTC");
+ *   1. Get `app` config object: getConfig("app");
+ *   2. Get timezone, return UTC if no timezone config found: getConfig("app.timezone", "UTC");
  */
 function getConfig(path, defaultValue) {
   return getObjectValue(appConfig, path, defaultValue);
-}
-
-function getObjectValue(obj, path, defaultValue) {
-  // Cf. https://stackoverflow.com/q/54733539/1743192
-  // See also: https://stackoverflow.com/a/6491621/1743192
-  return path.split(".").reduce(function getObjectValueViaPath(a, c) {
-    return (a && a[c] ? a[c] : defaultValue);
-  }, obj);
 }
 
 /**
@@ -60,31 +47,11 @@ function getObjectValue(obj, path, defaultValue) {
  *
  * @param {String} key: the config key to set.
  *   Nested keys can be comma-separated.
- * @param {Mixed}: the value to set te configuration to.
+ * @param {Mixed}: the value to set the configuration to.
  */
 function setConfig(path, value) {
   appConfig = setObjectValue(appConfig, path, value);
 }
-
-function setObjectValue(obj, path, value) {
-  // Credits: https://stackoverflow.com/a/65072147/1743192
-  const paths = is.array(path) ? path : path.split(".");
-  const inputObj = is.object(obj) ? { ...obj } : {};
-
-  if(paths.length === 1) {
-    inputObj[paths[0]] = value;
-
-    return inputObj;
-  }
-
-  const [currPath, ...rest] = paths;
-  const currentNode = inputObj[currPath];
-  const childNode = setObjectValue(currentNode, rest, value);
-
-  inputObj[currPath] = childNode;
-
-  return inputObj;
-};
 
 /**
  * Reset a static configuration value
@@ -94,7 +61,7 @@ function setObjectValue(obj, path, value) {
  */
 function resetConfig(path) {
   if(!path) {
-    appConfig = deepClone(config);
+    appConfig = config;
   } else {
     const originalValue = getObjectValue(config, path);
 

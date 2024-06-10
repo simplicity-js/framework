@@ -24,13 +24,23 @@ module.exports = {
    */
   connections: {
     mongodb: {
-      dsn      : env.DB_DSN,
+      url      : env.DB_URL,
       host     : env.DB_HOST,
       port     : Number(env.DB_PORT) || 27017,
       username : env.DB_USERNAME,
       password : env.DB_PASSWORD,
       dbName   : env.DB_DBNAME,
       exitOnConnectFail: true,
+    },
+
+    mysql: {
+      url      : env.DB_URL,
+      host     : env.DB_HOST,
+      port     : Number(env.DB_PORT) || 3006,
+      username : env.DB_USERNAME,
+      password : env.DB_PASSWORD,
+      dbName   : env.DB_DBNAME,
+      dbEngine : "mysql",
     },
   },
 };
