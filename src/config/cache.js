@@ -1,4 +1,6 @@
 const env = require("../dotenv");
+const is = require("../framework/lib/is");
+const NodeCache  = require( "node-cache" );
 
 module.exports = {
   /*
@@ -25,6 +27,11 @@ module.exports = {
   prefix: env.CACHE_KEY_PREFIX || `${env.NAME.toLowerCase().replace(/[\s*,-]+/g, "_")}_cache_`,
 
   /*
+   * Whether to compress the data prior to caching.
+   */
+  compress: is.falsy(env.CACHE_COMPRESS_DATA?.trim()?.toLowerCase()) ? false : true,
+
+  /*
    * -------------
    * Cache Stores
    * -------------
@@ -37,11 +44,12 @@ module.exports = {
   stores: {
     file: {
       driver: "file",
-      path: "storage/cache/data",
+      storagePath: "storage/cache/data",
     },
 
     memory: {
       driver: "memory",
+      store: new NodeCache(),
     },
 
     redis: {
