@@ -59,6 +59,14 @@ jobs:
 
     - name: Gather coverage report
       run: npm run test:coverage
-      #env:
+      env:
+         REDIS_HOST: 127.0.0.1
+         # GitHub actions for Node.js 18.x on ubuntu was failing due to ECONNREFUSED error
+         # when attempting to connect to redis.
+         # Override the REDIS_HOST in the .env file to use 127.0.0.1
+         # which is the static host bound by actions-setup-redis.
+         # See this reply: https://github.com/shogo82148/actions-setup-redis/issues/774#issuecomment-1521844296
       #  CI: true
         # https://docs.github.com/en/actions/learn-github-actions/variables
+        # See also:
+        # https://github.com/marketplace/actions/set-env-variables#using-configuration-variables
