@@ -4,10 +4,16 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 module.exports = {
+  deleteDirectory,
   getCurrentFile,
   isDirectory,
   isFile,
+  pathExists,
 };
+
+function deleteDirectory(dir) {
+  return fs.rmSync(dir, { recursive: true, force: true });
+}
 
 function getCurrentFile() {
   const e = new Error();

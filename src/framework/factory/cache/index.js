@@ -1,8 +1,10 @@
 const is = require("../../lib/is");
+const serializer = require("../../component/serializer");
 const createFileCache = require("./file-cache");;
 const createMemoryCache = require("./memory-cache");
 const createRedisCache = require("./redis-cache");
 
+const { serialize, deserialize } = serializer;
 const supportedCacheTypes = ["file", "memory", "redis"];
 
 module.exports = class CacheFactory {
@@ -72,12 +74,12 @@ module.exports = class CacheFactory {
 
     const cache = cacheCreationFn(config);
 
-    return unifiedCache(driver, cache);
+    return unifiedCacheInterface(driver, cache);
   }
 };
 
 
-function unifiedCache(driver, cache) {
+function unifiedCacheInterface(driver, cache) {
   driver = driver.toLowerCase();
 
   return {
@@ -91,15 +93,21 @@ function unifiedCache(driver, cache) {
      *   the cached value in the cache.
      */
     async set(key, value, { duration, replace }) {
-      if(driver === "redis") {
-        return await cache.set(key, value, { duration, replace });
-      } else {
-        return await cache.set(key, value, duration);
-      }
+      // The `replace` option is used by the redis driver
+      return await cache.set(key, serialize(value), { duration, replace });
     },
 
-    async get(key) {
-      return await cache.get(key);
+    async get(key, defaultValue) {
+      let value;
+      const cachedValue = await cache.get(key);
+
+      if(cachedValue) {
+        value = deserialize(cachedValue);
+      } else if(defaultValue) {
+        value = defaultValue;
+      }
+
+      return value;
     },
 
     async contains(key) {

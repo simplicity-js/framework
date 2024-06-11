@@ -1,38 +1,32 @@
-const serializer = require("../../component/serializer");
+const Cache = require("file-system-cache").default;
 
-const { serialize, deserialize } = serializer;
 
-module.exports = function createFileStore(/*{ storagePath }*/) {
+module.exports = function createFileStore({ storagePath }) {
+  const store = Cache({ basePath: storagePath });
+
   return {
     driver: "file",
 
-    set(key, value, duration) {
-      return store.set(key, serialize(value), duration);
+    async set(key, value, options) {
+      const { duration } = options ?? {};
+
+      return await store.set(key, value, duration);
     },
 
-    get(key) {
-      const serialized = store.get(key);
-      return serialized ? deserialize(serialized) : null;
+    async get(key) {
+      return await store.get(key);
     },
 
-    contains(key) {
-      return store.has(key);
+    async contains(key) {
+      return !!(await this.get(key));
     },
 
-    size() {
-      return store.keys().length;
+    async unset(key) {
+      return await store.remove(key);
     },
 
-    unset(key) {
-      return store.del(key);
-    },
-
-    clear() {
-      return store.flushAll();
-    },
-
-    stats() {
-      return store.getStats();
+    async clear() {
+      return await store.clear();
     },
 
     client() {

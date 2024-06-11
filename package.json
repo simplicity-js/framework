@@ -24,6 +24,7 @@
     "debug": "4.3.5",
     "dotenv": "16.4.5",
     "express": "4.19.2",
+    "file-system-cache": "2.4.4",
     "http-errors": "2.0.0",
     "mongoose": "8.4.1",
     "node-cache": "5.1.2",

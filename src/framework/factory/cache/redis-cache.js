@@ -1,7 +1,4 @@
 const RedisStore = require("../../component/connector/redis");
-const serializer = require("../../component/serializer");
-
-const { serialize, deserialize } = serializer;
 
 
 /**
@@ -33,9 +30,16 @@ module.exports = function createRedisStore(options) {
   if(connection && typeof connection === "object") {
     store = connection;
   } else if(credentials && typeof credentials === "object") {
-    store = new RedisStore(credentials);
+    const redisStore = new RedisStore(credentials);
+    store = redisStore.getClient();
 
-    store.connect();
+    store.on("connect", () => console.log("Connection established"));
+
+    setTimeout(async function() {
+      if(!redisStore.connecting() && !redisStore.connected()) {
+        await redisStore.connect();
+      }
+    }, 1000);
   }
 
   return {
@@ -69,12 +73,11 @@ module.exports = function createRedisStore(options) {
         storageOptions.EX = duration;
       }
 
-      return await store.set(key, serialize(value), storageOptions);
+      return await store.set(key, value, storageOptions);
     },
 
     async get(key) {
-      const serialized = await store.get(key);
-      return serialized ? deserialize(serialized) : null;
+      return await store.get(key);
     },
 
     async unset(key) {
@@ -83,6 +86,10 @@ module.exports = function createRedisStore(options) {
 
     async contains(key) {
       return await store.sendCommand(["EXISTS", key]);
+    },
+
+    async clear() {
+      return await store.sendCommand(["FLUSHDB"]);
     },
 
     client() {

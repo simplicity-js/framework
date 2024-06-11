@@ -1,8 +1,3 @@
-const serializer = require("../../component/serializer");
-
-const { serialize, deserialize } = serializer;
-
-
 module.exports = function createMemoryStore({ store }) {
   return {
     driver: "memory",
@@ -14,13 +9,14 @@ module.exports = function createMemoryStore({ store }) {
      * @param {Number} [options.duration] (optional): how long (in seconds) to keep
      *   the cached value in the cache.
      */
-    set(key, value, { duration }) {
-      return store.set(key, serialize(value), duration);
+    set(key, value, options) {
+      const { duration } = options ?? {};
+
+      return store.set(key, value, duration);
     },
 
     get(key) {
-      const serialized = store.get(key);
-      return serialized ? deserialize(serialized) : null;
+      return store.get(key);
     },
 
     contains(key) {
