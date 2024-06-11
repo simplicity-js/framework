@@ -46,22 +46,22 @@ module.exports = class CacheFactory {
         throw new Error(
           errorPrefix +
           "The `config` parameter for the 'redis' driver expects an object with " +
-          `one of either properties: ${expectedProps.join(", ")}`
+          `one of either properties: ${expectedProps.join(", ")}.`
         );
       }
     } else if(driver === "file" && !config.storagePath) {
       throw new Error(
         errorPrefix +
         "The `config` parameter for the 'file' driver expects an object with a " +
-        "`storagePath` string property"
+        "`storagePath` string property."
       );
-    } else if(!is.object(config.store)) {
+    } else if(driver === "memory" && !is.object(config.store)) {
       const expectedStoreMethods = ["get", "set", "has", "keys", "del"];
 
       throw new Error(
         errorPrefix +
         "The `config` parameter for the 'memory' driver expects an object with a " +
-        `\`store\` object property having methods: ${expectedStoreMethods.join(", ")}`
+        `\`store\` object property having methods: ${expectedStoreMethods.join(", ")}.`
       );
     }
 
@@ -80,9 +80,9 @@ module.exports = class CacheFactory {
 
 
 function unifiedCacheInterface(driver, cache) {
-  driver = driver.toLowerCase();
-
   return {
+    driver: driver.toLowerCase(),
+
     /**
      * @param {String} key: the cache key
      * @param {String} value: the value to cache
@@ -116,6 +116,10 @@ function unifiedCacheInterface(driver, cache) {
 
     async unset(key) {
       return await cache.unset(key);
+    },
+
+    client() {
+      return cache.client();
     },
   };
 }
