@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: ['ubuntu-latest']
         node-version: [18.x, 20.x]
-        redis-version: ['4.0', '5.0', '6.0', '6.2', '7.0', '7.2']
+        redis-version: ['4.0', '5.0', '6.0', '6.2', '7.x', 'latest']
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         # See redis enablement at: https://github.com/marketplace/actions/actions-setup-redis#usage
 
@@ -37,7 +37,6 @@ jobs:
       uses: shogo82148/actions-setup-redis@v1
       with:
         redis-version: ${{ matrix.redis-version }}
-        redis-port: 6379
 
     - name: 'Create env file'
       run: |
