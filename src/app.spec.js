@@ -164,13 +164,6 @@ const HTTP_STATUS_TEXTS = [
   [511, "Network Authentication Required"],
 ];
 
-after(function(done) {
-  // Call done() before stopping the server(s) (terminating the process);
-  // so that we can get the test report (20 passing, etc)
-  // before the process is terminated.
-  setTimeout(function stopServer() { process.exit(0); }, 0);
-  done();
-});
 
 /*
  * Assert the options injected into (web and api) route groups by the app.

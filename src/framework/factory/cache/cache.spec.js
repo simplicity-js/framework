@@ -16,15 +16,9 @@ const configs = {
   redis: { credentials: {
     host: "localhost",
     port: 6379,
-    autoConnect: true,
+    autoConnect: false,
   }},
 };
-
-after(async function() {
-  await connections.redis.client().disconnect();
-
-  setTimeout(process.exit.bind(process), 0);
-});
 
 
 module.exports = {

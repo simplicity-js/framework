@@ -17,7 +17,9 @@ function startServer({ port, onError, onListening }) {
   const app = createApp({ webRouter, apiRouter });
   const server = http.createServer(app);
 
-  // Listen on provided port, on all network interfaces.
+  /*
+   * Listen on provided port, on all network interfaces.
+   */
   server.listen(port);
 
   if(typeof onError === "function") {
@@ -44,6 +46,8 @@ function startServer({ port, onError, onListening }) {
     // exit immediately and generate a core dump file
     setTimeout(() => process.abort(), 1000).unref();
   });
+
+  return server;
 }
 
 /**
@@ -110,6 +114,4 @@ if(require.main === module) {
   startServer({ port, onError, onListening });
 }
 
-module.exports = {
-  start: startServer,
-};
+module.exports = startServer;

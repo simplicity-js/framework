@@ -3,18 +3,32 @@
 const request = require("supertest");
 const { StatusCodes, StatusTexts } = require("./framework/component/http");
 const { chai } = require("./lib/test-helper");
-const server = require(".");
-
-after(function(done) {
-  // Call done() before stopping the server(s) (terminating the process);
-  // so that we can get the test report (20 passing, etc)
-  // before the process is terminated.
-  setTimeout(function stopServer() { process.exit(0); }, 0);
-  done();
-});
-
+const startServer = require(".");
 
 module.exports = {
+  createServer() {
+    describe("startServer({ host, port, onError, onListening })", function() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
+      it("should return a Node.js HTTP server", function(done) {
+        const server = startServer({ port: 5000 });
+        const serverMethods = ["address", "close", "listen"];
+
+        expect(server).to.be.an("object");
+
+        for(const method of serverMethods) {
+          expect(server).to.have.property(method).to.be.a("function");
+        }
+
+        server.close(done);
+      });
+    });
+  },
+
   start() {
     describe("server.start({ port, onError, onListening })", function() {
       let expect;
@@ -26,25 +40,25 @@ module.exports = {
       it("should call the `onError` function if an error occurs", function(done) {
         const SHARED_PORT = 5000;
 
-        server.start({ port: SHARED_PORT });
-        server.start({ port: SHARED_PORT, onError: function onError(error, port) {
+        const server1 = startServer({ port: SHARED_PORT });
+        const server2 = startServer({ port: SHARED_PORT, onError: function onError(error, port) {
           expect(error.code).to.equal("EADDRINUSE");
           expect(port).to.equal(SHARED_PORT);
 
-          done();
+          server2.close(() => server1.close(done));
         }});
       });
 
       it("should call the `onListening` function on server listening", function(done) {
         const port = 5001;
 
-        server.start({ port, onError: done, onListening: function onListening(server) {
+        startServer({ port, onError: done, onListening: function onListening(server) {
           expect(server).to.be.an("object");
           expect(server).to.have.property("address").to.be.a("function");
           expect(server.address()).to.be.an("object");
           expect(server.address().port).to.equal(port);
 
-          done();
+          server.close(done);
         }});
       });
     });
@@ -53,15 +67,19 @@ module.exports = {
   routes() {
     describe("Routes", function routes() {
       let expect;
-
-      before(async function() {
-        expect = (await chai()).expect;
-      });
+      let server;
 
       const port = 5002;
       const host = `http://localhost:${port}`;
 
-      server.start({ port, onError: console.log });
+      before(async function() {
+        expect = (await chai()).expect;
+        server = startServer({ port, onError: console.log });
+      });
+
+      after(function(done) {
+        server.close(done);
+      });
 
       describe("Web Routes", function webRouter() {
         describe("/", function homePage() {
