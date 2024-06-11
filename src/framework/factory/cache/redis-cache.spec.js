@@ -5,32 +5,32 @@ const { serialize, deserialize } = require("../../component/serializer");
 const { chai } = require("../../lib/test-helper");
 const createCache = require("./redis-cache");
 
-let expect;
-let cache;
-const users = [{ name: "jamie", email: "jamie@lanister.com" }];
-
-before(async function() {
-  expect = (await chai()).expect;
-
-  cache = createCache({ credentials: {
-    host: "localhost",
-    port: 6379,
-    autoConnect: true,
-  }});
-});
-
-afterEach(async function() {
-  await cache.clear();
-});
-
-after(async function() {
-  await cache.client().disconnect();
-});
-
 
 module.exports = {
   set() {
     describe(".set(key, value[, { duration }])", function() {
+      let expect;
+      let cache;
+      const users = [{ name: "jamie", email: "jamie@lanister.com" }];
+
+      before(async function() {
+        expect = (await chai()).expect;
+
+        cache = createCache({ credentials: {
+          host: "localhost",
+          port: 6379,
+          autoConnect: true,
+        }});
+      });
+
+      afterEach(async function() {
+        await cache.clear();
+      });
+
+      after(async function() {
+        await cache.client().disconnect();
+      });
+
       it("should cache the value using the key as identifier", async function() {
         expect(await cache.get("users")).to.equal(null);
 
@@ -43,6 +43,28 @@ module.exports = {
 
   get() {
     describe(".get(key)", function() {
+      let expect;
+      let cache;
+      const users = [{ name: "tyrion", email: "tyrion@lanister.com" }];
+
+      before(async function() {
+        expect = (await chai()).expect;
+
+        cache = createCache({ credentials: {
+          host: "localhost",
+          port: 6379,
+          autoConnect: true,
+        }});
+      });
+
+      afterEach(async function() {
+        await cache.clear();
+      });
+
+      after(async function() {
+        await cache.client().disconnect();
+      });
+
       it("should returned undefined if key was not previously set", async function() {
         expect(await cache.get("users")).to.equal(null);
       });
@@ -59,6 +81,28 @@ module.exports = {
 
   contains() {
     describe(".contains(key)", function() {
+      let expect;
+      let cache;
+      const users = [{ name: "cersei", email: "cersei@lanister.com" }];
+
+      before(async function() {
+        expect = (await chai()).expect;
+
+        cache = createCache({ credentials: {
+          host: "localhost",
+          port: 6379,
+          autoConnect: true,
+        }});
+      });
+
+      afterEach(async function() {
+        await cache.clear();
+      });
+
+      after(async function() {
+        await cache.client().disconnect();
+      });
+
       it("should return false if the key is not set", async function() {
         expect(await cache.contains("users")).to.equal(0);
       });
@@ -75,6 +119,28 @@ module.exports = {
 
   unset() {
     describe(".unset(key)", function() {
+      let expect;
+      let cache;
+      const users = [{ name: "tywin", email: "tywin@lanister.com" }];
+
+      before(async function() {
+        expect = (await chai()).expect;
+
+        cache = createCache({ credentials: {
+          host: "localhost",
+          port: 6379,
+          autoConnect: true,
+        }});
+      });
+
+      afterEach(async function() {
+        await cache.clear();
+      });
+
+      after(async function() {
+        await cache.client().disconnect();
+      });
+
       it("should remove cached value by key", async function() {
         expect(await cache.get("users")).to.equal(null);
         expect(await cache.get("products")).to.equal(null);

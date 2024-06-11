@@ -3,15 +3,16 @@
 const { chai } = require("../lib/test-helper");
 const createRegistry = require("./registry");
 
-let expect;
-
-before(async function() {
-  expect = (await chai()).expect;
-});
 
 module.exports = {
   createRegistry() {
     describe("createRegistry()", function createRegistry_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should return a 'registry' object", function() {
         const registry = createRegistry();
         const registryMethods = ["add", "contains", "get", "remove"];
@@ -27,6 +28,12 @@ module.exports = {
     const registry = createRegistry();
 
     describe("registry.add(key, value)", function registryAdd_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should set new top-level key if not exists", function() {
         expect(registry.get("host")).to.equal(undefined);
 
@@ -52,6 +59,12 @@ module.exports = {
     const registry = createRegistry();
 
     describe("registry.get(key[, defaultValue])", function registryGet_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should return undefined for non-existent key", function() {
         expect(registry.get("database")).to.equal(undefined);
       });

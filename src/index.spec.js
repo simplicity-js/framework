@@ -5,12 +5,6 @@ const { StatusCodes, StatusTexts } = require("./framework/component/http");
 const { chai } = require("./lib/test-helper");
 const server = require(".");
 
-let expect;
-
-before(async function() {
-  expect = (await chai()).expect;
-});
-
 after(function(done) {
   // Call done() before stopping the server(s) (terminating the process);
   // so that we can get the test report (20 passing, etc)
@@ -23,6 +17,12 @@ after(function(done) {
 module.exports = {
   start() {
     describe("server.start({ port, onError, onListening })", function() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should call the `onError` function if an error occurs", function(done) {
         const SHARED_PORT = 5000;
 
@@ -52,6 +52,12 @@ module.exports = {
 
   routes() {
     describe("Routes", function routes() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       const port = 5002;
       const host = `http://localhost:${port}`;
 

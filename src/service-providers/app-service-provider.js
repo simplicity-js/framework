@@ -64,8 +64,8 @@ class AppServiceProvider extends ServiceProvider {
       const redisClient = redisStore.getClient();
 
       // TO DO: Use a proper log service for this.
-      redisClient.on("error", (e) => console.log("Redis error", require("node:util").inspect(e)));
-      redisClient.on("connect", () => console.log("Redis connection established"));
+      redisClient.on("error", (e) => log("Redis error", require("node:util").inspect(e)));
+      redisClient.on("connect", () => log("Redis connection established"));
 
       setTimeout(async function() {
         if(!redisStore.connecting() && !redisStore.connected()) {
@@ -76,8 +76,14 @@ class AppServiceProvider extends ServiceProvider {
       return redisClient;
     } catch(e) {
       // TO DO: Use a proper log service for this.
-      console.log("Redis error", require("node:util").inspect(e));
+      log("Redis error", require("node:util").inspect(e));
     }
+  }
+}
+
+function log(message) { 
+  if(config.get("app.environment") !== "test") {
+    console.log(message);
   }
 }
 

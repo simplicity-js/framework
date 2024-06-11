@@ -7,7 +7,7 @@ const NodeCache = require("node-cache");
 const { chai } = require("../../lib/test-helper");
 const CacheFactory = require(".");;
 
-let expect;
+
 const connections = {};
 const storagePath = path.join(__dirname.replace(/\\/g, "/"), ".data");
 const configs = {
@@ -20,10 +20,6 @@ const configs = {
   }},
 };
 
-before(async function() {
-  expect = (await chai()).expect;
-});
-
 after(async function() {
   await connections.redis.client().disconnect();
 
@@ -34,6 +30,12 @@ after(async function() {
 module.exports = {
   createCache() {
     describe("CacheFactory.createCache(driver, config)", function() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       const supportedCacheTypes = ["file", "memory", "redis"];
       const errorPrefix = "CacheFactory::getCache(driver, config): ";
 

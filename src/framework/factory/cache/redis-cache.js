@@ -33,8 +33,6 @@ module.exports = function createRedisStore(options) {
     const redisStore = new RedisStore(credentials);
     store = redisStore.getClient();
 
-    store.on("connect", () => console.log("Connection established"));
-
     setTimeout(async function() {
       if(!redisStore.connecting() && !redisStore.connected()) {
         await redisStore.connect();

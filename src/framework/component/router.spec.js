@@ -30,17 +30,17 @@ const methods = [
   "unsubscribe"
 ];
 
-let app;
-let router;
-
-beforeEach(function() {
-  app = express();
-  router = new Router();
-});
-
 module.exports = {
   route() {
     describe(".route(options:object|string, action:*):void", function() {
+      let app;
+      let router;
+
+      beforeEach(function() {
+        app = express();
+        router = new Router();
+      });
+
       describe("basic functionality", function() {
         const tests = [
           {
@@ -377,6 +377,14 @@ module.exports = {
 
   group() {
     describe(".group(groupOptions:object, closure:function)", function() {
+      let app;
+      let router;
+
+      beforeEach(function() {
+        app = express();
+        router = new Router();
+      });
+
       it("creates route groups that can share common uri prefixes, middleware, namespaces, and patterns", function(done) {
         let mCount = 0;
         let mCountMiddleware = (req, res, next) => {
@@ -474,6 +482,12 @@ module.exports = {
 
   url() {
     describe(".url(name:string, params:object)", function() {
+      let router;
+
+      beforeEach(function() {
+        router = new Router();
+      });
+
       it("generates urls to routes that have been named", function() {
         router.group({
           prefix: "/foo",
@@ -581,6 +595,14 @@ module.exports = {
 
   method() {
     describe(".{method}", function() {
+      let app;
+      let router;
+
+      beforeEach(function() {
+        app = express();
+        router = new Router();
+      });
+
       describe("different HTTP methods can also be routed to via router.{method} (or router[method])", function() {
         methods.forEach(method => {
           it(`successfully routes to ${method} requests`, function(done) {

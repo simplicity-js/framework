@@ -3,7 +3,6 @@
 const { chai } = require("../lib/test-helper");
 const config = require("./");
 
-let expect;
 const defaultDbConfig = {
   default: "mongodb",
   connections: {
@@ -28,13 +27,16 @@ const defaultDbConfig = {
   },
 };
 
-before(async function() {
-  expect = (await chai()).expect;
-});
 
 module.exports = {
   get() {
     describe(".get(path[, defaultValue])", function configDotGet_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should return `path` config value if exists", function() {
         expect(config.get("database")).to.deep.equal(defaultDbConfig);
       });
@@ -56,6 +58,12 @@ module.exports = {
 
   set() {
     describe(".set(path, value)", function configDotSet_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should set new top-level config key if not exists", function() {
         expect(config.get("host")).to.equal(undefined);
 
@@ -79,6 +87,12 @@ module.exports = {
 
   reset() {
     describe(".reset([path])", function configDotReset_Spec() {
+      let expect;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should reset entire config object if no `path` specified", function() {
         expect(config.get("app.environment")).to.equal("test");
         expect(config.get("app.timezone")).to.equal("UTC");

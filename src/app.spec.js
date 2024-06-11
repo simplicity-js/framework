@@ -164,10 +164,12 @@ const HTTP_STATUS_TEXTS = [
   [511, "Network Authentication Required"],
 ];
 
-
-
-before(async function() {
-  expect = (await chai()).expect;
+after(function(done) {
+  // Call done() before stopping the server(s) (terminating the process);
+  // so that we can get the test report (20 passing, etc)
+  // before the process is terminated.
+  setTimeout(function stopServer() { process.exit(0); }, 0);
+  done();
 });
 
 /*
@@ -203,6 +205,10 @@ function assertRouteGroupOptions(options) {
 module.exports = {
   createApp() {
     describe("createApp", function createApp_Spec() {
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
       it("should throw if none of `webRouter` or `apiRouter` functions are given", function() {
         const expectedErrorMessage = "createApp 'options' object expects either or both of " +
         "the following function members: `webRouter`, `apiRouter`.";

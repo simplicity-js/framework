@@ -5,28 +5,28 @@ const NodeCache = require("node-cache");
 const { chai } = require("../../lib/test-helper");
 const createCache = require("./memory-cache");
 
-let expect;
-let cache;
 const users = [{ name: "jamie", email: "jamie@lanister.com" }];
-
-before(async function() {
-  expect = (await chai()).expect;
-});
-
-beforeEach(function(done) {
-  cache = createCache({ store: new NodeCache() });
-  done();
-});
-
-afterEach(function(done) {
-  cache.clear();
-  done();
-});
-
 
 module.exports = {
   set() {
     describe(".set(key, value[, { duration }])", function() {
+      let expect;
+      let cache;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ store: new NodeCache() });
+        done();
+      });
+
+      afterEach(function(done) {
+        cache.clear();
+        done();
+      });
+
       it("should cache the value using the key as identifier", async function() {
         expect(await cache.get("users")).to.equal(undefined);
 
@@ -39,6 +39,23 @@ module.exports = {
 
   get() {
     describe(".get(key)", function() {
+      let expect;
+      let cache;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ store: new NodeCache() });
+        done();
+      });
+
+      afterEach(function(done) {
+        cache.clear();
+        done();
+      });
+
       it("should returned undefined if key was not previously set", async function() {
         expect(await cache.get("users")).to.equal(undefined);
       });
@@ -55,6 +72,23 @@ module.exports = {
 
   contains() {
     describe(".contains(key)", function() {
+      let expect;
+      let cache;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ store: new NodeCache() });
+        done();
+      });
+
+      afterEach(function(done) {
+        cache.clear();
+        done();
+      });
+
       it("should return false if the key is not set", async function() {
         expect(await cache.contains("users")).to.equal(false);
       });
@@ -71,6 +105,23 @@ module.exports = {
 
   unset() {
     describe(".unset(key)", function() {
+      let expect;
+      let cache;
+
+      before(async function() {
+        expect = (await chai()).expect;
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ store: new NodeCache() });
+        done();
+      });
+
+      afterEach(function(done) {
+        cache.clear();
+        done();
+      });
+
       it("should remove cached value by key", async function() {
         expect(await cache.get("users")).to.equal(undefined);
         expect(await cache.get("products")).to.equal(undefined);

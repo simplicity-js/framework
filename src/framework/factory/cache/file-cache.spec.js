@@ -7,30 +7,32 @@ const { deleteDirectory, pathExists } = require("../../component/file-system");
 const { chai } = require("../../lib/test-helper");
 const createCache = require("./file-cache");
 
-let expect;
-let cache;
+const storageBasePath = path.join(__dirname.replace(/\\/g, "/"), ".data");
 const users = [{ name: "jamie", email: "jamie@lanister.com" }];
-const storagePath = path.join(__dirname.replace(/\\/g, "/"), ".data");
-
-before(async function() {
-  expect = (await chai()).expect;
-  deleteDirectory(storagePath);
-});
-
-beforeEach(function(done) {
-  cache = createCache({ storagePath });
-  done();
-});
-
-afterEach(function(done) {
-  deleteDirectory(storagePath);
-  done();
-});
 
 
 module.exports = {
   set() {
     describe(".set(key, value[, { duration }])", function() {
+      let expect;
+      let cache;
+      const storagePath = `${storageBasePath}/set`;
+
+      before(async function() {
+        expect = (await chai()).expect;
+        deleteDirectory(storagePath);
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ storagePath });
+        done();
+      });
+
+      afterEach(function(done) {
+        deleteDirectory(storagePath);
+        done();
+      });
+
       it("should create the storage directory if not exists", async function() {
         expect(pathExists(storagePath)).to.equal(false);
 
@@ -51,6 +53,25 @@ module.exports = {
 
   get() {
     describe(".get(key)", function() {
+      let expect;
+      let cache;
+      const storagePath = `${storageBasePath}/get`;
+
+      before(async function() {
+        expect = (await chai()).expect;
+        deleteDirectory(storagePath);
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ storagePath });
+        done();
+      });
+
+      afterEach(function(done) {
+        deleteDirectory(storagePath);
+        done();
+      });
+
       it("should returned undefined if key was not previously set", async function() {
         expect(await cache.get("users")).to.equal(undefined);
       });
@@ -67,6 +88,25 @@ module.exports = {
 
   contains() {
     describe(".contains(key)", function() {
+      let expect;
+      let cache;
+      const storagePath = `${storageBasePath}/contains`;
+
+      before(async function() {
+        expect = (await chai()).expect;
+        deleteDirectory(storagePath);
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ storagePath });
+        done();
+      });
+
+      afterEach(function(done) {
+        deleteDirectory(storagePath);
+        done();
+      });
+
       it("should return false if the key is not set", async function() {
         expect(await cache.contains("users")).to.equal(false);
       });
@@ -83,6 +123,25 @@ module.exports = {
 
   unset() {
     describe(".unset(key)", function() {
+      let expect;
+      let cache;
+      const storagePath = `${storageBasePath}/unset`;
+
+      before(async function() {
+        expect = (await chai()).expect;
+        deleteDirectory(storagePath);
+      });
+
+      beforeEach(function(done) {
+        cache = createCache({ storagePath });
+        done();
+      });
+
+      afterEach(function(done) {
+        deleteDirectory(storagePath);
+        done();
+      });
+
       it("should remove cached value by key", async function() {
         expect(await cache.get("users")).to.equal(undefined);
         expect(await cache.get("products")).to.equal(undefined);
