@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest']
+        environment: ['development', 'staging', 'production']
         node-version: [18.x, 20.x]
         redis-version: ['4.0', '5.0', '6.0', '6.2', '7.x', 'latest']
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
@@ -60,6 +61,7 @@ jobs:
     - name: Gather coverage report
       run: npm run test:coverage
       env:
+         NODE_ENV: ${{ matrix.environment }}
          REDIS_HOST: '127.0.0.1'
          # GitHub actions for Node.js 18.x on ubuntu was failing due to ECONNREFUSED error
          # when attempting to connect to redis.
