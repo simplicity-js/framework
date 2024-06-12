@@ -5,6 +5,14 @@ const { serialize, deserialize } = require("../../component/serializer");
 const { chai } = require("../../lib/test-helper");
 const createCache = require("./redis-cache");
 
+const redisConnectionConfig = {
+  credentials: {
+    host: "127.0.0.1",
+    port: 6379,
+    autoConnect: true,
+  },
+};
+
 
 module.exports = {
   set() {
@@ -16,11 +24,7 @@ module.exports = {
       before(async function() {
         expect = (await chai()).expect;
 
-        cache = createCache({ credentials: {
-          host: "localhost",
-          port: 6379,
-          autoConnect: true,
-        }});
+        cache = createCache(redisConnectionConfig);
       });
 
       afterEach(async function() {
@@ -50,11 +54,7 @@ module.exports = {
       before(async function() {
         expect = (await chai()).expect;
 
-        cache = createCache({ credentials: {
-          host: "localhost",
-          port: 6379,
-          autoConnect: true,
-        }});
+        cache = createCache(redisConnectionConfig);
       });
 
       afterEach(async function() {
@@ -88,11 +88,7 @@ module.exports = {
       before(async function() {
         expect = (await chai()).expect;
 
-        cache = createCache({ credentials: {
-          host: "localhost",
-          port: 6379,
-          autoConnect: true,
-        }});
+        cache = createCache(redisConnectionConfig);
       });
 
       afterEach(async function() {
@@ -126,11 +122,7 @@ module.exports = {
       before(async function() {
         expect = (await chai()).expect;
 
-        cache = createCache({ credentials: {
-          host: "localhost",
-          port: 6379,
-          autoConnect: true,
-        }});
+        cache = createCache(redisConnectionConfig);
       });
 
       afterEach(async function() {
