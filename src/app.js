@@ -1,4 +1,5 @@
 const path = require("node:path");
+const RedisStore = require("connect-redis").default;
 const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -7,10 +8,12 @@ const bootstrap = require("./bootstrap");
 const providers = require("./bootstrap/providers");
 const config = require("./config");
 const container = require("./framework/component/container");
+const Connections = require("./framework/connections");
 const { StatusCodes, StatusTexts } = require("./framework/component/http");
 const Router = require("./framework/component/router");
 const view = require("./framework/component/view");
 const { convertBackSlashToForwardSlash } = require("./framework/lib/string");
+const session = require("./middleware/session");
 
 const router = new Router();
 const allowedOrigins  = config.get("app.allowedOrigins");
@@ -36,13 +39,6 @@ const corsOptions = {
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp({ webRouter, apiRouter }) {
-  /*
-   * Our first action is to bootstrap (aka, register) the services.
-   * This way, any registered services are available to route handlers
-   * (via req.app.resolve(serviceName)) and other files.
-   */
-  bootstrap(config, providers);
-
   if(typeof webRouter !== "function" && typeof apiRouter !== "function") {
     throw new Error(
       "createApp 'options' object expects either or both of " +
@@ -50,9 +46,18 @@ module.exports = function createApp({ webRouter, apiRouter }) {
     );
   }
 
+  /*
+   * Our first action is to bootstrap (aka, register) the services.
+   * This way, any registered services are available to route handlers
+   * (via req.app.resolve(serviceName)) and other files.
+   */
+  bootstrap(config, providers);
+
   const app = express();
   const STATUS_CODES = Object.assign(Object.create(null), StatusCodes);
   const STATUS_TEXTS = Object.assign(Object.create(null), StatusTexts);
+
+  let sessionStore;
 
   /*
    * Make the app a DI Container.
@@ -70,6 +75,11 @@ module.exports = function createApp({ webRouter, apiRouter }) {
     }
   }
 
+  if(config.get("session.storageDriver") === "redis") {
+    const redisClient = Connections.get("redis", config.get("redis"));
+    sessionStore = new RedisStore({ client: redisClient });
+  }
+
   /*
    * Disable the X-Powered-By header
    */
@@ -85,6 +95,7 @@ module.exports = function createApp({ webRouter, apiRouter }) {
   app.use(express.static(convertBackSlashToForwardSlash(path.join(__dirname, "public"))));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
+  app.use(session(config, sessionStore));
   app.use(cors(corsOptions));
 
   /*
