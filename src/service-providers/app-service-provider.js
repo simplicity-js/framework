@@ -1,5 +1,4 @@
 const config = require("../config");
-const RedisStore = require("../framework/component/connector/redis");
 const createObjectStore = require("../framework/component/registry");
 const ServiceProvider = require("../framework/component/service-provider");
 
@@ -11,11 +10,6 @@ const ServiceProvider = require("../framework/component/service-provider");
 class AppServiceProvider extends ServiceProvider {
   constructor() {
     super();
-
-    /*
-     * Connect to resources: (redis, databases, etc)
-     */
-    this.redisClient = this.#connectToRedis(config.get("redis"));
   }
 
   /**
@@ -27,10 +21,6 @@ class AppServiceProvider extends ServiceProvider {
     container.bindWithFunction("config", function configGetter() {
       return config;
     });
-
-    container.bindWithFunction("redis", function redisGetter(redisClient) {
-      return redisClient;
-    }, this.redisClient);
 
     /*
      * Bind a global registry to the container.
@@ -56,34 +46,6 @@ class AppServiceProvider extends ServiceProvider {
     container.bindWithFunction("registry", function createRegistry() {
       return createObjectStore();
     });
-  }
-
-  #connectToRedis(redisCreds) {
-    try {
-      const redisStore = new RedisStore(redisCreds);
-      const redisClient = redisStore.getClient();
-
-      // TO DO: Use a proper log service for this.
-      redisClient.on("error", (e) => log("Redis error", require("node:util").inspect(e)));
-      redisClient.on("connect", () => log("Redis connection established"));
-
-      setTimeout(async function() {
-        if(!redisStore.connecting() && !redisStore.connected()) {
-          await redisStore.connect();
-        }
-      }, 1000);
-
-      return redisClient;
-    } catch(e) {
-      // TO DO: Use a proper log service for this.
-      log("Redis error", require("node:util").inspect(e));
-    }
-  }
-}
-
-function log(message) { 
-  if(config.get("app.environment") !== "test") {
-    console.log(message);
   }
 }
 
