@@ -4,6 +4,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const bootstrap = require("./bootstrap");
+const providers = require("./bootstrap/providers");
 const config = require("./config");
 const container = require("./framework/component/container");
 const { StatusCodes, StatusTexts } = require("./framework/component/http");
@@ -40,7 +41,7 @@ module.exports = function createApp({ webRouter, apiRouter }) {
    * This way, any registered services are available to route handlers
    * (via req.app.resolve(serviceName)) and other files.
    */
-  bootstrap();
+  bootstrap(config, providers);
 
   if(typeof webRouter !== "function" && typeof apiRouter !== "function") {
     throw new Error(
