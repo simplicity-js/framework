@@ -39,7 +39,7 @@ module.exports = {
             const config = {
               get(path) {
                 if(path === "cache.compress") {
-                  return false;
+                  return false; // Test that it works with data compression disabled.
                 }
               }
             };
@@ -167,7 +167,7 @@ module.exports = {
             const config = {
               get(path) {
                 if(path === "cache.compress") {
-                  return false;
+                  return true; // Test that it also works with data compression enabled.
                 }
               }
             };
