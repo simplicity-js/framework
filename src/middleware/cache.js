@@ -40,8 +40,8 @@ module.exports = function createCacheMiddleware(config) {
     const compress = config.get("cache.compress");
 
     if(typeof predicate === "function") {
-      if(await predicate(req, res) && cache.contains(key)) {
-        cache.unset(key);
+      if(await predicate(req, res) && await cache.contains(key)) {
+        await cache.unset(key);
       }
     }
 
@@ -117,12 +117,12 @@ module.exports = function createCacheMiddleware(config) {
       return value;
     }
 
-    async function writeToCache(key, data, options, compress) {
+    async function writeToCache(key, value, options, compress) {
       if(compress) {
-        data = deflate(data);
+        value = deflate(value);
       }
 
-      return await cache.set(key, data, options);
+      return await cache.set(key, value, options);
     }
   };
 };
