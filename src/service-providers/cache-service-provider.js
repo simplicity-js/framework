@@ -1,16 +1,16 @@
 const RedisStore = require("../framework/component/connector/redis");
-const ServiceProvider = require("../framework/component/service-provider");
 const CacheFactory = require("../framework/factory/cache");
+const ServiceProvider = require("./service-provider");
 
 
 module.exports = class CacheServiceProvider extends ServiceProvider {
-  constructor() {
-    super();
+  constructor(config) {
+    super(config);
   }
 
   register() {
     const container = this.container();
-    const config = container.resolve("config");
+    const config = this.config() ?? container.resolve("config");
     const cacheConfig = config.get("cache");
     const defaultCache = cacheConfig.default;
     const defaultCacheData = cacheConfig.stores[defaultCache];

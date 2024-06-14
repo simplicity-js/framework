@@ -1,6 +1,5 @@
-const config = require("../config");
 const createObjectStore = require("../framework/component/registry");
-const ServiceProvider = require("../framework/component/service-provider");
+const ServiceProvider = require("./service-provider");
 
 
 /*
@@ -8,8 +7,8 @@ const ServiceProvider = require("../framework/component/service-provider");
  * the DI Container via `this.container()` method.
  */
 class AppServiceProvider extends ServiceProvider {
-  constructor() {
-    super();
+  constructor(config) {
+    super(config);
   }
 
   /**
@@ -17,6 +16,7 @@ class AppServiceProvider extends ServiceProvider {
    */
   register() {
     const container = this.container();
+    const config = this.config();
 
     container.bindWithFunction("config", function configGetter() {
       return config;
