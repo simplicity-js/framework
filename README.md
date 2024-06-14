@@ -110,6 +110,11 @@ All event objects contain the following attributes:
 - Run all tests with coverage report: `npm run test:coverage`.
 
 #### Testing individual modules and methods
+- Test a directory: `npm test -- --<directory>`.
+
+  Examples:
+    - `npm test -- --service-providers`
+    - `npm test -- --framework`
 - Test a module: `npm test -- --<module_name>`.
   Example: `npm test -- --app`.
 
@@ -120,9 +125,11 @@ All event objects contain the following attributes:
   `Error: Not enough arguments following: config`
 
   Using `config::*` enables us to achieve our desired functionality.
-- Test a module's method: `npm test -- --<module_name::<method_name>`.
+- Test a module's method: `npm test -- --<module_name::<method_name>`
   Example: `npm test -- --config::get`.
-- Test nested module method: `npm test -- --<directory>.<file_name>[::<method_name>]`.
+- Test nested module method:
+  `npm test -- --<directory>.<file_name>[::<method_name>]` or
+  `npm test -- --<directory.<ModuleName>[::<method_name>]`
 
   Examples:
     - Test the router (*src/framework/router.js* file) methods: `npm test -- --framework.router`.
@@ -130,10 +137,17 @@ All event objects contain the following attributes:
 
 #### Example tests
 ```bash
-npm test -- --config                  // Test only methods of the config module (src/config.js)
-npm test -- --config::get             // Test only the get method of the config module
-npm test -- --framework.router        // Test only the methods of the router module (src/framework/router.js)
-npm test -- --framework.router::group // Test only the group method of the router
+npm test -- --framework                           // Run all tests inside the src/framework/ directory
+npm test -- --service-providers                   // Run all tests inside the src/service-providers/ directory.
+npm test -- --service-providers.service-provider  // Run tests inside the src/service-providers/service-provider.js file
+npm test -- --service-providers.ServiceProvider   // Ditto
+npm test -- --framework.factory.cache             // Run all tests inside the src/framework/factory/cache/ directory.
+npm test -- --framework.factory.cache.file-cache  // Run only the tests within the file-cache.spec.js file
+npm test -- --framework.factory.cache.FileCache   // Ditto
+npm test -- --config::*                           // Test only methods of the config module (src/config.js)
+npm test -- --config::get                         // Test only the get method of the config module
+npm test -- --framework.component.router          // Test only the methods of the router module (src/framework/component/router.js)
+npm test -- --framework.component.router::group   // Test only the group method of the router
 ```
 
 ### Committing and Pushing changes
