@@ -3,28 +3,6 @@ require("winston-daily-rotate-file");
 
 
 module.exports = class LoggerFactory {
-  /* Features:
-   * It should let the user customize the level colours
-   * It should let the user add custom log transports [Array/List of transports].
-   * It should let the user specify if they want it to log uncaught exceptions
-   *    and what transports to use (or whether to use same transport as for regular logging)
-   * It should let the user specify if they want it to log uncaught promise rejections
-   *    and what transports to use
-   *    (or whether to use same transport as for regular logging or uncaught exceptions)
-   */
-
-  /*
-   * Events on rotating transport
-   * // fired when a log file is created
-   * fileRotateTransport.on('new', (filename) => {});
-   * // fired when a log file is rotated
-   * fileRotateTransport.on('rotate', (oldFilename, newFilename) => {});
-   * // fired when a log file is archived
-   * fileRotateTransport.on('archive', (zipFilename) => {});
-   * // fired when a log file is deleted
-   * fileRotateTransport.on('logRemoved', (removedFilename) => {});
-   */
-
   /**
    * @param {Object} options
    * @param {String} [options.label]
@@ -41,7 +19,7 @@ module.exports = class LoggerFactory {
    */
   static createLogger(options) {
     const {
-      label = "FrameworkLogger",
+      label,
       levels,
       logDir,
       logToFile,
@@ -51,8 +29,11 @@ module.exports = class LoggerFactory {
       transports: customTransports = [],
     } = options || {};
 
-    let { exceptionHandlers, rejectionHandlers } = options || {};
-
+    let exceptionHandlers;
+    let rejectionHandlers;
+    const consoleTransport = new winston.transports.Console({
+      format: winston.format.simple(),
+    });
     const transports = [].concat(customTransports);
 
     if(logToFile) {
@@ -82,14 +63,22 @@ module.exports = class LoggerFactory {
     }
 
     if(logExceptions) {
-      if(!Array.isArray(exceptionHandlers)) {
+      if(!disableConsoleLogs) {
+        // Cf. https://github.com/winstonjs/winston/issues/1289#issuecomment-396527779
+        consoleTransport.handleExceptions = true;
+        exceptionHandlers = transports.concat([consoleTransport]);
+      } else {
         exceptionHandlers = transports;
       }
     }
 
     if(logRejections) {
-      if(!Array.isArray(rejectionHandlers)) {
-        rejectionHandlers = transports;
+      if(!disableConsoleLogs) {
+        // Cf. https://github.com/winstonjs/winston/issues/1289#issuecomment-396527779
+        consoleTransport.handleRejections = true;
+        exceptionHandlers = transports.concat([consoleTransport]);
+      } else {
+        exceptionHandlers = transports;
       }
     }
 
@@ -109,16 +98,8 @@ module.exports = class LoggerFactory {
       transports,
       exceptionHandlers,
       rejectionHandlers,
-      defaultMeta: { service: label },
+      defaultMeta: { service: label ?? "FrameworkLogger" },
       exitOnError: false,
-    });
-
-    winston.addColors({
-      debug : "blue",
-      error : "red",
-      http  : "gray",
-      info  : "green",
-      warn  : "yellow",
     });
 
     /*
@@ -126,56 +107,21 @@ module.exports = class LoggerFactory {
      * `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
      */
     if(!disableConsoleLogs) {
-      logger.add(new winston.transports.Console({
-        format: winston.format.simple(),
-      }));
+      logger.add(consoleTransport);
     }
+
+    winston.addColors({
+      debug: "blue",
+      error: "red",
+      http: "gray",
+      info: "green",
+      warn: "yellow"
+    });
 
     return logger;
 
 
     // Private Helper functions
-    /**
-     * A common need that Winston does not enable by default
-     * is the ability to log each level into different files (or transports)
-     * so that only info messages go to, for example, an `app-info.log` file,
-     * debug messages into an `app-debug.log file`, and so on.
-     * To get around this, we create a custom format on the transport to filter the messages by level.
-     *
-     * USAGE EXAMPLE:
-     * transports: [
-     *   new winston.transports.File({
-     *     filename: 'app-error.log',
-     *     level: 'error',
-     *     format: combine(levelFilter("error")(), timestamp(), json()),
-     *   }),
-     *
-     *   new winston.transports.File({
-     *     filename: 'app-others.log',
-     *     level: 'error',
-     *     format: combine(levelFilter(["debug", "info", ...])(), timestamp(), json()),
-     *   }),
-     * ]
-     */
-    /*function createLevelFilter(infoLevels, availableLevels = npm.levels) {
-      let levels;
-
-      if(typeof infoLevels === "string") {
-        levels = infoLevels.split(/\s+,\s+/).map(Boolean);
-      }
-
-      if(!Array.isArray(levels)) {
-        throw new TypeError(
-          `Invalid log level ${levels} specified. ` +
-          `Supported log levesl are ${availableLevels.join(", ")}`
-        );
-      }
-
-      return winston.format((info, opts) => {
-        return levels.includes(info.level) ? info : false;
-      });
-    }*/
-
     function customFormatter(info) {
       return JSON.stringify({
         service: label,
@@ -185,5 +131,56 @@ module.exports = class LoggerFactory {
         message: info.message
       });
     }
+  }
+
+  /**
+   * A common need that Winston does not enable by default
+   * is the ability to log each level into different files (or transports)
+   * such that only info messages go to, for example, an `app-info.log` file,
+   * debug messages go into an `app-debug.log file`, and so on.
+   * To get around this, we can create a custom format on the transport
+   * to filter the messages by level.
+   *
+   * @param {Array|String} logLevels: An array or comma-separated list
+   *   of the log priority levels.
+   * @param {Object} logPriorityProtocol: The protocol that defines the
+   *   available log levels. The default is `winston.npm.levels`.
+   *
+   * USAGE EXAMPLE:
+   * transports: [
+   *   new winston.transports.File({
+   *     filename: 'app-error.log',
+   *     level: 'error',
+   *     format: combine(levelFilter("error")(), timestamp(), json()),
+   *   }),
+   *
+   *   new winston.transports.File({
+   *     filename: 'app-debug.log',
+   *     level: 'error',
+   *     format: combine(levelFilter("debug")(), timestamp(), json()),
+   *   }),
+   *
+   *   new winston.transports.File({
+   *     filename: 'app-others.log',
+   *     level: 'error',
+   *     format: combine(levelFilter(["info", ...])(), timestamp(), json()),
+   *   }),
+   * ]
+   */
+  static levelFilter(logLevels, availableLevels = winston.npm.levels) {
+    let levels;
+
+    if(typeof logLevels === "string") {
+      levels = logLevels.split(/\s+,\s+/).map(Boolean);
+    }
+
+    if(!Array.isArray(levels)) {
+      throw new TypeError(
+        `Invalid log level ${levels} specified. ` +
+        `Supported log levesl are ${availableLevels.join(", ")}`
+      );
+    }
+
+    return winston.format((info) => levels.includes(info.level) ? info : false);
   }
 };

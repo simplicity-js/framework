@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const util = require("node:util");
 const sinon = require("sinon");
+const winston = require("winston");
 const { chai } = require("../../lib/test-helper");
 const LoggerFactory = require(".");
 
@@ -26,7 +27,9 @@ function spyOnConsoleOutput(object = "stdout") {
   // Overwrite the console._stdout.write used by winston internally.
   // So that it doesn't write to the actual console, cluttering our screen.
   // Instead, it writes to an output file.
-  console[object].write = () => fs.appendFileSync(logFile, util.inspect(arguments, { depth: 12 }));
+  console[object].write = function() {
+    fs.appendFileSync(logFile, util.inspect(arguments, { depth: 12 }));
+  };
 
   // spy on the overwritten console method
   const consoleSpy = sinon.spy(console[object], "write");
@@ -45,7 +48,7 @@ function spyOnConsoleOutput(object = "stdout") {
 
 module.exports = {
   createLogger() {
-    describe("LoggerFactory", function() {
+    describe("Factory", function() {
       let expect;
 
       before(async function() {
@@ -157,6 +160,7 @@ module.exports = {
 
         it("should let the user specify the option to log to file", function() {
           const scopedLogDir = path.join(__dirname, ".scoped.logs");
+
           fs.rmSync(scopedLogDir, { recursive: true, force: true });
 
           LoggerFactory.createLogger();
@@ -176,9 +180,50 @@ module.exports = {
           expect(thrower).to.throw("The 'logToFile' option requires a 'logDir' options to be specified");
         });
 
-        describe("logger instance", function() {
+        it("should let the user add an array of transports", function(done) {
+          this.timeout(5000);
 
+          const filename = "custom.logs";
+          const filepath = path.join(__dirname, filename);
+
+          expect(fs.existsSync(filepath)).to.equal(false);
+
+          LoggerFactory.createLogger({
+            transports: [new winston.transports.File({ filename: filepath })]
+          });
+
+          setTimeout(() => {
+            expect(fs.existsSync(filepath)).to.equal(true);
+
+            fs.rmSync(filepath, { force: true });
+            done();
+          }, 2000);
         });
+
+        /*it("should let the user specify if they want to log uncaught exceptions", function(done) {
+          this.timeout(5000);
+          const logger = LoggerFactory.createLogger({ logExceptions: true });
+          const { sinonSpy, restore } = spyOnConsoleOutput("stdout");
+
+          process.on("uncaughtException", function() {
+            restore();
+
+            const expected = /Error: Uncaught exception/;
+
+            // Since we are spying on/monkey-patching stdout,
+            // the first output (call[0]) is the one that
+            // displays the test title: "should let the user specify if..."
+            // The error output is captured in the second (call[1]).
+            // Why spying on stdout instead of stderr?
+            // Probably because the setting of createLogger exitOnError is false,
+            // so the error output is delivered via the stdout rather than stderr.
+            expect(sinonSpy.getCall(1).args[0]).to.match(expected);
+            expect(sinonSpy.calledWith(sinon.match(expected))).to.equal(true);
+          });
+
+          // Cf. https://github.com/winstonjs/winston/issues/1289#issuecomment-396527779
+          setTimeout(() => { throw new Error("Uncaught exception"); }, 1000);
+        });*/
       });
     });
   }
