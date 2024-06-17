@@ -18,7 +18,7 @@ class AppServiceProvider extends ServiceProvider {
     const container = this.container();
     const config = this.config();
 
-    container.bindWithFunction("config", function configGetter() {
+    container.bind("config", function configGetter() {
       return config;
     });
 
@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider {
      * value will be that object, otherwise, value will be whatever is passed as
      * defaultValue.
      */
-    container.bindWithFunction("registry", function createRegistry() {
+    container.bind("registry", function createRegistry() {
       return createObjectStore();
     });
   }

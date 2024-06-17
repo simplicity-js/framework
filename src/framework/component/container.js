@@ -5,6 +5,7 @@
  */
 
 const awilix = require("awilix");
+const { asValue, asFunction } = awilix;
 
 const container = awilix.createContainer({
   injectionMode: awilix.InjectionMode.PROXY,
@@ -13,31 +14,48 @@ const container = awilix.createContainer({
 
 
 module.exports = {
-  bindWithClass(key, value, params) {
-    let resolver = awilix.asClass(value);
-
-    if(params) {
-      resolver = resolver.inject(() => params);
-    }
-
-    container.register({
-      [key]: resolver
-    });
+  bind(name, resolver) {
+    return container.register(name, asFunction(function bind() {
+      return resolver(container);
+    }));
   },
 
-  bindWithFunction(key, value, params) {
-    let resolver = awilix.asFunction(value);
+  instance(name, object) {
+    return container.register(name, asValue(object));
+  },
 
-    if(params) {
-      resolver = resolver.inject(() => params);
-    }
-
-    container.register({
-      [key]: resolver,
-    });
+  value(name, val) {
+    return container.register(name, asValue(val));
   },
 
   resolve(key) {
     return container.resolve(key);
   },
 };
+
+
+/*
+function bindWithClass(key, value, params) {
+  let resolver = awilix.asClass(value);
+
+  if(params) {
+    resolver = resolver.inject(() => params);
+  }
+
+  container.register({
+    [key]: resolver
+  });
+}
+
+function bindWithFunction(key, value, params) {
+  let resolver = awilix.asFunction(value);
+
+  if(params) {
+    resolver = resolver.inject(() => params);
+  }
+
+  container.register({
+    [key]: resolver,
+  });
+}
+*/

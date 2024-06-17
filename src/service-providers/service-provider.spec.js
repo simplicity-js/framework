@@ -30,7 +30,7 @@ module.exports = {
           expect(sp).to.be.an("object");
           expect(sp).to.have.property("container").to.be.a("function");
 
-          for(const method of ["bindWithClass", "bindWithFunction", "resolve"]) {
+          for(const method of ["bind", "instance", "value", "resolve"]) {
             expect(sp.container()).to.have.property(method).to.be.a("function");
           }
         });

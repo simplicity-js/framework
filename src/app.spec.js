@@ -226,7 +226,7 @@ module.exports = {
         const app = createApp({ webRouter: function() {} });
 
         const expressAppMethods = ["get", "listen", "set", "use"];
-        const diContainerMethods = ["bindWithClass", "bindWithFunction", "resolve"];
+        const diContainerMethods = ["bind", "instance", "value", "resolve"];
 
         for(const method of expressAppMethods) {
           expect(app).to.have.property(method).to.be.a("function");

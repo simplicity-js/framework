@@ -32,7 +32,7 @@ module.exports = class CacheServiceProvider extends ServiceProvider {
     /*
      * Bind the default cache to the container
      */
-    container.bindWithFunction("cache", function createCache() {
+    container.bind("cache", function createCache() {
       return cache;
     });
   }

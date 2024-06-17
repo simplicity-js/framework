@@ -69,7 +69,7 @@ module.exports = function createApp({ webRouter, apiRouter }) {
    *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
    *   - const value = req.app.resolve(dependencyKey)
    */
-  for(const prop of ["bindWithClass", "bindWithFunction", "resolve"]) {
+  for(const prop of ["bind", "instance", "value", "resolve"]) {
     if(!(prop in app)) {
       app[prop] = container[prop].bind(container);
     }
