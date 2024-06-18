@@ -18,6 +18,7 @@
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
   "license": "Private",
   "dependencies": {
+    "app-root-path": "3.1.0",
     "awilix": "10.0.2",
     "connect-redis": "7.1.1",
     "cookie-parser": "1.4.6",

@@ -1,5 +1,5 @@
 const hash = require("object-hash");
-const { deflate, inflate } = require("../framework/lib/string");
+const { deflate, inflate } = require("../../lib/string");
 
 function convertRequestToCacheKey(req) {
   /*

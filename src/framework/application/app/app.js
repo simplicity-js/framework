@@ -4,32 +4,13 @@ const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
-const bootstrap = require("./bootstrap");
-const providers = require("./bootstrap/providers");
-const config = require("./config");
-const container = require("./framework/component/container");
-const Connections = require("./framework/connections");
-const { StatusCodes, StatusTexts } = require("./framework/component/http");
-const Router = require("./framework/component/router");
-const view = require("./framework/component/view");
-const { convertBackSlashToForwardSlash } = require("./framework/lib/string");
-const session = require("./middleware/session");
-
-const router = new Router();
-const allowedOrigins  = config.get("app.allowedOrigins");
-const allowAllOrigins = allowedOrigins.includes("*");
-const corsOptions = {
-  origin: function (origin, callback) {
-    if(!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: config.get("app.allowedMethods"),
-  allowedHeaders: config.get("app.allowedHeaders"),
-};
+const bootstrap = require("../../bootstrap");
+const container = require("../../component/container");
+const Connections = require("../../connections");
+const { StatusCodes, StatusTexts } = require("../../component/http");
+const Router = require("../../component/router");
+const view = require("../../component/view");
+const session = require("../../component/middleware/session");
 
 /**
  * @param {Function} webRouter (optional): A function that takes an
@@ -38,19 +19,55 @@ const corsOptions = {
  *    options object and returns API routes.
  * @return {Object} An Express app instance.
  */
-module.exports = function createApp({ webRouter, apiRouter }) {
+module.exports = function createApp(options) {
+  const { config, webRouter, apiRouter, providers } = options || {};
+
+  if(typeof config !== "object" || typeof config.get !== "function") {
+    throw new TypeError(
+      "createApp 'options' object expects a 'config' object with a 'get' method."
+    );
+  }
+
+  if(!Array.isArray(providers)) {
+    throw new TypeError(
+      "createApp 'options' object expects a 'providers' array."
+    );
+  }
+
   if(typeof webRouter !== "function" && typeof apiRouter !== "function") {
-    throw new Error(
+    throw new TypeError(
       "createApp 'options' object expects either or both of " +
       "the following function members: `webRouter`, `apiRouter`."
     );
   }
 
   /*
+   * Set the default timezone
+   */
+  process.env.TZ = config.get("app.timezone");
+
+  const router = new Router();
+  const allowedOrigins  = config.get("app.allowedOrigins");
+  const allowAllOrigins = allowedOrigins.includes("*");
+  const corsOptions = {
+    origin: function (origin, callback) {
+      if(!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: config.get("app.allowedMethods"),
+    allowedHeaders: config.get("app.allowedHeaders"),
+  };
+
+  /*
    * Our first action is to bootstrap (aka, register) the services.
    * This way, any registered services are available to route handlers
    * (via req.app.resolve(serviceName)) and other files.
    */
+  //const providers = require(`${config.get("app.rootDir")}/src/bootstrap/providers`);
   bootstrap(config, providers);
 
   const app = express();
@@ -88,11 +105,12 @@ module.exports = function createApp({ webRouter, apiRouter }) {
   /*
    * View setup
    */
-  app.set("views", path.join(__dirname, "views"));
+  //app.set("views", path.join(__dirname, "views"));
+  app.set("views", config.get("app.viewsDir"));
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
 
   app.use(view.init);
-  app.use(express.static(convertBackSlashToForwardSlash(path.join(__dirname, "public"))));
+  app.use(express.static(path.join(config.get("app.srcDir"), "public")));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(session(config, sessionStore));
@@ -136,7 +154,6 @@ module.exports = function createApp({ webRouter, apiRouter }) {
    */
   // eslint-disable-next-line
   app.use((err, req, res, next) => {
-    const config = req.app.resolve("config");
     const appName = config.get("app.name");
     const environment = req.app.get("env");
     const statusCode = err.status || 500;

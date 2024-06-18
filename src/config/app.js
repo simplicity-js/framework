@@ -4,6 +4,8 @@ const is = require("../framework/lib/is");
 const string = require("../framework/lib/string");
 
 const SPLIT_REGEX = /[\s+,;|]+/;
+const APP_ROOT = string.convertBackSlashToForwardSlash(path.resolve(path.dirname(__dirname), ".."));
+const APP_SRC_DIR = `${APP_ROOT}/src`;
 
 module.exports = {
   name        : env.NAME,
@@ -13,7 +15,9 @@ module.exports = {
   apiVersion  : env.API_VERSION,
   debug       : is.falsy(env.DEBUG?.trim()?.toLowerCase()) ? false : true,
   timezone    : (env.TIMEZONE || "UTC").toUpperCase(),
-  rootDir     : string.convertBackSlashToForwardSlash(path.resolve(path.dirname(__dirname), "..")),
+  rootDir     : APP_ROOT,
+  srcDir      : APP_SRC_DIR,
+  viewsDir    : `${APP_SRC_DIR}/${(env.VIEWS_DIR || "views")}`,
   allowedHeaders : env.ALLOWED_HEADERS.split(SPLIT_REGEX).map(s => s.trim()),
   allowedMethods : env.ALLOWED_METHODS.split(SPLIT_REGEX).map(o => o.trim().toUpperCase()),
   allowedOrigins : env.ALLOWED_ORIGINS.split(SPLIT_REGEX).map(o => o.trim()),

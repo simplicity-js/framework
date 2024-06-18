@@ -1,4 +1,4 @@
-const createCache = require("../middleware/cache");
+const createCache = require("../framework/component/middleware/cache");
 
 const cache = createCache({ duration: 0 });
 

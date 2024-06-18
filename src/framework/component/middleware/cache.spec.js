@@ -2,7 +2,7 @@
 
 const NodeCache = require("node-cache");
 const sinon = require("sinon");
-const { chai } = require("../lib/test-helper");
+const { chai } = require("../../lib/test-helper");
 const createCacheMiddleware = require("./cache");
 
 

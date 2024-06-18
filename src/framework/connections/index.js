@@ -1,5 +1,6 @@
 const RedisStore = require("../component/connector/redis");
 const createObjectStore = require("../component/registry");
+const debug = require("../lib/debug");
 
 const registry = createObjectStore();
 
@@ -42,6 +43,6 @@ module.exports = class Connections {
   }
 
   static #log(message) {
-    console.log(message);
+    debug(message);
   }
 };
