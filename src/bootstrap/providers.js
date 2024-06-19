@@ -3,6 +3,7 @@
  */
 const AppServiceProvider = require("../service-providers/app-service-provider");
 const CacheServiceProvider = require("../service-providers/cache-service-provider");
+const DatabaseServiceProvider = require("../service-providers/database-service-provider");
 
 
 /*
@@ -11,4 +12,5 @@ const CacheServiceProvider = require("../service-providers/cache-service-provide
 module.exports = [
   AppServiceProvider,
   CacheServiceProvider,
+  DatabaseServiceProvider,
 ];
