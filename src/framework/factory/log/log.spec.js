@@ -9,7 +9,7 @@ const util = require("node:util");
 const sinon = require("sinon");
 const winston = require("winston");
 const { chai } = require("../../lib/test-helper");
-const LoggerFactory = require(".");
+const LogFactory = require(".");
 
 
 const thisDir = path.resolve(__dirname, ".").replace(/\\/g, "/");
@@ -62,14 +62,14 @@ module.exports = {
 
       describe(".createLogger(options)", function() {
         it("should return a logger object", function() {
-          const logger = LoggerFactory.createLogger();
+          const logger = LogFactory.createLogger();
 
           expect(logger).to.be.an("object");
           expect(logger).to.have.property("log").to.be.a("function");
         });
 
         it("should use the 'console' as the default transport", function() {
-          const logger = LoggerFactory.createLogger();
+          const logger = LogFactory.createLogger();
           const { sinonSpy, restore } = spyOnConsoleOutput();
 
           // Call the logger.log, which internally calls console._stdout.write
@@ -85,7 +85,7 @@ module.exports = {
         });
 
         it("should use the label 'FrameworkLogger' as the default 'label' for the logger", function() {
-          const logger = LoggerFactory.createLogger();
+          const logger = LogFactory.createLogger();
           const { sinonSpy, restore } = spyOnConsoleOutput();
 
           // Call the logger.log, which internally calls console._stdout.write
@@ -102,7 +102,7 @@ module.exports = {
 
         it("should let the user specify a custom 'label' for the logger", function() {
           const label = "LogService";
-          const logger = LoggerFactory.createLogger({ label });
+          const logger = LogFactory.createLogger({ label });
           const { sinonSpy, restore } = spyOnConsoleOutput();
 
           // Call the logger.log, which internally calls console._stdout.write
@@ -118,7 +118,7 @@ module.exports = {
         });
 
         it("should use npm log levels as the default log priority protocol", function() {
-          const logger = LoggerFactory.createLogger();
+          const logger = LogFactory.createLogger();
           const logLevels = ["error", "warn", "info", "http", "verbose", "debug", "silly"];
 
           for(const level of logLevels) {
@@ -132,7 +132,7 @@ module.exports = {
             warning: 4, notice: 5, info: 6, debug: 7
           };
 
-          const logger = LoggerFactory.createLogger({ levels: syslogLevels });
+          const logger = LogFactory.createLogger({ levels: syslogLevels });
           const logLevels = Object.keys(syslogLevels);
 
           for(const level of logLevels) {
@@ -141,7 +141,7 @@ module.exports = {
         });
 
         it("should let the user disable console logging", function() {
-          let logger = LoggerFactory.createLogger({ disableConsoleLogs: true });
+          let logger = LogFactory.createLogger({ disableConsoleLogs: true });
           const { sinonSpy, restore } = spyOnConsoleOutput("stderr");
 
           // Call the logger.log, which internally calls console._stdout.write
@@ -163,18 +163,18 @@ module.exports = {
 
           fs.rmSync(scopedLogDir, { recursive: true, force: true });
 
-          LoggerFactory.createLogger();
+          LogFactory.createLogger();
 
           expect(fs.existsSync(scopedLogDir)).to.be.false;
 
-          LoggerFactory.createLogger({ logToFile: true, logDir: scopedLogDir });
+          LogFactory.createLogger({ logToFile: true, logDir: scopedLogDir });
 
           expect(fs.existsSync(scopedLogDir)).to.be.true;
         });
 
         it("should throw if the 'logToFile' option is set to true with no 'logDir' option specified", function() {
           const thrower = () => {
-            LoggerFactory.createLogger({ logToFile: true });
+            LogFactory.createLogger({ logToFile: true });
           };
 
           expect(thrower).to.throw("The 'logToFile' option requires a 'logDir' options to be specified");
@@ -188,7 +188,7 @@ module.exports = {
 
           expect(fs.existsSync(filepath)).to.equal(false);
 
-          LoggerFactory.createLogger({
+          LogFactory.createLogger({
             transports: [new winston.transports.File({ filename: filepath })]
           });
 
@@ -202,7 +202,7 @@ module.exports = {
 
         /*it("should let the user specify if they want to log uncaught exceptions", function(done) {
           this.timeout(5000);
-          const logger = LoggerFactory.createLogger({ logExceptions: true });
+          const logger = LogFactory.createLogger({ logExceptions: true });
           const { sinonSpy, restore } = spyOnConsoleOutput("stdout");
 
           process.on("uncaughtException", function() {

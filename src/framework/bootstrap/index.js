@@ -1,3 +1,6 @@
+const debug = require("../lib/debug");
+
+
 module.exports = function setupServices(config, providers) {
   for(let i = 0; i < providers.length; i++) {
     const Provider = providers[i];
@@ -19,10 +22,14 @@ module.exports = function setupServices(config, providers) {
       );
     }
 
+    debug(`Registering provider '${className}'`);
+
     /*
      * Bind the dependencies of the service(s) that the provider provides
      * to the service container.
      */
     provider.register();
+
+    debug(`Provider '${className}' registration complete.`);
   }
 };

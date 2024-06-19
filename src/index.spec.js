@@ -4,7 +4,7 @@ const request = require("supertest");
 const { create } = require("./framework/application");
 
 const { StatusCodes, StatusTexts } = require("./framework/component/http");
-const { chai } = require("./framework/lib/test-helper");
+const { chai } = require("./lib/test-helper");
 
 module.exports = {
   routes() {

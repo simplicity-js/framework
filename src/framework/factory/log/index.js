@@ -2,7 +2,7 @@ const winston  = require("winston");
 require("winston-daily-rotate-file");
 
 
-module.exports = class LoggerFactory {
+module.exports = class LogFactory {
   /**
    * @param {Object} options
    * @param {String} [options.label]
@@ -82,6 +82,8 @@ module.exports = class LoggerFactory {
       }
     }
 
+    const logLevels = levels || winston.config.npm.levels;
+    const levelKeys = Object.keys(logLevels);
     const formats = winston.format.combine(
       winston.format.label({ label, message: true }),
       winston.format.errors({ stack: true }),
@@ -98,6 +100,7 @@ module.exports = class LoggerFactory {
       transports,
       exceptionHandlers,
       rejectionHandlers,
+      level: levelKeys[levelKeys.length - 1], // Make all the levels available to the client.
       defaultMeta: { service: label ?? "FrameworkLogger" },
       exitOnError: false,
     });
