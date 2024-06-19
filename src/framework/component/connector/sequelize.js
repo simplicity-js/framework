@@ -1,10 +1,12 @@
 const { Sequelize } = require("sequelize");
+const debug = require("../../lib/debug");
 
 
 module.exports = class SequelizeStore {
   #db = null;
   #dbEngine = "memory";
   #options = null;
+  #connected = false;
 
   /**
    * @param {Object} options object with properties:
@@ -23,6 +25,8 @@ module.exports = class SequelizeStore {
    *   in the URL string.
    */
   constructor(options) {
+    debug("Creating SequelizeStore Instance...");
+
     const {
       dsn      = "",
       host     = "0.0.0.0",
@@ -30,7 +34,7 @@ module.exports = class SequelizeStore {
       username = "",
       password = "",
       dbEngine = "memory",
-      dbName   = "orders",
+      dbName   = "frameworkdb",
     } = options;
 
     this.#options = { dsn, host, port, username, password, dbEngine, dbName };
@@ -41,11 +45,13 @@ module.exports = class SequelizeStore {
   }
 
   createDbObject() {
+    debug("Creating Sequelize object...");
+
     let dsn;
     let sequelize;
     const options = this.#options;
     const { host, port, username, password, dbEngine, dbName } = options;
-    //const connOpts = { logging: logger.debug.bind(logger) };
+    const connOpts = {}; //{ logging: logger.debug.bind(logger) };
 
     if(dbEngine.toLowerCase() === "memory") {
       sequelize = new Sequelize("sqlite::memory:", connOpts);
@@ -70,6 +76,8 @@ module.exports = class SequelizeStore {
     }
 
     this.#db = sequelize;
+
+    debug("Sequelize object created.");
   }
 
   /**
@@ -78,7 +86,15 @@ module.exports = class SequelizeStore {
    * @return {resource} a (mongoose) connection instance
    */
   async connect() {
+    const dbEngine = this.#dbEngine;
+
+    debug(`Connecting to ${dbEngine}...`);
+
     await this.#db.authenticate();
+
+    this.#connected = true;
+
+    debug(`${dbEngine} connection established`);
 
     return this.#db;
   }
@@ -93,7 +109,19 @@ module.exports = class SequelizeStore {
    * Cf. https://sequelize.org/docs/v6/getting-started/#closing-the-connection
    */
   async disconnect() {
+    const dbEngine = this.#dbEngine;
+
+    debug(`Disconnecting from ${dbEngine}`);
+
     await this.#db.close();
+
+    this.#connected = false;
+
+    debug(`${dbEngine} disconnection complete`);
+  }
+
+  connected() {
+    return this.#connected;
   }
 
   getClient() {

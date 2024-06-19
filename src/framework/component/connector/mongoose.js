@@ -76,6 +76,7 @@ module.exports = class MongooseStore {
     debug("Disconnecting from MongoDB");
 
     await this.#db.disconnect();
+    this.#db = null;
 
     debug("MongoDB disconnection complete");
   }
