@@ -10,8 +10,10 @@
  *
  */
 const chai = () => import("chai").then(chai => chai);
+const chaiAsPromised = () => import("chai-as-promised").then(asPromised => asPromised.default);
 
 
 module.exports = {
   chai,
+  chaiAsPromised,
 };

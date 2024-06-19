@@ -13,3 +13,4 @@ node_modules
 .markdown-viewer
 .logs
 .log
+.sqlite

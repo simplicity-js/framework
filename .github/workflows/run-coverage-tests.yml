@@ -21,8 +21,12 @@ jobs:
         environment: ['development', 'staging', 'production']
         node-version: [18.x, 20.x]
         redis-version: ['4.0', '5.0', '6.0', '6.2', '7.x', 'latest']
+        mongodb-version: ['5.0', '6.0']
+        #mysql-version: ['8.3']
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         # See redis enablement at: https://github.com/marketplace/actions/actions-setup-redis#usage
+        # See mongodb enablement at: https://github.com/marketplace/actions/mongodb-in-github-actions#usage
+        # See mysql enablement at: https://github.com/marketplace/actions/setup-mysql#usage
 
     steps:
     - name: Git checkout
@@ -38,6 +42,17 @@ jobs:
       uses: shogo82148/actions-setup-redis@v1
       with:
         redis-version: ${{ matrix.redis-version }}
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.10.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-port: 27017
+
+    #- name: Start MySQL
+    #  uses: mirromutth/mysql-action@v1.1
+    #  with:
+    #    mysql version: ${{ matrix.mysql-version }}
 
     - name: 'Create env file'
       run: |
