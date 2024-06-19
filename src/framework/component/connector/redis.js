@@ -1,4 +1,6 @@
 const redis  = require("redis");
+const util = require("node:util");
+const debug = require("../../lib/debug");
 
 
 module.exports = class RedisStore {
@@ -20,6 +22,8 @@ module.exports = class RedisStore {
    * @return {Promise} resolved with the connection on success.
    */
   constructor(options) {
+    debug("Creating RedisStore Instance...");
+
     if(options) {
       this.setOptions(options);
       this.#createClient();
@@ -38,11 +42,19 @@ module.exports = class RedisStore {
       );
     }
 
+    debug("Connecting to Redis...");
+
     await this.getClient()?.connect();
+
+    debug("Redis connection established.");
   }
 
   async disconnect() {
+    debug("Disconnecting from Redis...");
+
     await this.getClient().disconnect();
+
+    debug("Redis disconnection complete.");
   }
 
   /**
@@ -92,6 +104,8 @@ module.exports = class RedisStore {
    *   automatically connect to the Redis server. Default is true.
    */
   setOptions(options) {
+    debug("Setting Redis connection options...");
+
     const {
       url       = "",
       host      = "localhost",
@@ -103,9 +117,13 @@ module.exports = class RedisStore {
     } = options;
 
     this.#options = { url, host, port, username, password, db, autoConnect };
+
+    debug("Redis connection options set.");
   }
 
   #createClient() {
+    debug("Creating Redis client...");
+
     const options = this.#options;
     const { url, host, port, username, password, db } = options;
 
@@ -149,6 +167,10 @@ module.exports = class RedisStore {
       : redis.createClient({ url: connString }) // else, connect with supplied credentials
     );
 
+    client.on("error", (e) => debug("Redis error", util.inspect(e)));
+
     this.#client = client;
+
+    debug("Redis client created.");
   }
 };

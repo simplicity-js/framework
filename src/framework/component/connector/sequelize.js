@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 
 
-class SequelizeStore {
+module.exports = class SequelizeStore {
   #db = null;
   #dbEngine = "memory";
   #options = null;
@@ -96,9 +96,7 @@ class SequelizeStore {
     await this.#db.close();
   }
 
-  getSequelizeObject() {
+  getClient() {
     return this.#db;
   }
-}
-
-module.exports = SequelizeStore;
+};

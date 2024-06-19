@@ -1,9 +1,17 @@
 const mongoose = require("mongoose");
+const debug = require("../../lib/debug");
 
 
 module.exports = class MongooseStore {
   #db = null;
   #options = null;
+
+  static readyStates = {
+    disconnected: 0,
+    connected: 1,
+    connecting: 2,
+    disconnecting: 3,
+  };
 
   /**
    * @param {Object} options object with properties:
@@ -20,6 +28,8 @@ module.exports = class MongooseStore {
    * @param {Boolean} [options.debug] determines whether or not to show debugging output
    */
   constructor(options) {
+    debug("Creating MongooseStore Instance...");
+
     this.setOptions(options);
     this.connect();
   }
@@ -31,7 +41,7 @@ module.exports = class MongooseStore {
    */
   async connect() {
     const options = this.#options;
-    const { host, port, username, password, dbName, debug } = options;
+    const { host, port, username, password, dbName, enableDebugging } = options;
 
     let dsn;
 
@@ -51,18 +61,43 @@ module.exports = class MongooseStore {
       dsn += ( (username ? "@" : "") + `${host}:${port}/${dbName}` );
     }
 
-    mongoose.set("debug", debug);
+    mongoose.set("debug", enableDebugging);
+
+    debug("Connecting to MongoDB...");
 
     this.#db = await mongoose.connect(dsn, {});
+
+    debug("MongoDB connection established");
 
     return this.#db;
   }
 
   async disconnect() {
+    debug("Disconnecting from MongoDB");
+
     await this.#db.disconnect();
+
+    debug("MongoDB disconnection complete");
+  }
+
+  connected() {
+    return mongoose.connection.readyState === MongooseStore.readyStates.connected;
+
+    // Ready states:
+    // eady states being: 0: disconnected 1: connected 2: connecting 3: disconnecting
+  }
+
+  connecting() {
+    return mongoose.connection.readyState === MongooseStore.readyStates.disconnected;
+  }
+
+  getClient() {
+    return this.#db;
   }
 
   setOptions(options) {
+    debug("Setting Mongoose connection options...");
+
     const {
       url      = "",
       host     = "0.0.0.0",
@@ -70,10 +105,12 @@ module.exports = class MongooseStore {
       username = "",
       password = "",
       dbName   = "users",
-      debug    = false,
+      debug: enableDebugging = false,
       exitOnConnectFail = false,
     } = options;
 
-    this.#options = { url, host, port, username, password, dbName, debug, exitOnConnectFail };
+    this.#options = { url, host, port, username, password, dbName, enableDebugging, exitOnConnectFail };
+
+    debug("Mongoose connection options set.");
   }
 };

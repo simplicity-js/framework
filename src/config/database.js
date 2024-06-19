@@ -10,7 +10,7 @@ module.exports = {
    * This connection will be used unless another connection
    * is explicitly specified when you execute a query.
    */
-  default: env.DB_CONNECTION || "mongodb",
+  default: (env.DB_CONNECTION.toLowerCase()) || "mongodb",
 
   /*
    * ---------------------
