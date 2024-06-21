@@ -6,11 +6,26 @@ const string = require("../framework/lib/string");
 const SPLIT_REGEX = /[\s+,;|]+/;
 const APP_ROOT = string.convertBackSlashToForwardSlash(path.resolve(path.dirname(__dirname), ".."));
 const APP_SRC_DIR = `${APP_ROOT}/src`;
+const HTTP_REGEX  = /^https?:\/\//i;
+
+let host = env.HOST;
+let port = env.PORT;
+let scheme = env.URL_SCHEME?.toLowerCase();
+
+if(!(/^https?(:\/\/)?/.test(scheme))) {
+  scheme = "http://";
+}
+
+scheme = scheme.split(/:\/\//)[0] + "://";
+host  = (HTTP_REGEX.test(host)) ? host: `${scheme}${host}`;
+port  = [80, 443].includes(Number(port)) ? "" : port;
 
 module.exports = {
   name        : env.NAME,
   host        : env.HOST,
   port        : env.PORT,
+  url         : port ? `${host}:${port}` : host,
+  urlScheme   : scheme,
   environment : (env.NODE_ENV || "production").toLowerCase(),
   apiVersion  : env.API_VERSION,
   debug       : is.falsy(env.DEBUG?.trim()?.toLowerCase()) ? false : true,
