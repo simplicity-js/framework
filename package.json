@@ -29,6 +29,7 @@
     "file-system-cache": "2.4.4",
     "http-errors": "2.0.0",
     "mongoose": "8.4.1",
+    "morgan": "1.10.0",
     "node-cache": "5.1.2",
     "node-laravel-router": "1.0.0",
     "object-hash": "3.0.0",
