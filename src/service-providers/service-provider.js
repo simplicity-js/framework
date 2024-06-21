@@ -1,6 +1,6 @@
 const FrameworkServiceProvider = require("../framework/component/service-provider");
 
-class ServiceProvider extends FrameworkServiceProvider {
+module.exports = class ServiceProvider extends FrameworkServiceProvider {
   #config;
 
   constructor(config) {
@@ -12,6 +12,4 @@ class ServiceProvider extends FrameworkServiceProvider {
   config() {
     return this.#config;
   }
-}
-
-module.exports = ServiceProvider;
+};

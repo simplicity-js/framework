@@ -6,7 +6,7 @@ const ServiceProvider = require("./service-provider");
  * Extending the parent `ServiceContainer` gives us access to
  * the DI Container via `this.container()` method.
  */
-class AppServiceProvider extends ServiceProvider {
+module.exports = class AppServiceProvider extends ServiceProvider {
   constructor(config) {
     super(config);
   }
@@ -47,6 +47,4 @@ class AppServiceProvider extends ServiceProvider {
       return createObjectStore();
     });
   }
-}
-
-module.exports = AppServiceProvider;
+};
