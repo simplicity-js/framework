@@ -8,6 +8,8 @@ module.exports = {
   decode: decodeFromBase,
   deflate,
   inflate,
+  stripFirstNCharsFromString,
+  stripLastNCharsFromString,
 };
 
 function convertBackSlashToForwardSlash(str) {
@@ -75,4 +77,12 @@ function encode(str, opts) {
   }
 
   return encoded;
+}
+
+function stripFirstNCharsFromString(str, n = 1) {
+  return str.substring(n);
+}
+
+function stripLastNCharsFromString(str, n = 1) {
+  return str.substring(0, str.length - n);
 }
