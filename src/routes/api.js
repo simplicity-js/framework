@@ -1,9 +1,10 @@
+const { STATUS_CODES, STATUS_TEXTS } = require("../framework/component/http");
 const createCache = require("../framework/component/middleware/cache");
 
 const cache = createCache({ duration: 0 });
 
 
-module.exports = function apiRouter({ router, STATUS_CODES, STATUS_TEXTS }) {
+module.exports = function apiRouter({ router }) {
   /*
    * Apply the cache middleware to every router in this group.
    */

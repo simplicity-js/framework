@@ -7,9 +7,9 @@ const createError = require("http-errors");
 const bootstrap = require("../../bootstrap");
 const container = require("../../component/container");
 const Connections = require("../../connections");
-const { StatusCodes, StatusTexts } = require("../../component/http");
 const Router = require("../../component/router");
 const view = require("../../component/view");
+const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
 
 /**
@@ -71,8 +71,6 @@ module.exports = function createApp(options) {
   bootstrap(config, providers);
 
   const app = express();
-  const STATUS_CODES = Object.assign(Object.create(null), StatusCodes);
-  const STATUS_TEXTS = Object.assign(Object.create(null), StatusTexts);
 
   let sessionStore;
 
@@ -109,6 +107,8 @@ module.exports = function createApp(options) {
   app.set("views", config.get("app.viewsDir"));
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
 
+  app.use(requestLogger(app));
+  app.use(express.json());
   app.use(view.init);
   app.use(express.static(path.join(config.get("app.srcDir"), "public")));
   app.use(express.urlencoded({ extended: false }));
@@ -124,8 +124,6 @@ module.exports = function createApp(options) {
       router,
       download: view.downloadFile,
       view: view.viewFile,
-      STATUS_CODES,
-      STATUS_TEXTS,
     }));
   }
 
@@ -134,8 +132,6 @@ module.exports = function createApp(options) {
       router,
       download: view.downloadFile,
       view: view.viewFile,
-      STATUS_CODES,
-      STATUS_TEXTS,
     }));
   }
 
