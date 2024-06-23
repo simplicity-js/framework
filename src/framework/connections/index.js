@@ -1,4 +1,3 @@
-const util = require("node:util");
 const RedisStore = require("../component/connector/redis");
 const MongooseStore = require("../component/connector/mongoose");
 const createObjectStore = require("../component/registry");
@@ -25,39 +24,29 @@ module.exports = class Connections {
   }
 
   static #connectToMongoDb(dbCreds) {
-    try {
-      const mongooseStore = new MongooseStore(dbCreds);
-      const mongooseClient = mongooseStore.getClient();
+    const mongooseStore = new MongooseStore(dbCreds);
+    const mongooseClient = mongooseStore.getClient();
 
-      setTimeout(async function() {
-        if(!mongooseStore.connecting() && !mongooseStore.connected()) {
-          await mongooseStore.connect();
-        }
-      }, 1000);
+    setTimeout(async function() {
+      if(!mongooseStore.connecting() && !mongooseStore.connected()) {
+        await mongooseStore.connect();
+      }
+    }, 1000);
 
-      return mongooseClient;
-    } catch(e) {
-      // TO DO: Use a proper log service for this.
-      Connections.#log("Mongoose error", util.inspect(e));
-    }
+    return mongooseClient;
   }
 
   static #connectToRedis(redisCreds) {
-    try {
-      const redisStore = new RedisStore(redisCreds);
-      const redisClient = redisStore.getClient();
+    const redisStore = new RedisStore(redisCreds);
+    const redisClient = redisStore.getClient();
 
-      setTimeout(async function() {
-        if(!redisStore.connecting() && !redisStore.connected()) {
-          await redisStore.connect();
-        }
-      }, 1000);
+    setTimeout(async function() {
+      if(!redisStore.connecting() && !redisStore.connected()) {
+        await redisStore.connect();
+      }
+    }, 1000);
 
-      return redisClient;
-    } catch(e) {
-      // TO DO: Use a proper log service for this.
-      Connections.#log("Redis error", util.inspect(e));
-    }
+    return redisClient;
   }
 
   static #log(message) {

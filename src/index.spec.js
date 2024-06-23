@@ -3,7 +3,7 @@
 const request = require("supertest");
 const { create } = require("./framework/application");
 
-const { StatusCodes, StatusTexts } = require("./framework/component/http");
+const { STATUS_CODES, STATUS_TEXTS } = require("./framework/component/http");
 const { chai } = require("./lib/test-helper");
 
 module.exports = {
@@ -69,7 +69,7 @@ module.exports = {
 
                 expect(res.body).to.be.an("object");
                 expect(res.body).to.have.property("success", true);
-                expect(res.body).to.have.property("message", StatusTexts[StatusCodes.HTTP_OK]);
+                expect(res.body).to.have.property("message", STATUS_TEXTS[STATUS_CODES.HTTP_OK]);
                 done();
               });
           });

@@ -42,19 +42,27 @@ module.exports = class RedisStore {
       );
     }
 
-    debug("Connecting to Redis...");
+    try {
+      debug("Connecting to Redis...");
 
-    await this.getClient()?.connect();
+      await this.getClient()?.connect();
 
-    debug("Redis connection established.");
+      debug("Redis connection established.");
+    } catch(e) {
+      debug(`Redis connection error: ${util.inspect(e)}`);
+    }
   }
 
   async disconnect() {
-    debug("Disconnecting from Redis...");
+    try {
+      debug("Disconnecting from Redis...");
 
-    await this.getClient().disconnect();
+      await this.getClient().disconnect();
 
-    debug("Redis disconnection complete.");
+      debug("Redis disconnection complete.");
+    } catch(e) {
+      debug(`Redis disconnection error: ${util.inspect(e)}`);
+    }
   }
 
   /**

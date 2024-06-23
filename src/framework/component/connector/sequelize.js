@@ -1,3 +1,4 @@
+const util = require("node:util");
 const { Sequelize } = require("sequelize");
 const debug = require("../../lib/debug");
 
@@ -88,13 +89,17 @@ module.exports = class SequelizeStore {
   async connect() {
     const dbEngine = this.#dbEngine;
 
-    debug(`Connecting to ${dbEngine}...`);
+    try {
+      debug(`Connecting to ${dbEngine}...`);
 
-    await this.#db.authenticate();
+      await this.#db.authenticate();
 
-    this.#connected = true;
+      this.#connected = true;
 
-    debug(`${dbEngine} connection established`);
+      debug(`${dbEngine} connection established`);
+    } catch(e) {
+      debug(`Sequelize connection error: ${util.inspect(e)}`);
+    }
 
     return this.#db;
   }
@@ -111,13 +116,17 @@ module.exports = class SequelizeStore {
   async disconnect() {
     const dbEngine = this.#dbEngine;
 
-    debug(`Disconnecting from ${dbEngine}`);
+    try {
+      debug(`Disconnecting from ${dbEngine}`);
 
-    await this.#db.close();
+      await this.#db.close();
 
-    this.#connected = false;
+      this.#connected = false;
 
-    debug(`${dbEngine} disconnection complete`);
+      debug(`${dbEngine} disconnection complete`);
+    } catch(e) {
+      debug(`Sequelize disconnection error: ${util.inspect(e)}`);
+    }
   }
 
   connected() {

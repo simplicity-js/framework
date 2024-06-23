@@ -1,3 +1,4 @@
+const util = require("node:util");
 const mongoose = require("mongoose");
 const debug = require("../../lib/debug");
 
@@ -63,22 +64,30 @@ module.exports = class MongooseStore {
 
     mongoose.set("debug", enableDebugging);
 
-    debug("Connecting to MongoDB...");
+    try {
+      debug("Connecting to MongoDB...");
 
-    this.#db = await mongoose.connect(dsn, {});
+      this.#db = await mongoose.connect(dsn, {});
 
-    debug("MongoDB connection established");
+      debug("MongoDB connection established");
 
-    return this.#db;
+      return this.#db;
+    } catch(e) {
+      debug(`Mongoose connection error: ${util.inspect(e)}`);
+    }
   }
 
   async disconnect() {
-    debug("Disconnecting from MongoDB");
+    try {
+      debug("Disconnecting from MongoDB");
 
-    await this.#db.disconnect();
-    this.#db = null;
+      await this.#db.disconnect();
+      this.#db = null;
 
-    debug("MongoDB disconnection complete");
+      debug("MongoDB disconnection complete");
+    } catch(e) {
+      debug(`Mongoose disconnection error: ${util.inspect(e)}`);
+    }
   }
 
   connected() {
