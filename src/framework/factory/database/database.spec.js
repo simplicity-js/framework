@@ -48,14 +48,16 @@ module.exports = {
         const unsupportedDbTypes = ["database", "file", "graph"];
 
         for(const driver of unsupportedDbTypes) {
-          await expect(DatabaseFactory.createDatastore(driver, {})).to.be.rejectedWith(TypeError, driverError);
+          await expect(DatabaseFactory.createDatastore(driver, {}))
+            .to.be.rejectedWith(TypeError, driverError);
         }
 
         /*
          * We are filtering the mongodb out so that the last test can pass
          */
         for(const driver of supportedDbTypes.filter(type => type !== "mongodb")) {
-          await expect(DatabaseFactory.createDatastore(driver, {})).to.eventually.have.property("driver");
+          await expect(DatabaseFactory.createDatastore(driver, {}))
+            .to.eventually.be.an("object");
         }
       });
 
@@ -72,10 +74,37 @@ module.exports = {
       it("should create the database using the appropriate driver", async function() {
         for(const driver of ["mongodb", "sqlite"]) {
           const store = await DatabaseFactory.createDatastore(driver, config[driver]);
+          const storeMethods = [
+            "connect", "disconnect", "connected", "getClient"
+          ];
+
+          const booleanMethods = ["connected"];
+          const promiseMethods = ["connect", "disconnect"];
 
           expect(store).to.be.an("object");
-          expect(store).to.have.property("db").to.be.an("object");
-          expect(store).to.have.property("driver", driver);
+          //expect(store).to.have.property("db");
+          //expect(store).to.have.property("driver", driver);
+
+          for(const method of storeMethods) {
+            expect(store).to.have.property(method).to.be.a("function");
+          }
+
+          for(const method of booleanMethods) {
+            expect(store[method]()).to.be.a("boolean");
+          }
+
+          for(const method of promiseMethods) {
+            expect(store[method]()).to.be.a("promise");
+          }
+
+          if(driver === "mongodb") {
+            expect(store).to.have.property("connecting").to.be.a("function");
+            expect(store.connecting()).to.be.a("boolean");
+          }
+
+          if(store.connected()) {
+            expect(store.getClient()).to.be.an("object");
+          }
         }
       });
     });

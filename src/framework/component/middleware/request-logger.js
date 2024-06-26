@@ -3,7 +3,13 @@ const morgan = require("morgan");
 
 module.exports = function logHttpRequests(app) {
   let loggerMiddleware;
-  const logger = app.resolve("logger") || console;
+  let logger;
+
+  try {
+    logger = app.resolve("logger");
+  } catch {
+    logger = console;
+  }
 
   /*
    * If the logger is using log levels different from winston.config.npm.levels,

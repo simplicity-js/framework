@@ -19,12 +19,14 @@ const SequelizeStore = require("../../component/connector/sequelize");
  */
 module.exports = async function createSqlStore(options) {
   const sequelizeStore = new SequelizeStore(options);
-  const db = sequelizeStore.getClient();
-  const driver = options.dbEngine;
+  //const db = sequelizeStore.getClient();
+  //const driver = options.dbEngine;
 
   if(!sequelizeStore.connected()) {
     await sequelizeStore.connect();
   }
 
-  return { db, driver };
+  //return { db, driver };
+
+  return sequelizeStore;
 };

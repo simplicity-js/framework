@@ -1,7 +1,7 @@
 /* eslint-env node, mocha */
 
 const request = require("supertest");
-const { StatusCodes, StatusTexts } = require("../../component/http");
+const { STATUS_CODES, STATUS_TEXTS } = require("../../component/http");
 const { chai } = require("../../lib/test-helper");
 const config = require("../test-mocks/config");
 const webRouter = require("../test-mocks/routes/web");
@@ -171,7 +171,7 @@ module.exports = {
 
                 expect(res.body).to.be.an("object");
                 expect(res.body).to.have.property("success", true);
-                expect(res.body).to.have.property("message", StatusTexts[StatusCodes.HTTP_OK]);
+                expect(res.body).to.have.property("message", STATUS_TEXTS[STATUS_CODES.HTTP_OK]);
                 done();
               });
           });

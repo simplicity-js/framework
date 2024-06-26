@@ -9,7 +9,7 @@ const defaultDbConfig = {
     mongodb: {
       url      : "",
       host     : "0.0.0.0",
-      port     : 27017,
+      port     : "27017",
       username : "",
       password : "",
       dbName   : "",
@@ -18,7 +18,7 @@ const defaultDbConfig = {
     mysql: {
       url      : "",
       host     : "0.0.0.0",
-      port     : 27017,
+      port     : "27017",
       username : "",
       password : "",
       dbName   : "",

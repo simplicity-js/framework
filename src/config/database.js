@@ -1,4 +1,4 @@
-const env = require("../dotenv");
+const env = require("../framework/env");
 
 module.exports = {
   /*
@@ -10,7 +10,7 @@ module.exports = {
    * This connection will be used unless another connection
    * is explicitly specified when you execute a query.
    */
-  default: (env.DB_CONNECTION.toLowerCase()) || "mongodb",
+  default: env("DB_CONNECTION", "mongodb").toLowerCase(),
 
   /*
    * ---------------------
@@ -24,22 +24,22 @@ module.exports = {
    */
   connections: {
     mongodb: {
-      url      : env.DB_URL,
-      host     : env.DB_HOST,
-      port     : Number(env.DB_PORT) || 27017,
-      username : env.DB_USERNAME,
-      password : env.DB_PASSWORD,
-      dbName   : env.DB_DBNAME,
+      url      : env("DB_URL"),
+      host     : env("DB_HOST"),
+      port     : env("DB_PORT", 27017),
+      username : env("DB_USERNAME"),
+      password : env("DB_PASSWORD"),
+      dbName   : env("DB_DBNAME"),
       exitOnConnectFail: true,
     },
 
     mysql: {
-      url      : env.DB_URL,
-      host     : env.DB_HOST,
-      port     : Number(env.DB_PORT) || 3006,
-      username : env.DB_USERNAME,
-      password : env.DB_PASSWORD,
-      dbName   : env.DB_DBNAME,
+      url      : env("DB_URL"),
+      host     : env("DB_HOST"),
+      port     : env("DB_PORT", 3006),
+      username : env("DB_USERNAME"),
+      password : env("DB_PASSWORD"),
+      dbName   : env("DB_DBNAME"),
       dbEngine : "mysql",
     },
   },

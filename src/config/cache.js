@@ -1,4 +1,4 @@
-const env = require("../dotenv");
+const env = require("../framework/env");
 const is = require("../framework/lib/is");
 const NodeCache  = require( "node-cache" );
 
@@ -13,7 +13,7 @@ module.exports = {
    * for running a cache operation inside the application
    * unless another is explicitly specified during the operation.
    */
-  default: env.CACHE_STORE || "memory",
+  default: env("CACHE_STORE", "memory"),
 
   /*
    * ----------------
@@ -24,12 +24,12 @@ module.exports = {
    * there might be other applications using the same cache. For
    * To avoid collisions, you may prefix every cache key.
    */
-  prefix: env.CACHE_KEY_PREFIX || `${env.NAME.toLowerCase().replace(/[\s*,-]+/g, "_")}_cache_`,
+  prefix: env("CACHE_KEY_PREFIX", `${env("NAME").toLowerCase().replace(/[\s*,-]+/g, "_")}_cache_`),
 
   /*
    * Whether to compress the data prior to caching.
    */
-  compress: is.falsy(env.CACHE_COMPRESS_DATA?.trim()?.toLowerCase()) ? false : true,
+  compress: is.falsy(env("CACHE_COMPRESS_DATA")?.toLowerCase()) ? false : true,
 
   /*
    * -------------
