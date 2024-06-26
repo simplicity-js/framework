@@ -10,17 +10,23 @@ function getValidUrl(baseUrl, path, apiBasePath) {
   path = normalizeUrlPath(path) || "";
   apiBasePath = normalizeUrlPath(apiBasePath) || "";
 
-  return baseUrl + (apiBasePath ? `/${apiBasePath}` : "") + `/${path}`;
+  let url = baseUrl;
+
+  if(apiBasePath) {
+    url += `/${apiBasePath}`;
+  }
+
+  url += `/${path}`;
+
+  return url;
 }
 
 function normalizeUrlPath(path) {
-  path = String(path);
-
-  if(path.startsWith("/")) {
+  if(path?.startsWith("/")) {
     path = stripFirstNCharsFromString(path, 1);
   }
 
-  if(path.endsWith("/")) {
+  if(path?.endsWith("/")) {
     path = stripLastNCharsFromString(path, 1);
   }
 
