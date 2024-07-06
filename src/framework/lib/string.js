@@ -3,6 +3,7 @@ const zlib = require("node:zlib");
 const BACKSLASH_REGEX = /\\/g;
 
 module.exports = {
+  camelCaseToSnakeCase,
   convertBackSlashToForwardSlash,
   encode: encodeToBase,
   decode: decodeFromBase,
@@ -11,6 +12,14 @@ module.exports = {
   stripFirstNCharsFromString,
   stripLastNCharsFromString,
 };
+
+function camelCaseToSnakeCase(str, separator = "-") {
+  return (
+    str
+      .replace(/([A-Z])/g, `${separator}$1`)
+      .replace(new RegExp(`^${separator}`), "") // strip off the `-` preceding the first CAPS letter
+  );
+}
 
 function convertBackSlashToForwardSlash(str) {
   return str.replace(BACKSLASH_REGEX, "/");

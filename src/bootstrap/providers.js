@@ -2,8 +2,6 @@
  * Import any service providers here
  */
 const AppServiceProvider = require("../service-providers/app-service-provider");
-const CacheServiceProvider = require("../service-providers/cache-service-provider");
-const DatabaseServiceProvider = require("../service-providers/database-service-provider");
 
 
 /*
@@ -11,6 +9,13 @@ const DatabaseServiceProvider = require("../service-providers/database-service-p
  */
 module.exports = [
   AppServiceProvider,
-  CacheServiceProvider,
-  DatabaseServiceProvider,
+
+  /*
+   * If your service providers are stored inside the
+   * `src/service-providers/` directory,
+   * you can avoid importing them and just list them
+   * as CamelCase or hyphen-case strings:
+   */
+  "CacheServiceProvider",
+  "database-service-provider",
 ];

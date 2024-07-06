@@ -84,7 +84,7 @@ module.exports = function createApp(options) {
    *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
    *   - const value = req.app.resolve(dependencyKey)
    */
-  for(const prop of ["bind", "instance", "value", "resolve"]) {
+  for(const prop of ["bind", "instance", "instantiate", "value", "resolve"]) {
     if(!(prop in app)) {
       app[prop] = container[prop].bind(container);
     }
