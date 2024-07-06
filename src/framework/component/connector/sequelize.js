@@ -1,6 +1,7 @@
 const util = require("node:util");
 const { Sequelize } = require("sequelize");
 const debug = require("../../lib/debug");
+const validateConnectionOptions = require("./connection-validator");
 
 
 module.exports = class SequelizeStore {
@@ -28,17 +29,10 @@ module.exports = class SequelizeStore {
   constructor(options) {
     debug("Creating SequelizeStore Instance...");
 
-    const {
-      dsn      = "",
-      host     = "0.0.0.0",
-      port     = 3006,
-      username = "",
-      password = "",
-      dbEngine = "memory",
-      dbName   = "frameworkdb",
-    } = options;
+    const validatedOptions = this.#validate(options);
+    const { url, host, port, username, password, dbEngine, dbName } = validatedOptions;
 
-    this.#options = { dsn, host, port, username, password, dbEngine, dbName };
+    this.#options = { url, host, port, username, password, dbEngine, dbName };
     this.#dbEngine = dbEngine;
 
     this.createDbObject();
@@ -135,5 +129,38 @@ module.exports = class SequelizeStore {
 
   getClient() {
     return this.#db;
+  }
+
+  #validate(options) {
+    debug("Validating Sequelize connection options...");
+
+    let validatedOptions;
+
+    const validateAgainst = {
+      driver: options.dbEngine || "sqlite::memory:",
+      defaults: {
+        host: "0.0.0.0", port: 3006, dbEngine: "memory",
+        username: "", password: "", dbName: "frameworkDb"
+      },
+      required: ["dbEngine", "dbName"],
+    };
+
+    if(options.dbEngine !== "memory") {
+      validateAgainst.required.push("host");
+    }
+
+    if(!["memory", "sqlite"].includes(options.dbEngine)) {
+      validateAgainst.required.push("port");
+    }
+
+    if(options?.url) {
+      validatedOptions = validateConnectionOptions(options.url, validateAgainst);
+    } else {
+      validatedOptions = validateConnectionOptions(options, validateAgainst);
+    }
+
+    debug("Sequelize connection options validated.");
+
+    return validatedOptions;
   }
 };

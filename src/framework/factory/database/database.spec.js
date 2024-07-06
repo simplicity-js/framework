@@ -41,22 +41,34 @@ module.exports = {
       const supportedDbTypes = ["mongodb", "mariadb", "memory", "mysql", "postgres", "sqlite"];
       const errorPrefix = "DatabaseFactory::createDatastore(driver, config): ";
 
+      /*
+       * We are filtering the mongodb out so that the last test can pass
+       * We are filtering the sqlite out to avoid creating a localhost/ directory.
+       * However, we are leaving both of them in the supportedDbTypes
+       * so that the test can pass the generated error message.
+       */
+      const useDbTypes = supportedDbTypes.filter(type => (
+        !["mongodb", "sqlite"].includes(type)
+      ));
+
       it("should throw if driver is not supported", async function() {
         const driverError = errorPrefix + "Invalid `driver` parameter. " +
           `Supported drivers include ${supportedDbTypes.join(", ")}`;
 
         const unsupportedDbTypes = ["database", "file", "graph"];
+        const connObj = { host: "localhost", port: 3006, dbName: "testDb" };
 
         for(const driver of unsupportedDbTypes) {
-          await expect(DatabaseFactory.createDatastore(driver, {}))
+          connObj.dbEngine = driver;
+
+          await expect(DatabaseFactory.createDatastore(driver, connObj))
             .to.be.rejectedWith(TypeError, driverError);
         }
 
-        /*
-         * We are filtering the mongodb out so that the last test can pass
-         */
-        for(const driver of supportedDbTypes.filter(type => type !== "mongodb")) {
-          await expect(DatabaseFactory.createDatastore(driver, {}))
+        for(const driver of useDbTypes) {
+          connObj.dbEngine = driver;
+
+          await expect(DatabaseFactory.createDatastore(driver, connObj))
             .to.eventually.be.an("object");
         }
       });

@@ -1,6 +1,7 @@
 const util = require("node:util");
 const mongoose = require("mongoose");
 const debug = require("../../lib/debug");
+const validateConnectionOptions = require("./connection-validator");
 
 
 module.exports = class MongooseStore {
@@ -31,7 +32,9 @@ module.exports = class MongooseStore {
   constructor(options) {
     debug("Creating MongooseStore Instance...");
 
-    this.setOptions(options);
+    const validatedOptions = this.#validate(options);
+
+    this.setOptions(validatedOptions);
     this.connect();
   }
 
@@ -109,18 +112,39 @@ module.exports = class MongooseStore {
     debug("Setting Mongoose connection options...");
 
     const {
-      url      = "",
-      host     = "0.0.0.0",
-      port     = 27017,
-      username = "",
-      password = "",
-      dbName   = "users",
-      debug: enableDebugging = false,
-      exitOnConnectFail = false,
+      url, host, port, username, password, dbName,
+      debug: enableDebugging, exitOnConnectFail,
     } = options;
 
-    this.#options = { url, host, port, username, password, dbName, enableDebugging, exitOnConnectFail };
+    this.#options = {
+      url, host, port, username, password, dbName,
+      enableDebugging, exitOnConnectFail
+    };
 
     debug("Mongoose connection options set.");
+  }
+
+  #validate(options) {
+    debug("Validating mongoose connection options...");
+
+    let validatedOptions;
+    const validateAgainst = {
+      driver: "mongodb",
+      defaults: {
+        host: "0.0.0.0", port: 27017, username: "", password: "",
+        dbName: "frameworkDb", debug: false, exitOnConnectFail: false,
+      },
+      required: ["host", "port", "dbName"],
+    };
+
+    if(options?.url) {
+      validatedOptions = validateConnectionOptions(options.url, validateAgainst);
+    } else {
+      validatedOptions = validateConnectionOptions(options, validateAgainst);
+    }
+
+    debug("Mongoose connection options validated.");
+
+    return validatedOptions;
   }
 };

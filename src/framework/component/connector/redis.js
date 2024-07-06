@@ -1,6 +1,7 @@
 const redis  = require("redis");
 const util = require("node:util");
 const debug = require("../../lib/debug");
+const validateConnectionOptions = require("./connection-validator");
 
 
 module.exports = class RedisStore {
@@ -25,7 +26,9 @@ module.exports = class RedisStore {
     debug("Creating RedisStore Instance...");
 
     if(options) {
-      this.setOptions(options);
+      const validatedOptions = this.#validate(options);
+
+      this.setOptions(validatedOptions);
       this.#createClient();
 
       if(this.#options.autoConnect) {
@@ -114,15 +117,7 @@ module.exports = class RedisStore {
   setOptions(options) {
     debug("Setting Redis connection options...");
 
-    const {
-      url       = "",
-      host      = "localhost",
-      port      = 6379,
-      username  = "",
-      password  = "",
-      db        = "",
-      autoConnect = false,
-    } = options;
+    const { url, host, port, username, password, db, autoConnect } = options;
 
     this.#options = { url, host, port, username, password, db, autoConnect };
 
@@ -180,5 +175,26 @@ module.exports = class RedisStore {
     this.#client = client;
 
     debug("Redis client created.");
+  }
+
+  #validate(options) {
+    debug("Validating redis connection options...");
+
+    let validatedOptions;
+    const validateAgainst = {
+      driver: "redis",
+      defaults: { host: "localhost", port: 6379, username: "", password: "", db: "" },
+      required: ["host", "port"],
+    };
+
+    if(options?.url) {
+      validatedOptions = validateConnectionOptions(options.url, validateAgainst);
+    } else {
+      validatedOptions = validateConnectionOptions(options, validateAgainst);
+    }
+
+    debug("Redis connection options validated.");
+
+    return validatedOptions;
   }
 };
