@@ -24,7 +24,7 @@ function convertBackSlashToForwardSlash(str) {
  *   Default is base64.
  * @return {String}
  */
-function encodeToBase(str, base = 64) {
+function encodeToBase(str, base = "base64") {
   return encode(str, { to: base });
 }
 
@@ -37,7 +37,7 @@ function encodeToBase(str, base = 64) {
  *   Default is base64.
  * @return {String}: the original string.
  */
-function decodeFromBase(str, base = 64) {
+function decodeFromBase(str, base = "base64") {
   return encode(str, { from: base });
 }
 
