@@ -1,22 +1,25 @@
 {
-  "name": "audit-log-service",
+  "name": "simplicity",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/index.js",
+  "description": "Simplicity Framework",
+  "main": "index.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha src/test-runner.js",
     "test:coverage": "nyc npm test",
     "build": "npm install",
-    "serve": "node ./src/index.js",
-    "serve:watch": "nodemon ./src/index.js",
     "commit": "git-cz",
     "lint": "npx eslint src/**/*.js",
-    "lint:fix": "npm run lint -- --fix",
-    "timezone:set": "cross-env TZ='UTC'"
+    "lint:fix": "npm run lint -- --fix"
   },
-  "keywords": [],
+  "keywords": [
+    "API",
+    "Framework",
+    "Node",
+    "REST API",
+    "Web Service"
+  ],
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
-  "license": "Private",
+  "license": "MIT",
   "dependencies": {
     "app-root-path": "3.1.0",
     "awilix": "10.0.2",
