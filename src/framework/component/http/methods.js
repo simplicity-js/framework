@@ -1,6 +1,7 @@
 module.exports = {
   buildQueryString,
   getClientInfo,
+  getClientIp,
 };
 
 function buildQueryString(obj) {
@@ -25,7 +26,16 @@ function buildQueryString(obj) {
 
 function getClientInfo(req) {
   return {
-    ipAddress: req.ip,
+    ipAddress: getClientIp(req),
     userAgent: req.headers["user-agent"],
   };
 };
+
+function getClientIp (req) {
+  return (
+    req.ip ||
+    req._remoteAddress ||
+    (req.connection && req.connection.remoteAddress) ||
+    undefined
+  );
+}

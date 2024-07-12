@@ -40,6 +40,7 @@ function formatter(tokens, req, res) {
   return JSON.stringify({
     method         : tokens.method(req, res),
     url            : tokens.url(req, res),
+    ip_address     : tokens["remote-addr"](req, res),
     status         : Number.parseFloat(tokens.status(req, res)),
     content_length : tokens.res(req, res, "content-length"),
     response_time  : Number.parseFloat(tokens["response-time"](req, res)),

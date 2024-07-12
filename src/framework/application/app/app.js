@@ -95,6 +95,8 @@ module.exports = function createApp(options) {
     sessionStore = new RedisStore({ client: redisClient });
   }
 
+  app.enable("trust proxy");
+
   /*
    * Disable the X-Powered-By header
    */
