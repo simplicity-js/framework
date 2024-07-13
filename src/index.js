@@ -1,16 +1,17 @@
 const path = require("node:path");
-const APP_ROOT = require("../app-root");
+const APP_ROOT = require("./app-root");
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
 
-const { pathExists } = require("../component/file-system");
-const { camelCaseToSnakeCase } = require("../lib/string");
-
-const { createApp, normalizePort, onError, onListening } = require("./app");
-const createServer = require("./server");
 const config = require(`${SRC_DIR}/config`);
 const apiRouter = require(`${SRC_DIR}/routes/api`);
 const webRouter = require(`${SRC_DIR}/routes/web`);
 const serviceProviders = require(`${SRC_DIR}/bootstrap/providers`);
+
+const { createApp, normalizePort, onError, onListening } = require(
+  "./application/app");
+const createServer = require("./aplication/server");
+const { pathExists } = require("./component/file-system");
+const { camelCaseToSnakeCase } = require("./lib/string");
 
 const PROVIDERS_DIR = `${SRC_DIR}/service-providers`;
 
