@@ -1,5 +1,5 @@
 const NodeCache = require("node-cache");
-const APP_ROOT = require("app-root-path");
+const APP_ROOT = __dirname; //require("app-root-path");
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
 
 const cacheConfig = {

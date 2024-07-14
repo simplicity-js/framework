@@ -9,7 +9,7 @@ const serviceProviders = require(`${SRC_DIR}/bootstrap/providers`);
 
 const { createApp, normalizePort, onError, onListening } = require(
   "./application/app");
-const createServer = require("./aplication/server");
+const createServer = require("./application/server");
 const { pathExists } = require("./component/file-system");
 const { camelCaseToSnakeCase } = require("./lib/string");
 
