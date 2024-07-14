@@ -1,4 +1,4 @@
-const FrameworkServiceProvider = require("../../../component/service-provider");
+const FrameworkServiceProvider = require("../../../../component/service-provider");
 
 class ServiceProvider extends FrameworkServiceProvider {
   #config;

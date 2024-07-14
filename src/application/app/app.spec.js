@@ -1,7 +1,7 @@
 /* eslint-env node, mocha */
 
 const { chai } = require("../../lib/test-helper");
-const config = require("../test-mocks/config");
+const config = require("../test-mocks/src/config");
 const createApp = require("./app");
 
 

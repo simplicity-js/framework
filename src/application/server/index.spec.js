@@ -3,10 +3,10 @@
 const request = require("supertest");
 const { STATUS_CODES, STATUS_TEXTS } = require("../../component/http");
 const { chai } = require("../../lib/test-helper");
-const config = require("../test-mocks/config");
-const webRouter = require("../test-mocks/routes/web");
-const apiRouter = require("../test-mocks/routes/api");
-const providers = require("../test-mocks/service-providers");
+const config = require("../test-mocks/src/config");
+const webRouter = require("../test-mocks/src/routes/web");
+const apiRouter = require("../test-mocks/src/routes/api");
+const providers = require("../test-mocks/src/service-providers");
 const { createApp } = require("../app");
 const createServer = require(".");
 

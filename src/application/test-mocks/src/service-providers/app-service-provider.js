@@ -1,4 +1,4 @@
-const createObjectStore = require("../../../component/registry");
+const createObjectStore = require("../../../../component/registry");
 const ServiceProvider = require("./service-provider");
 
 

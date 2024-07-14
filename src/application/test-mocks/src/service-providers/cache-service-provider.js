@@ -1,5 +1,5 @@
-const Connections = require("../../../connections");
-const CacheFactory = require("../../../factory/cache");
+const Connections = require("../../../../connections");
+const CacheFactory = require("../../../../factory/cache");
 const ServiceProvider = require("./service-provider");
 
 

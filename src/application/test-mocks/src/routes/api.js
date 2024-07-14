@@ -1,4 +1,4 @@
-const { STATUS_CODES, STATUS_TEXTS } = require("../../../component/http");
+const { STATUS_CODES, STATUS_TEXTS } = require("../../../../component/http");
 
 
 module.exports = function apiRouter({ router }) {
