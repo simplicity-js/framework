@@ -1,3 +1,3 @@
-const debug = require("debug")("simple-framework");
+const debug = require("debug")("@simplicityjs/framework");
 
 module.exports = debug;

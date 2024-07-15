@@ -11,16 +11,24 @@ const Router = require("../../component/router");
 const view = require("../../component/view");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
+const is = require("../../lib/is");
 
 /**
- * @param {Function} webRouter (optional): A function that takes an
+ * @param {Object} config: A config object with a get() method
+ *    for getting config values.
+ * @param {Object} routes: The routes object
+ * @param {Object} [routes.web]: web routes (optional):
+ *    An object with a "routes" array property, each member of which must have
+ *    a method, a path, and a handler stack.
  *    options object and returns web routes.
- * @param {Function} apiRouter (optional): A function that takes an
- *    options object and returns API routes.
+ * @param {Object} [routes.api] api routes (optional):
+ *    An object with a "routes" array property, each member of which must have
+ *    a method, a path, and a handler stack.
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp(options) {
-  const { config, webRouter, apiRouter, providers } = options || {};
+  const { config, routes, providers } = options || {};
+  const { web: webRoutes, api: apiRoutes } = routes || {};
 
   if(typeof config !== "object" || typeof config.get !== "function") {
     throw new TypeError(
@@ -34,10 +42,11 @@ module.exports = function createApp(options) {
     );
   }
 
-  if(typeof webRouter !== "function" && typeof apiRouter !== "function") {
+  if(!is.array(webRoutes?.routes) && !is.array(apiRoutes?.routes)) {
     throw new TypeError(
-      "createApp 'options' object expects either or both of " +
-      "the following function members: `webRouter`, `apiRouter`."
+      "createApp 'options' object expects a 'routes' object " +
+      "with either or both of the following members: `web`, `api` " +
+      "that must have a 'routes' array member."
     );
   }
 
@@ -46,7 +55,6 @@ module.exports = function createApp(options) {
    */
   process.env.TZ = config.get("app.timezone");
 
-  const router = new Router();
   const allowedOrigins  = config.get("app.allowedOrigins");
   const allowAllOrigins = allowedOrigins.includes("*");
   const corsOptions = {
@@ -67,10 +75,10 @@ module.exports = function createApp(options) {
    * This way, any registered services are available to route handlers
    * (via req.app.resolve(serviceName)) and other files.
    */
-  //const providers = require(`${config.get("app.rootDir")}/src/bootstrap/providers`);
   bootstrap(config, providers);
 
   const app = express();
+  const router = Router.router();
 
   let sessionStore;
 
@@ -105,7 +113,6 @@ module.exports = function createApp(options) {
   /*
    * View setup
    */
-  //app.set("views", path.join(__dirname, "views"));
   app.set("views", config.get("app.viewsDir"));
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
 
@@ -121,21 +128,21 @@ module.exports = function createApp(options) {
   /*
    * Setup Routing
    */
-  if(typeof webRouter === "function") {
-    router.group("/", (router) => webRouter({
-      router,
-      download: view.downloadFile,
-      view: view.viewFile,
-    }));
-  }
+  router.group("/", function setupWebRoutes(router) {
+    const { routes = [] } = webRoutes;
 
-  if(typeof apiRouter === "function") {
-    router.group("/api", (router) => apiRouter({
-      router,
-      download: view.downloadFile,
-      view: view.viewFile,
-    }));
-  }
+    routes.forEach(({ method, path, handlers }) => {
+      router[method](path, handlers);
+    });
+  });
+
+  router.group("/api", function setupApiRoutes(router) {
+    const { routes = [] } = apiRoutes;
+
+    routes.forEach(({ method, path, handlers }) => {
+      router[method](path, handlers);
+    });
+  });
 
   /*
    * Apply the routing
@@ -162,7 +169,7 @@ module.exports = function createApp(options) {
 
     res.status(statusCode);
 
-    return view.viewFile("404", {
+    return view.view("404", {
       appName,
       pageTitle: "Not Found",
       pageTagline: appName,

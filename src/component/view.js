@@ -21,7 +21,7 @@ module.exports = {
    *   file to download, relative to the source directory.
    *   The default is the views (src/views) directory.
    */
-  downloadFile(file, options) {
+  download(file, options) {
     const res = localRes;
     const { basePath = "views" } = options || {};
 
@@ -31,13 +31,13 @@ module.exports = {
   },
 
   /*
-   * @param {Any} filename: The file to view (with or without the file extension).
+   * @param {String} filename: The file to view (with or without the file extension).
    * @param {Object} options (optional):
    * @param {String} [options.basePath] (optional): The directory housing the
    *   file to send to the browser, relative to the source directory.
    *   The default is the views (src/views) directory.
    */
-  viewFile(filename, options) {
+  view(filename, options) {
     const res = localRes;
     const ext = getViewFilesExtension();
     const file = `${path.basename(filename, ext)}.${ext}`;

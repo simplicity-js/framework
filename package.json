@@ -2,10 +2,11 @@
   "name": "@simplicityjs/framework",
   "version": "1.0.0",
   "description": "Simplicity Framework",
-  "main": "src/index.js",
+  "main": "src/application/index.js",
   "exports": {
-    ".": "./src/index.js",
+    ".": "./src/application/index.js",
     "./env": "./src/env.js",
+    "./application": "./src/application/index.js",
     "./component/*": "./src/component/*.js",
     "./component/http": "./src/component/http/index.js",
     "./component/middleware/*": "./src/component/middleware/*.js",
