@@ -1,3 +1,5 @@
+require("./node-version-check");
+
 const path = require("node:path");
 const APP_ROOT = require("../app-root");
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
