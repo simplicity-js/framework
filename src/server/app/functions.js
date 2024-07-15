@@ -1,3 +1,5 @@
+const os = require("node:os");
+const publicIp = () => import("public-ip").then(publicIp => publicIp);
 const debug = require("../../lib/debug");
 
 module.exports = {
@@ -5,6 +7,33 @@ module.exports = {
   onError,
   onListening,
 };
+
+const EOL = os.EOL;
+const COLORS = { info: "\x1b[44m", error: "\x1b[41m", warn: "\x1b[43m" };
+const COLOR_TERM = "\x1b[0m"; // color terminator
+const logStream = getLogStream("stdout");
+
+function getLogStream() {
+  let out;
+  let err;
+
+  if(console._stderr?.write) {
+    err = console._stderr.write.bind(console._stderr);
+  } else {
+    err = console.error.bind(console);
+  }
+
+  if(console._stdout?.write) {
+    out = console._stdout.write.bind(console._stdout);
+  } else {
+    out = console.log.bind(console);
+  }
+
+  return {
+    log: out,
+    error: err,
+  };
+}
 
 /**
  * Normalize a port into a number, string, or false.
@@ -38,13 +67,22 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
   case "EACCES":
-    console.error(bind + " requires elevated privileges");
+    logStream.error(
+      `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${bind} ` +
+      "requires elevated privileges."
+    );
+
     process.exit(1);
     break;
+
   case "EADDRINUSE":
-    console.error(bind + " is already in use");
+    logStream.error(
+      `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${bind} is already in use.`
+    );
+
     process.exit(1);
     break;
+
   default:
     throw error;
   }
@@ -66,4 +104,21 @@ function onListening(server) {
     : "port " + addr.port;
 
   debug("Server Listening on ", bind);
+
+  (async function() {
+    const port = addr.port;
+    let message = `Server running: ${EOL}` +
+    `       Loopback address [http://127.0.0.1:${port}].${EOL}`;
+
+    try {
+      const publicAddr = await (await publicIp()).publicIpv4();
+
+      message += `       Public address [http://${publicAddr}:${port}].${EOL}`;
+    } catch {
+      message += "";
+    }
+
+    logStream.log(`${EOL}  ${COLORS.info}INFO${COLOR_TERM} ${message}`);
+    logStream.log(`${EOL}  Press Ctrl+C to stop the server.${EOL}`);
+  }());
 }
