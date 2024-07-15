@@ -1,8 +1,9 @@
 const createApp = require("./app");
-const { normalizePort, onError, onListening } = require("./functions");
+const { appConsole, normalizePort, onError, onListening } = require("./functions");
 
 module.exports = {
   createApp,
+  appConsole,
   normalizePort,
   onError,
   onListening,

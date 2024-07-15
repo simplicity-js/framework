@@ -1,7 +1,9 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
+const EOL = os.EOL;
 
 module.exports = {
   deleteDirectory,
@@ -9,6 +11,7 @@ module.exports = {
   isDirectory,
   isFile,
   pathExists,
+  EOL,
 };
 
 function deleteDirectory(dir) {

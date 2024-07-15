@@ -7,8 +7,8 @@ const apiRoutes = require(`${SRC_DIR}/routes/api`);
 const webRoutes = require(`${SRC_DIR}/routes/web`);
 const serviceProviders = require(`${SRC_DIR}/bootstrap/providers`);
 
-const { createApp, normalizePort, onError, onListening } = require(
-  "../server/app");
+const { createApp, normalizePort, onError, onListening, appConsole
+} = require("../server/app");
 const createServer = require("../server/server");
 const { pathExists } = require("../component/file-system");
 const { camelCaseToSnakeCase } = require("../lib/string");
@@ -38,6 +38,7 @@ const providers = serviceProviders.map(function getProvider(provider) {
 
 
 module.exports = {
+  console: appConsole,
   create() {
     const app = createApp({ config, routes, providers });
     const server = createServer({ app, onError, onListening });

@@ -1,39 +1,36 @@
-const os = require("node:os");
 const publicIp = () => import("public-ip").then(publicIp => publicIp);
+const { EOL } = require("../../component/file-system");
 const debug = require("../../lib/debug");
+
+const COLORS = { info: "\x1b[44m", error: "\x1b[41m", warn: "\x1b[43m" };
+const COLOR_TERM = "\x1b[0m"; // color terminator
+
+const appConsole = {
+  log(...args) {
+    console.log.apply(console, args);
+  },
+  info(...args) {
+    args[0] = `${EOL}  ${COLORS.info}INFO${COLOR_TERM} ${args[0]}`;
+    console.log.apply(console, args);
+  },
+  error(...args) {
+    args[0] = `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${args[0]}`;
+    console.error.apply(console, args);
+  },
+  warn(...args) {
+    args[0] = `${EOL}  ${COLORS.warn}WARN${COLOR_TERM} ${args[0]}`;
+    console.log.apply(console, allArgs);
+  },
+};
+
 
 module.exports = {
   normalizePort,
   onError,
   onListening,
+  appConsole,
 };
 
-const EOL = os.EOL;
-const COLORS = { info: "\x1b[44m", error: "\x1b[41m", warn: "\x1b[43m" };
-const COLOR_TERM = "\x1b[0m"; // color terminator
-const logStream = getLogStream("stdout");
-
-function getLogStream() {
-  let out;
-  let err;
-
-  if(console._stderr?.write) {
-    err = console._stderr.write.bind(console._stderr);
-  } else {
-    err = console.error.bind(console);
-  }
-
-  if(console._stdout?.write) {
-    out = console._stdout.write.bind(console._stdout);
-  } else {
-    out = console.log.bind(console);
-  }
-
-  return {
-    log: out,
-    error: err,
-  };
-}
 
 /**
  * Normalize a port into a number, string, or false.
@@ -67,19 +64,12 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
   case "EACCES":
-    logStream.error(
-      `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${bind} ` +
-      "requires elevated privileges."
-    );
-
+    appConsole.error(`${bind} requires elevated privileges.`);
     process.exit(1);
     break;
 
   case "EADDRINUSE":
-    logStream.error(
-      `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${bind} is already in use.`
-    );
-
+    appConsole.error(`${bind} is already in use.`);
     process.exit(1);
     break;
 
@@ -113,12 +103,12 @@ function onListening(server) {
     try {
       const publicAddr = await (await publicIp()).publicIpv4();
 
-      message += `       Public address [http://${publicAddr}:${port}].${EOL}`;
+      message += `       Public address [http://${publicAddr}:${port}].`;
     } catch {
       message += "";
     }
 
-    logStream.log(`${EOL}  ${COLORS.info}INFO${COLOR_TERM} ${message}`);
-    logStream.log(`${EOL}  Press Ctrl+C to stop the server.${EOL}`);
+    appConsole.info(message);
+    appConsole.log(`${EOL}  Press Ctrl+C to stop the server.${EOL}`);
   }());
 }
