@@ -1,6 +1,7 @@
 require("./node-version-check");
 
 const path = require("node:path");
+const { parseArgs } = require("node:util");
 const APP_ROOT = require("../app-root");
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
 
@@ -51,7 +52,16 @@ module.exports = {
       },
 
       listen(port) {
-        server.listen(normalizePort(port));
+        const options = parseArgs({
+          allowPositionals: true,
+          options: {
+            port: { type: "string", short: "p" },
+          },
+        });
+        const defaultPort = 8800;
+        const listenPort = options.values.port ?? port ?? defaultPort;
+
+        server.listen(normalizePort(listenPort));
       },
     };
   },
