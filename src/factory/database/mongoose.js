@@ -19,16 +19,6 @@ const MongooseStore = require("../../component/connector/mongoose");
  */
 module.exports = async function createDocumentStore(options) {
   const mongooseStore = new MongooseStore(options);
-  /* const driver = "mongodb";
-  let db;
-
-  if(!mongooseStore.connecting() && !mongooseStore.connected()) {
-    db = await mongooseStore.connect();
-  } else {
-    db = mongooseStore.getClient();
-  }
-
-  return { db, driver };*/
 
   if(!mongooseStore.connecting() && !mongooseStore.connected()) {
     await mongooseStore.connect();

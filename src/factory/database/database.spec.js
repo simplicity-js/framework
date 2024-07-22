@@ -13,13 +13,14 @@ const config = {
     username : "",
     password : "",
     dbName   : "test",
+    orm      : "mongoose",
     exitOnConnectFail: false,
   },
 
   sqlite: {
-    host     : ".sqlite",
-    dbName   : "test",
-    dbEngine : "sqlite",
+    storagePath : ".sqlite",
+    dbName      : "test.sqlite",
+    dbEngine    : "sqlite",
   }
 };
 
@@ -42,13 +43,13 @@ module.exports = {
       const errorPrefix = "DatabaseFactory::createDatastore(driver, config): ";
 
       /*
-       * We are filtering the mongodb out so that the last test can pass
+       * We are filtering the mongodb out so that the last test can pass.
        * We are filtering the sqlite out to avoid creating a localhost/ directory.
        * However, we are leaving both of them in the supportedDbTypes
        * so that the test can pass the generated error message.
        */
       const useDbTypes = supportedDbTypes.filter(type => (
-        !["mongodb", "sqlite"].includes(type)
+        !["mongodb", "sqlit"].includes(type)
       ));
 
       it("should throw if driver is not supported", async function() {
@@ -67,6 +68,14 @@ module.exports = {
 
         for(const driver of useDbTypes) {
           connObj.dbEngine = driver;
+
+          if(driver === "mongodb") {
+            connObj.orm = "mongoose";
+          }
+
+          if(driver === "sqlite") {
+            connObj.storagePath = config.sqlite.storagePath;
+          }
 
           await expect(DatabaseFactory.createDatastore(driver, connObj))
             .to.eventually.be.an("object");

@@ -19,6 +19,7 @@ module.exports = class SequelizeStore {
    * @param {Number} [options.port]: the db server port
    * @param {String} [options.username]: the db server username
    * @param {String} [options.password]: the db server user password
+   * @param {String} [options.storagePath]: the storage location for sqlite databases.
    * @param {String} [options.dbName]: the name of the database to connect to
    * @param {String} [options.url]: full DSN of the mysql server
    *   If the [options.url] is set, it is used instead
@@ -30,9 +31,9 @@ module.exports = class SequelizeStore {
     debug("Creating SequelizeStore Instance...");
 
     const validatedOptions = this.#validate(options);
-    const { url, host, port, username, password, dbEngine, dbName } = validatedOptions;
+    const { url, host, port, username, password, dbEngine, storagePath, dbName } = validatedOptions;
 
-    this.#options = { url, host, port, username, password, dbEngine, dbName };
+    this.#options = { url, host, port, username, password, dbEngine, storagePath, dbName };
     this.#dbEngine = dbEngine;
 
     this.createDbObject();
@@ -45,11 +46,21 @@ module.exports = class SequelizeStore {
     let dsn;
     let sequelize;
     const options = this.#options;
-    const { host, port, username, password, dbEngine, dbName } = options;
+    const { host, port, username, password, dbEngine, storagePath, dbName } = options;
     const connOpts = {}; //{ logging: logger.debug.bind(logger) };
 
     if(dbEngine.toLowerCase() === "memory") {
       sequelize = new Sequelize("sqlite::memory:", connOpts);
+    } else if(dbEngine.toLowerCase() === "sqlite") {
+      // We are assuming and working with sqlite as being
+      // on the local system as the application.
+      // To use a remote DB, use a dbEngine other than sqlite.
+      // Cf. https://www.sqlite.org/useovernet.html
+      // for why we are doing it this way.
+      sequelize = new Sequelize({
+        dialect: "sqlite",
+        storage: `${storagePath}/${dbName.replace(/\.sqlite$/i, "")}.sqlite`,
+      });
     } else {
       if(options.url?.trim()?.length > 0) {
         dsn = options.url?.trim();
@@ -140,17 +151,13 @@ module.exports = class SequelizeStore {
       driver: options.dbEngine || "sqlite::memory:",
       defaults: {
         host: "0.0.0.0", port: 3006, dbEngine: "memory",
-        username: "", password: "", dbName: "frameworkDb"
+        username: "", password: "", storagePath: "", dbName: "frameworkDb"
       },
       required: ["dbEngine", "dbName"],
     };
 
-    if(options.dbEngine !== "memory") {
-      validateAgainst.required.push("host");
-    }
-
     if(!["memory", "sqlite"].includes(options.dbEngine)) {
-      validateAgainst.required.push("port");
+      validateAgainst.required.push("host", "port");
     }
 
     if(options?.url) {
