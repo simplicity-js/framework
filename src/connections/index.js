@@ -1,20 +1,13 @@
 const RedisStore = require("../component/connector/redis");
-const DatabaseFactory = require("../factory/database");
+const MongooseStore = require("../component/connector/mongoose");
+const SequelizeStore = require("../component/connector/sequelize");
 const createObjectStore = require("../component/registry");
 
 const registry = createObjectStore();
 
 module.exports = class Connections {
-  static async get(key, options) {
+  static get(key, options) {
     key = key.toLowerCase();
-
-    if(key === "mongodb") {
-      if(options?.orm?.toLowerCase() === "mongoose") {
-        key = "mongodb:mongoose";
-      } else {
-        key = "mongodb:sequelize";
-      }
-    }
 
     if(!registry.contains(key)) {
       switch(key) {
@@ -22,19 +15,19 @@ module.exports = class Connections {
         registry.add(key, Connections.#connectToRedis(options));
         break;
 
-      case "memoryDb":
-        registry.add(key, await Connections.#connectToDatabase("memory", options));
+      case "mongodb":
+        registry.add(key, Connections.#connectToMongooseStore(options));
         break;
 
-      case "mongodb":
-        registry.add(key, await Connections.#connectToDatabase("mongodb", options));
+      case "memoryDb":
+        registry.add(key, Connections.#connectToSequelizeStore(options));
         break;
 
       case "mariadb"  :
       case "mysql"    :
       case "postgres" :
       case"sqlite"    :
-        registry.add(key, await Connections.#connectToDatabase(key, options));
+        registry.add(key, Connections.#connectToSequelizeStore(options));
         break;
       }
     }
@@ -42,9 +35,30 @@ module.exports = class Connections {
     return registry.get(key);
   }
 
-  static async #connectToDatabase(driver, config) {
-    const dbStore = await DatabaseFactory.createDatastore(driver, config);
-    return dbStore.getClient();
+  static #connectToMongooseStore(options) {
+    const mongooseStore = new MongooseStore(options);
+    const mongooseClient = mongooseStore.getClient();
+
+    setTimeout(async function() {
+      if(!mongooseStore.connecting() && !mongooseStore.connected()) {
+        await mongooseStore.connect();
+      }
+    }, 1000);
+
+    return mongooseClient;
+  }
+
+  static #connectToSequelizeStore(options) {
+    const sequelizeStore = new SequelizeStore(options);
+    const sequelizeClient = sequelizeStore.getClient();
+
+    setTimeout(async function() {
+      if(!sequelizeStore.connected()) {
+        await sequelizeStore.connect();
+      }
+    }, 1000);
+
+    return sequelizeClient;
   }
 
   static #connectToRedis(redisCreds) {

@@ -9,9 +9,8 @@ module.exports = class DatabaseFactory {
    * @param {String} driver: the type of database to get.
    *   Supported drivers include
    *     "mongodb", "mariadb", "memory", "mysql", "postgres", "sqlite".
+   *     Default is "mongodb".
    * @param {Object} config: the configuration for the specified database type driver.
-   * @param {String} [config.orm]: The ODM/ORM library to use.
-   *    Supported ODM/ORM libraries are "mongoose" and "sequelize" (default).
    * @return {Object}
    */
   static async createDatastore(driver, config) {
@@ -35,13 +34,7 @@ module.exports = class DatabaseFactory {
       );
     }
 
-    if(driver === "mongodb" && config.orm?.toLowerCase() === "mongoose") {
-      datastoreCreationFn = createDocumentStore;
-    } else {
-      datastoreCreationFn = createSqlStore;
-    }
-
-    /*switch(driver) {
+    switch(driver) {
     case "mariadb"  :
     case "memory"   :
     case "mysql"    :
@@ -52,7 +45,7 @@ module.exports = class DatabaseFactory {
     case "mongodb" :
     default        : datastoreCreationFn = createDocumentStore;
       break;
-    }*/
+    }
 
     const store = await datastoreCreationFn(config);
 

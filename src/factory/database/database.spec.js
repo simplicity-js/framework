@@ -13,7 +13,6 @@ const config = {
     username : "",
     password : "",
     dbName   : "test",
-    orm      : "mongoose",
     exitOnConnectFail: false,
   },
 
@@ -44,12 +43,11 @@ module.exports = {
 
       /*
        * We are filtering the mongodb out so that the last test can pass.
-       * We are filtering the sqlite out to avoid creating a localhost/ directory.
-       * However, we are leaving both of them in the supportedDbTypes
+       * However, we are leaving it in the supportedDbTypes
        * so that the test can pass the generated error message.
        */
       const useDbTypes = supportedDbTypes.filter(type => (
-        !["mongodb", "sqlit"].includes(type)
+        !["mongodb"].includes(type)
       ));
 
       it("should throw if driver is not supported", async function() {
@@ -68,10 +66,6 @@ module.exports = {
 
         for(const driver of useDbTypes) {
           connObj.dbEngine = driver;
-
-          if(driver === "mongodb") {
-            connObj.orm = "mongoose";
-          }
 
           if(driver === "sqlite") {
             connObj.storagePath = config.sqlite.storagePath;
