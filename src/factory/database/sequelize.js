@@ -11,6 +11,7 @@ const SequelizeStore = require("../../component/connector/sequelize");
  * @param {String} [options.username]: the db server username
  * @param {String} [options.password]: the db server user password
  * @param {String} [options.dbName]: the name of the database to connect to
+ * @param {Boolean} [options.logging]: Whether to enable logging or not.
  * @param {String} [options.url]: full DSN of the mysql server
  *   If the [options.url] is set, it is used instead
  *   and the other options are ignored. For this reason,
