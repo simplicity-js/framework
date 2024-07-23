@@ -9,6 +9,18 @@ module.exports = {
   //toPrimitive,
 };
 
+function cloneFunction(fn) {
+  const temp = function temporary() { return fn.apply(this, arguments); };
+
+  for(const key in fn) {
+    if(Object.prototype.hasOwnProperty.call(fn, key)) {
+      temp[key] = fn[key];
+    }
+  }
+
+  return temp;
+}
+
 function deepClone(obj) {
 
   /*
@@ -59,8 +71,12 @@ function deepClone(obj) {
     clone = new Date(obj);
   } else if(obj.nodeType && typeof obj.cloneNode === "function") { // handle (HTML) DOM nodes
     clone = obj.cloneNode(true);
-  } else { // We have an object literal
-    clone = {};
+  } else if(typeof obj === "function" || obj instanceof Function) {
+    clone = cloneFunction(obj);
+  } else {
+    clone = typeof obj.constructor === "function"
+      ? new obj.constructor(obj)
+      :  {}; // We have an object literal
 
     for(const x in obj) {
       clone[x] = deepClone(obj[x]);

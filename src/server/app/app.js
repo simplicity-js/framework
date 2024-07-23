@@ -13,6 +13,18 @@ const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
 const is = require("../../lib/is");
 
+function copyRouter(srcRouter, destRouter) {
+  const { routes = [], routeGroups = [] } = srcRouter;
+
+  routes.forEach(({ method, path, handlers }) => {
+    destRouter[method].call(destRouter, path, handlers);
+  });
+
+  routeGroups.forEach(innerRouter => {
+    copyRouter(innerRouter, destRouter);
+  });
+}
+
 /**
  * @param {Object} config: A config object with a get() method
  *    for getting config values.
@@ -129,19 +141,11 @@ module.exports = function createApp(options) {
    * Setup Routing
    */
   router.group("/", function setupWebRoutes(router) {
-    const { routes = [] } = webRoutes;
-
-    routes.forEach(({ method, path, handlers }) => {
-      router[method](path, handlers);
-    });
+    copyRouter(webRoutes, router);
   });
 
   router.group("/api", function setupApiRoutes(router) {
-    const { routes = [] } = apiRoutes;
-
-    routes.forEach(({ method, path, handlers }) => {
-      router[method](path, handlers);
-    });
+    copyRouter(apiRoutes, router);
   });
 
   /*
