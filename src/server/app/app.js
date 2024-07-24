@@ -91,6 +91,7 @@ module.exports = function createApp(options) {
 
   const app = express();
   const router = Router.router();
+  const templatesDir = config.get("app.viewsDir");
 
   let sessionStore;
 
@@ -125,8 +126,15 @@ module.exports = function createApp(options) {
   /*
    * View setup
    */
-  app.set("views", config.get("app.viewsDir"));
+  app.set("views", templatesDir);
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
+  
+  /*
+   * Allows us to use 'includes' and 'extends' with absolute paths in pug templates.
+   * Otherwise, we'll get error
+   * Error: the "basedir" option is required to use includes and extends with "absolute" paths
+   */
+  app.locals.basedir = templatesDir;
 
   app.use(requestLogger(app));
   app.use(express.json());
