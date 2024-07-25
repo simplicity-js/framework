@@ -189,3 +189,29 @@ function toPrimitive(obj) {
     }
   }
 }
+
+/**
+ * Overwrite an object's method while retaining a reference to the original method;
+ * AOP.
+ */
+/*function addMethod(obj, method, fn) {
+  const old = obj[method];
+
+  obj[method] = function() {
+    fn.call(this);
+    old.apply(this, arguments);
+  };
+}*/
+
+/**
+ * A more flexible and generalized version of the addMethod function.
+ * This implementation allows us to conditionally call the original method
+ * rather than having no option that calling it the way `addMethod` does.
+ */
+/*function wrap(object, method, fn) {
+  const old = object[method];
+
+  return object[method] = function(...args) {
+    return fn.apply(this, [old.bind(this)].concat(args));
+  };
+}*/
