@@ -128,13 +128,18 @@ module.exports = function createApp(options) {
    */
   app.set("views", templatesDir);
   app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
-  
+
   /*
    * Allows us to use 'includes' and 'extends' with absolute paths in pug templates.
    * Otherwise, we'll get error
    * Error: the "basedir" option is required to use includes and extends with "absolute" paths
    */
   app.locals.basedir = templatesDir;
+
+  /*
+   * Make the current environment available to template files
+   */
+  app.locals.environment = config.get("app.environment"); //process.env.NODE_ENV;
 
   app.use(requestLogger(app));
   app.use(express.json());
