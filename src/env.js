@@ -1,5 +1,12 @@
 const env = require("./dotenv");
 
+const specialTypes = {
+  "false" : false,
+  "true"  : true,
+  "empty" : "",
+  "null"  : null
+};
+
 
 /**
  * Read an environment variable value if set.
@@ -11,5 +18,13 @@ const env = require("./dotenv");
  *   if the name is not set in the environment.
  */
 module.exports = function getEnv(name, defaultValue) {
-  return env[name] ?? defaultValue;
+  let val = env[name] ?? defaultValue;
+
+  for(const type of Object.keys(specialTypes)) {
+    if(String(val).trim().match(new RegExp(`^\\(?${type}\\)?$`))) {
+      val = specialTypes[type];
+    }
+  }
+
+  return val;
 };
