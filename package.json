@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/application/index.js",
     "./env": "./src/env.js",
+    "./config": "./src/config.js",
     "./application": "./src/application/index.js",
     "./component/*": "./src/component/*.js",
     "./component/http": "./src/component/http/index.js",
