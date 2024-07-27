@@ -1,10 +1,30 @@
 "use strict";
 
 const createRouter = require("node-laravel-router").createRouter;
+const container = require("../../component/container");
+const { wrap } = require("../../lib/object");
 const { createRequestHandler } = require("./routing-functions");
 
 exports.router = function getAFreshRouterInstance() {
-  const router = createRouter();
+  let router = createRouter();
+
+  /**
+   * Redefine the router.route method so that we are able to
+   * automatically resolve controller actions from within it.
+   * This gives us greater flexibility in specifying route handlers:
+   * { controller: instanceOrClassName, method: methodName }
+   * [controllerInstance, methodName]
+   * [ControllerClass, methodName]
+   * "controllerInstance.methodName",
+   * "controllerInstance::methodName"
+   * "ControllerClass.methodName",
+   * "ControllerClass::methodName"
+   */
+  wrap(router, "route", function wrapRouter(original, options, action) {
+    const resolvedAction = createRequestHandler(action, container);
+
+    return original(options, resolvedAction);
+  });
 
   router.controller = function controllerGroup(controller, closure) {
     closure(new Proxy(router, {
@@ -44,5 +64,3 @@ exports.router = function getAFreshRouterInstance() {
 
   return router;
 };
-
-exports.createRequestHandler = createRequestHandler;

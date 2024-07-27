@@ -4,7 +4,6 @@ const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
-const bootstrap = require("../../bootstrap");
 const { Container } = require("../../component/container");
 const Connections = require("../../connections");
 const Router = require("../../component/router");
@@ -26,20 +25,22 @@ function copyRouter(srcRouter, destRouter) {
 }
 
 /**
- * @param {Object} config: A config object with a get() method
+ * @param {Object} options
+ * @param {Object} [options.config]: A config object with a get() method
  *    for getting config values.
- * @param {Object} routes: The routes object
- * @param {Object} [routes.web]: web routes (optional):
+ * @param {Object} [options.routes]: The routes object
+ * @param {Object} [options.routes.web]: web routes (optional):
  *    An object with a "routes" array property, each member of which must have
  *    a method, a path, and a handler stack.
  *    options object and returns web routes.
- * @param {Object} [routes.api] api routes (optional):
+ * @param {Object} [options.routes.api] api routes (optional):
  *    An object with a "routes" array property, each member of which must have
  *    a method, a path, and a handler stack.
+ * @param {Object} [options.container]: An instance of components/container.Container.
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp(options) {
-  const { config, container, routes, providers } = options || {};
+  const { config, container, routes } = options || {};
   const { web: webRoutes, api: apiRoutes } = routes || {};
 
   if(typeof config !== "object" || typeof config.get !== "function") {
@@ -51,12 +52,6 @@ module.exports = function createApp(options) {
   if(typeof container !== "object" || !(container instanceof Container)) {
     throw new TypeError(
       "createApp 'options' object expects a 'Container' instance."
-    );
-  }
-
-  if(!Array.isArray(providers)) {
-    throw new TypeError(
-      "createApp 'options' object expects a 'providers' array."
     );
   }
 
@@ -87,13 +82,6 @@ module.exports = function createApp(options) {
     methods: config.get("app.allowedMethods"),
     allowedHeaders: config.get("app.allowedHeaders"),
   };
-
-  /*
-   * Our first action is to bootstrap (aka, register) the services.
-   * This way, any registered services are available to route handlers
-   * (via req.app.resolve(serviceName)) and other files.
-   */
-  bootstrap(config, providers);
 
   const app = express();
   const router = Router.router();

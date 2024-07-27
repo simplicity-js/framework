@@ -7,6 +7,7 @@ module.exports = {
   getObjectValue,
   setObjectValue,
   //toPrimitive,
+  wrap,
 };
 
 function cloneFunction(fn) {
@@ -208,10 +209,10 @@ function toPrimitive(obj) {
  * This implementation allows us to conditionally call the original method
  * rather than having no option that calling it the way `addMethod` does.
  */
-/*function wrap(object, method, fn) {
+function wrap(object, method, fn) {
   const old = object[method];
 
   return object[method] = function(...args) {
     return fn.apply(this, [old.bind(this)].concat(args));
   };
-}*/
+}

@@ -1,8 +1,8 @@
 /* eslint-env node, mocha */
 
+const container = require("../../component/container");
 const { chai } = require("../../lib/test-helper");
 const config = require("../test-mocks/src/config");
-const container = require("../test-mocks/src/container");
 const createApp = require("./app");
 
 let expect;
@@ -47,7 +47,7 @@ module.exports = {
         })).to.throw(expectedErrorMessage);
       });
 
-      it("should throw if a 'providers' array is not passed", function() {
+      /*it("should throw if a 'providers' array is not passed", function() {
         const expectedErrorMessage = "createApp 'options' object expects a 'providers' array.";
         const routes = [];
 
@@ -91,6 +91,7 @@ module.exports = {
           },
         })).not.to.throw();
       });
+      */
 
       it("should throw if a of `routes` object is not given", function() {
         const expectedErrorMessage = "" +

@@ -52,10 +52,16 @@ class Container {
   /**
    * Bind class instance inside the container.
    *
-   * @param {String} name: The name to associate with the class instance
+   * @param {String} name (optional): The name to associate with the class instance.
+   *    The class's name is used if none is provided.
    * @param {Object} className: The class whose instance we want to bind.
    */
   instantiate(name, className) {
+    if(typeof name === "object" || typeof name === "function") {
+      className = name;
+      name = className.name;
+    }
+
     this.#container.register(name, asClass(className));
 
     return this;

@@ -95,7 +95,7 @@ function createRequestHandler(handler, container) {
 
     requestHandler = resolveRequestHandler(controller, method, container);
   } else if(typeof handler === "string") {
-    const [controller, method] = handler.split(".").map(s => s.trim());
+    const [controller, method] = handler.split(/\.|\:\:/).map(s => s.trim());
 
     requestHandler = resolveRequestHandler(controller, method, container);
   } else {
@@ -123,7 +123,10 @@ function resolveRequestHandler(controllerRef, methodRef, container) {
   let methodName;
 
   if(container && typeof container.resolve === "function") {
-    if(typeof controllerRef === "string") {
+    if(typeof controllerRef === "function" || controllerRef instanceof Function) {
+      // We are dealing with a class or constructor function
+      controller = container.resolve(controllerRef.name);
+    } else if(typeof controllerRef === "string") {
       controller = container.resolve(controllerRef);
     } else {
       controller = controllerRef;
@@ -131,7 +134,6 @@ function resolveRequestHandler(controllerRef, methodRef, container) {
   } else {
     controller = require(controllerRef);
   }
-
 
   if(!controller)  {
     throw new TypeError(`Controller ${controllerRef} not found`);

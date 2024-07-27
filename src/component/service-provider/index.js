@@ -1,6 +1,6 @@
 "use strict";
 
-const container = require("./container");
+const container = require("../container");
 
 
 class ServiceProvider {
