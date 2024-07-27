@@ -5,7 +5,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const bootstrap = require("../../bootstrap");
-const container = require("../../component/container");
+const { Container } = require("../../component/container");
 const Connections = require("../../connections");
 const Router = require("../../component/router");
 const view = require("../../component/view");
@@ -39,12 +39,18 @@ function copyRouter(srcRouter, destRouter) {
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp(options) {
-  const { config, routes, providers } = options || {};
+  const { config, container, routes, providers } = options || {};
   const { web: webRoutes, api: apiRoutes } = routes || {};
 
   if(typeof config !== "object" || typeof config.get !== "function") {
     throw new TypeError(
       "createApp 'options' object expects a 'config' object with a 'get' method."
+    );
+  }
+
+  if(typeof container !== "object" || !(container instanceof Container)) {
+    throw new TypeError(
+      "createApp 'options' object expects a 'Container' instance."
     );
   }
 
@@ -100,14 +106,20 @@ module.exports = function createApp(options) {
    *
    * This enables us to bind (register) and resolve (fetch) dependencies
    * to and from the container from within middleware and route handlers
-   * using the app as follows:
-   *   - req.app.bindWithClass(dependencyKey, implementationClass, constructorParams)
-   *   - req.app.bindWithFunction(dependencyKey, implementationFunction, params)
-   *   - const value = req.app.resolve(dependencyKey)
+   * using the app to bind values as follows:
+   *   - req.app.bind(key, resolver)
+   *   - req.app.instance(key, instance)
+   *   - req.app.instantiate(key, className)
+   *   - req.app.value(key, value)
+   *
+   * and to retrieve bound values as follows:
+   *   - const value = req.app.resolve(key)
+   *
+   * ["bind", "instance", "instantiate", "value", "resolve"]
    */
-  for(const prop of ["bind", "instance", "instantiate", "value", "resolve"]) {
-    if(!(prop in app)) {
-      app[prop] = container[prop].bind(container);
+  for(const method of ["bind", "instance", "instantiate", "value", "resolve"]) {
+    if(!(method in app)) {
+      app[method] = container[method].bind(container);
     }
   }
 

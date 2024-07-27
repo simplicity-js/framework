@@ -4,6 +4,7 @@ const request = require("supertest");
 const { STATUS_CODES, STATUS_TEXTS } = require("../../component/http");
 const { chai } = require("../../lib/test-helper");
 const config = require("../test-mocks/src/config");
+const container = require("../test-mocks/src/container");
 const webRoutes = require("../test-mocks/src/routes/web");
 const apiRoutes = require("../test-mocks/src/routes/api");
 const providers = require("../test-mocks/src/service-providers");
@@ -20,7 +21,7 @@ module.exports = {
       let expect;
 
       before(async function() {
-        app = createApp({ config, routes, providers });
+        app = createApp({ config, container, routes, providers });
         expect = (await chai()).expect;
       });
 
@@ -39,7 +40,7 @@ module.exports = {
 
       it("should call the `onError` function if an error occurs", function(done) {
         const SHARED_PORT = 5000;
-        const app2 = createApp({ config, routes, providers });
+        const app2 = createApp({ config, container, routes, providers });
         const server1 = createServer({ app });
         const server2 = createServer({ app: app2, onError: function onError(error) {
           expect(error.code).to.equal("EADDRINUSE");
@@ -80,7 +81,7 @@ module.exports = {
 
       before(async function() {
         expect = (await chai()).expect;
-        app = createApp({ config, routes, providers });
+        app = createApp({ config, container, routes, providers });
         server = createServer({ app, onError: console.log });
 
         server.listen(port);

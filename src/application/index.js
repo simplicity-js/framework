@@ -10,6 +10,7 @@ const apiRoutes = require(`${SRC_DIR}/routes/api`);
 const webRoutes = require(`${SRC_DIR}/routes/web`);
 const serviceProviders = require(`${SRC_DIR}/bootstrap/providers`);
 
+const container = require("../component/container");
 const { createApp, normalizePort, onError, onListening, appConsole
 } = require("../server/app");
 const createServer = require("../server/server");
@@ -43,7 +44,7 @@ const providers = serviceProviders.map(function getProvider(provider) {
 module.exports = {
   console: appConsole,
   create() {
-    const app = createApp({ config, routes, providers });
+    const app = createApp({ config, container, routes, providers });
     const server = createServer({ app, onError, onListening });
 
     return {

@@ -4,7 +4,7 @@ const container = require("./container");
 
 
 class ServiceProvider {
-  #container;
+  #container = null;
 
   constructor() {
     this.#container = container;
