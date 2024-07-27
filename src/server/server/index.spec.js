@@ -12,8 +12,8 @@ const createServer = require(".");
 
 function getRoutes() {
   const routes = {
-    web: require("../test-mocks/src/routes/web"),
-    api: require("../test-mocks/src/routes/api")
+    web: { prefix: "/",    router: require("../test-mocks/src/routes/web") },
+    api: { prefix: "/api", router: require("../test-mocks/src/routes/api") },
   };
 
   return routes;

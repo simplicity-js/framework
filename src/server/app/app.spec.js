@@ -47,52 +47,6 @@ module.exports = {
         })).to.throw(expectedErrorMessage);
       });
 
-      /*it("should throw if a 'providers' array is not passed", function() {
-        const expectedErrorMessage = "createApp 'options' object expects a 'providers' array.";
-        const routes = [];
-
-        expect(createApp.bind(null, {
-          config,
-          container,
-          providers: "providers",
-          routes: {
-            web: { routes },
-            api: { routes }
-          },
-        })).to.throw(expectedErrorMessage);
-
-        expect(createApp.bind(null, {
-          config,
-          container,
-          providers: 100,
-          routes: {
-            web: { routes },
-            api: { routes }
-          },
-        })).to.throw(expectedErrorMessage);
-
-        expect(createApp.bind(null, {
-          config,
-          container,
-          providers: {},
-          routes: {
-            web: { routes },
-            api: { routes }
-          },
-        })).to.throw(expectedErrorMessage);
-
-        expect(createApp.bind(null, {
-          config,
-          container,
-          providers: [],
-          routes: {
-            web: { routes },
-            api: { routes }
-          },
-        })).not.to.throw();
-      });
-      */
-
       it("should throw if a of `routes` object is not given", function() {
         const expectedErrorMessage = "" +
         "createApp 'options' object expects a 'routes' object " +
@@ -109,9 +63,9 @@ module.exports = {
         "with either or both of the following members: `web`, `api` " +
         "that must have a 'routes' array member.";
 
-        expect(createApp.bind(null, { config, container, providers: [] }))
+        expect(createApp.bind(null, { config, container }))
           .to.throw(expectedErrorMessage);
-        expect(createApp.bind(null, { config, container, providers: [], routes: {} }))
+        expect(createApp.bind(null, { config, container, routes: {} }))
           .to.throw(expectedErrorMessage);
       });
 
@@ -119,10 +73,9 @@ module.exports = {
         const app = createApp({
           config,
           container,
-          providers: [],
           routes: {
-            web: { routes: [] },
-            api: { routes: [] }
+            web: { prefix: "/",    router: { routes: [] } },
+            api: { prefix: "/api", router: { routes: [] } },
           },
         });
 

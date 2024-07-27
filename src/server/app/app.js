@@ -55,7 +55,7 @@ module.exports = function createApp(options) {
     );
   }
 
-  if(!is.array(webRoutes?.routes) && !is.array(apiRoutes?.routes)) {
+  if(!is.array(webRoutes?.router?.routes) && !is.array(apiRoutes?.router?.routes)) {
     throw new TypeError(
       "createApp 'options' object expects a 'routes' object " +
       "with either or both of the following members: `web`, `api` " +
@@ -153,12 +153,12 @@ module.exports = function createApp(options) {
   /*
    * Setup Routing
    */
-  router.group("/", function setupWebRoutes(router) {
-    copyRouter(webRoutes, router);
+  router.group(webRoutes.prefix ?? "/", function setupWebRoutes(router) {
+    copyRouter(webRoutes.router, router);
   });
 
-  router.group("/api", function setupApiRoutes(router) {
-    copyRouter(apiRoutes, router);
+  router.group(apiRoutes.prefix ?? "/api", function setupApiRoutes(router) {
+    copyRouter(apiRoutes.router, router);
   });
 
   /*
