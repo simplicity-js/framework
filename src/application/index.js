@@ -91,6 +91,9 @@ module.exports = class Application {
           allowPositionals: true,
           options: {
             port: { type: "string", short: "p" },
+
+            // Only included so our test -- --application will not throw errors
+            application: { type: "boolean" },
           },
         });
         const defaultPort = 8800;

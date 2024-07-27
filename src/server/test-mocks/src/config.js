@@ -22,6 +22,27 @@ const cacheConfig = {
   },
 };
 
+const databaseConfig = {
+  default: "sqlite",
+
+  connections: {
+    sqlite: {
+      dbEngine    : "sqlite",
+      dbName      : "test.sqlite",
+      logging     : false,
+      storagePath : "../../.sqlite",
+    },
+  },
+};
+
+const logConfig = {
+  logExceptions : false,
+  logRejections : false,
+  logToConsole  : false,
+  logToFile     : true,
+  logDir: "../../.logs",
+};
+
 const sessionConfig = {
   name          : "connect.id",
   cookieDomain  : "localhost",
@@ -43,6 +64,8 @@ const config = {
     case "app.viewsDir": return `${SRC_DIR}/views`;
     case "app.viewTemplatesEngine": return "pug";
     case "cache": return cacheConfig;
+    case "database": return databaseConfig;
+    case "logging": return logConfig;
     case "session": return sessionConfig;
     }
   },
