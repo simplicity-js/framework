@@ -4,9 +4,11 @@ const path = require("node:path");
 const request = require("supertest");
 const { STATUS_CODES, STATUS_TEXTS } = require("../component/http");
 const { chai } = require("../lib/test-helper");
+const overrideConsoleDotLog = require("../server/test-mocks/console-override");
 const config = require("../server/test-mocks/src/config");
 const Application = require(".");
 
+const currDir = path.dirname(__filename).replace(/\\/g, "/");
 const healthCheckRoute = "/up";
 const applicationBootstrapConfig = {
   basePath: path.dirname(__dirname) + "/server/test-mocks/src",
@@ -30,9 +32,17 @@ module.exports = {
   Application() {
     describe("Application", function routing() {
       let expect;
+      let restoreConsoleDotLog;
 
       before(async function() {
         expect = (await chai()).expect;
+
+        restoreConsoleDotLog = overrideConsoleDotLog(`${currDir}/console.log`);
+      });
+
+      after(function(done) {
+        restoreConsoleDotLog();
+        done();
       });
 
       describe("Routing", function() {
@@ -168,7 +178,6 @@ module.exports = {
           this.timeout(5000);
           const port = 5007;
           const host = "http://localhost";
-          const currDir = path.dirname(__filename).replace(/\\/g, "/");
 
           function execInBackground(command, args, stdoutFile, stderrFile) {
             args = args || [];
