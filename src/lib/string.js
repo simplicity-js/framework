@@ -9,6 +9,7 @@ module.exports = {
   decode: decodeFromBase,
   deflate,
   inflate,
+  LCFirst,
   stripFirstNCharsFromString,
   stripLastNCharsFromString,
 };
@@ -56,6 +57,10 @@ function deflate(data) {
 
 function inflate(value) {
   return zlib.inflateSync(Buffer.from(value, "base64")).toString();
+}
+
+function LCFirst(str) {
+  return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 /**

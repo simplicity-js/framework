@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { LCFirst } = require("../../lib/string");
 const ServiceProvider = require(".");
 
 
@@ -45,7 +46,7 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
         if(filename.endsWith("-controller.js") || filename.endsWith("Controller.js")) {
           const controllerClass = require(path.join(dir, filename));
 
-          container.instantiate(controllerClass);
+          this.#bindClassInstance(container, controllerClass);
         }
       });
     } catch(e) {
@@ -66,12 +67,29 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
         if(filename.endsWith("-service.js") || filename.endsWith("Service.js")) {
           const serviceClass = require(path.join(dir, filename));
 
-          container.instantiate(serviceClass);
+          this.#bindClassInstance(container, serviceClass);
         }
       });
     } catch(e) {
       this.#log("error", "Unable to bind services to Service Container", e);
     }
+  }
+
+  #bindClassInstance(container, theClass) {
+    /*
+     * Bind the class' name to an instance of the class.
+     * So, we can resolve the class from the container
+     * using the class' name.
+     */
+    container.instantiate(theClass);
+
+    /*
+     * Also bind the camelCase version of the class' name to
+     * an instance of the class.
+     * We can, therefore, also resolve the class from the container
+     * using the camelCase version of the class' name
+     */
+    container.instantiate(LCFirst(theClass.name), theClass);
   }
 
   #log(type, message, data) {
