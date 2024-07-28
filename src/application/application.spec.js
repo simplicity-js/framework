@@ -4,8 +4,10 @@ const path = require("node:path");
 const request = require("supertest");
 const { STATUS_CODES, STATUS_TEXTS } = require("../component/http");
 const { chai } = require("../lib/test-helper");
+const config = require("../server/test-mocks/src/config");
 const Application = require(".");
 
+const healthCheckRoute = "/up";
 const applicationBootstrapConfig = {
   basePath: path.dirname(__dirname) + "/server/test-mocks/src",
   routing: {
@@ -17,8 +19,7 @@ const applicationBootstrapConfig = {
       prefix: "/api",
       definitions: path.join(path.dirname(__dirname), "server/test-mocks/src/routes", "api"),
     },
-
-    health: "/up",
+    health: healthCheckRoute,
   },
 };
 
@@ -98,6 +99,29 @@ module.exports = {
                   done();
                 });
             });
+          });
+        });
+
+        describe(`Health Check Route (${healthCheckRoute})`, function serverHealthRoute() {
+          it("should get the server's health status", function(done) {
+            request(host)
+              .get(healthCheckRoute)
+              .expect(200)
+              .expect("Content-Type", "application/json; charset=utf-8")
+              .end((err, res) => {
+                if(err) {
+                  return done(err);
+                }
+
+                expect(res.body).to.be.an("object");
+                expect(res.body).to.have.property("application").to.be.an("object");
+                expect(res.body).to.have.property("server").to.be.an("object");
+                expect(res.body.application).to.have.property("name", config.get("app.name"));
+                expect(res.body.application).to.have.property("version", config.get("app.version"));
+                expect(res.body.server).to.have.property("status", "healthy");
+                expect(res.body.server).to.have.property("uptime");
+                done();
+              });
           });
         });
 
@@ -189,13 +213,12 @@ module.exports = {
 
                 done();
               });
-          }, 2000);
+          }, 3000);
 
         });
 
         it("should listen on `config.app.port`", function(done) {
           const Application = require(".");
-          const config = require("../server/test-mocks/src/config");
           const host = "http://localhost";
           const oldGet = config.get;
 

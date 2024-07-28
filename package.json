@@ -46,6 +46,7 @@
     "express": "4.19.2",
     "file-system-cache": "2.4.4",
     "http-errors": "2.0.0",
+    "loadavg-windows": "1.1.1",
     "mariadb": "3.3.1",
     "mongoose": "8.4.1",
     "morgan": "1.10.0",

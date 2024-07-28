@@ -18,10 +18,11 @@ module.exports = class Application {
   static #providers;
   static #webRoutes;
   static #apiRoutes;
+  static #healthCheckRoute;
 
   static configure(options) {
     const { basePath, routing } = options;
-    const { web: webRoutes, api: apiRoutes } = routing;
+    const { web: webRoutes, api: apiRoutes, health: healthCheckRoute } = routing;
 
     const rootDir = normalizePath(basePath);
     const config = require(`${rootDir}/config`);
@@ -51,6 +52,7 @@ module.exports = class Application {
     this.#providers = providers;
     this.#webRoutes = webRoutes;
     this.#apiRoutes = apiRoutes;
+    this.#healthCheckRoute = healthCheckRoute;
 
     return this;
   }
@@ -60,6 +62,7 @@ module.exports = class Application {
     const config = this.#config;
     const webRoutes = this.#webRoutes;
     const apiRoutes = this.#apiRoutes;
+    const healthCheckRoute = this.#healthCheckRoute;
 
     /*
      * Our first action is to bootstrap (aka, register) the services.
@@ -76,6 +79,7 @@ module.exports = class Application {
     routes = {
       web: { ...webRoutes, router: require(webRoutes.definitions) },
       api: { ...apiRoutes, router: require(apiRoutes.definitions) },
+      healthCheckRoute,
     };
 
     const app = createApp({ config, container, routes });

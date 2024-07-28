@@ -1,5 +1,6 @@
 const path = require("node:path");
 const NodeCache = require("node-cache");
+const pkg = require("../../../../package.json");
 const APP_ROOT = path.dirname(__dirname); //require("app-root-path");
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
 
@@ -57,10 +58,11 @@ const sessionConfig = {
 const config = {
   get(val) {
     switch(val) {
-    case "app.name": return "simple framework";
+    case "app.name": return pkg.name;
     case "app.allowedOrigins": return ["*"];
     case "app.rootDir": return APP_ROOT; //path.dirname(path.dirname(path.dirname(__dirname))).replace(/\\/g, "/");
     case "app.srcDir" : return SRC_DIR;
+    case "app.version": return pkg.version;
     case "app.viewsDir": return `${SRC_DIR}/views`;
     case "app.viewTemplatesEngine": return "pug";
     case "cache": return cacheConfig;

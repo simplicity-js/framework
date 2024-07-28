@@ -161,6 +161,29 @@ module.exports = function createApp(options) {
     copyRouter(apiRoutes.router, router);
   });
 
+  if(routes.healthCheckRoute) {
+    const uri = routes.healthCheckRoute;
+    const middleware = require("../../component/middleware/server-status");
+
+    router.get({ uri, middleware }, (req, res) => {
+      const config = req.app.resolve("config");
+      const { application, server } = res.serverState;
+      const { status, uptime, utilization } = server;
+
+      return res.json({
+        application: {
+          ...application,
+          name: config.get("app.name"),
+        },
+        server: {
+          status,
+          uptime,
+          utilization,
+        },
+      });
+    });
+  }
+
   /*
    * Apply the routing
    */

@@ -10,10 +10,13 @@ const providers = require("../test-mocks/src/service-providers");
 const { createApp } = require("../app");
 const createServer = require(".");
 
+const healthCheckRoute = "/up";
+
 function getRoutes() {
   const routes = {
     web: { prefix: "/",    router: require("../test-mocks/src/routes/web") },
     api: { prefix: "/api", router: require("../test-mocks/src/routes/api") },
+    healthCheckRoute,
   };
 
   return routes;
@@ -148,6 +151,29 @@ module.exports = {
                 done();
               });
           });
+        });
+      });
+
+      describe(`Health Check Route (${healthCheckRoute})`, function serverHealthRoute() {
+        it("should get the server's health status", function(done) {
+          request(host)
+            .get(healthCheckRoute)
+            .expect(200)
+            .expect("Content-Type", "application/json; charset=utf-8")
+            .end((err, res) => {
+              if(err) {
+                return done(err);
+              }
+
+              expect(res.body).to.be.an("object");
+              expect(res.body).to.have.property("application").to.be.an("object");
+              expect(res.body).to.have.property("server").to.be.an("object");
+              expect(res.body.application).to.have.property("name", config.get("app.name"));
+              expect(res.body.application).to.have.property("version", config.get("app.version"));
+              expect(res.body.server).to.have.property("status", "healthy");
+              expect(res.body.server).to.have.property("uptime");
+              done();
+            });
         });
       });
 
