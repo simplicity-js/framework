@@ -82,7 +82,7 @@ module.exports = class Application {
     const server = createServer({ app, onError, onListening });
 
     class Simplicity {
-      close(cb) {
+      stop(cb) {
         server.close(cb);
       }
 
@@ -97,7 +97,12 @@ module.exports = class Application {
           },
         });
         const defaultPort = 8800;
-        const listenPort = options.values.port ?? port ?? defaultPort;
+        const listenPort = (
+          port                           // argument passed to `listen(port)`
+            ?? options.values.port       // CLI option
+            ?? config.get("app.port")    // config (aka process.env.PORT)
+            ?? defaultPort               // default port
+        );
 
         server.listen(normalizePort(listenPort));
       }

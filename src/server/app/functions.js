@@ -100,12 +100,14 @@ function onListening(server) {
     let message = `Server running: ${EOL}` +
     `       Loopback address [http://127.0.0.1:${port}].${EOL}`;
 
-    try {
-      const publicAddr = await (await publicIp()).publicIpv4();
+    if(process.env.NODE_ENV !== "test") {
+      try {
+        const publicAddr = await (await publicIp()).publicIpv4();
 
-      message += `       Public address [http://${publicAddr}:${port}].`;
-    } catch {
-      message += "";
+        message += `       Public address [http://${publicAddr}:${port}].`;
+      } catch {
+        message += "";
+      }
     }
 
     appConsole.info(message);
