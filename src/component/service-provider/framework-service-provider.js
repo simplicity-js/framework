@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { isDirectory } = require("../../lib/file-system");
 const { LCFirst } = require("../../lib/string");
 const ServiceProvider = require(".");
 
@@ -27,9 +28,11 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
     const container = this.container();
     const httpDirectory = path.join(config.get("app.srcDir"), "app", "http");
     const controllersDirectory = path.join(httpDirectory, "controllers");
+    const modelsDirectory = path.join(httpDirectory, "models");
     const servicesDirectory = path.join(httpDirectory, "services");
 
     this.#registerControllers(container, controllersDirectory);
+    this.#registerModels(container, modelsDirectory);
     this.#registerServices(container, servicesDirectory);
   }
 
@@ -51,6 +54,35 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
       });
     } catch(e) {
       this.#log("error", "Unable to bind controllers to Service Container", e);
+    }
+  }
+
+  /**
+   * Bind model class names to their instances in the container.
+   * This allows us to resolve model instances
+   * using the model class name.
+   */
+  #registerModels(container, dir) {
+    try {
+      bindModels(dir);
+    } catch(e) {
+      this.#log("error", "Unable to bind models to Service Container", e);
+    }
+
+    function bindModels(dir) {
+      const modelFiles = fs.readdirSync(dir.replace(/\\/g, "/"));
+
+      modelFiles.forEach(function bindModelToServiceContainer(filename) {
+        const file = path.join(dir, filename);
+
+        if(isDirectory(file)) {
+          bindModels(file);
+        } else if(filename !== "index.js") {
+          const modelClass = require(file);
+
+          this.#bindClassInstance(container, modelClass);
+        }
+      });
     }
   }
 
