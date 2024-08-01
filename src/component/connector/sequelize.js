@@ -58,7 +58,13 @@ module.exports = class SequelizeStore {
       host, port, username, password,
       dbEngine, storagePath, dbName, logging
     } = options;
-    const connOpts = { logging };
+
+    /*
+     * Handle [SEQUELIZE0002] DeprecationWarning: The logging-option should be
+     * either a function or false. Default: console.log
+     */
+    const loggingOption = typeof logging === "function" ? logging : false;
+    const connOpts = { logging: loggingOption };
 
     if(dbEngine.toLowerCase() === "memory") {
       sequelize = new Sequelize("sqlite::memory:", connOpts);

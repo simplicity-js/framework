@@ -1,5 +1,6 @@
-const env = require("./dotenv");
+//const env = require("./dotenv");
 
+let env;
 const specialTypes = {
   "false" : false,
   "true"  : true,
@@ -27,4 +28,22 @@ module.exports = function getEnv(name, defaultValue) {
   }
 
   return val;
+};
+
+
+/**
+ * Initialize the .env file in the project.
+ * This method should only be called once and only from inside application/index.js
+ * during the application initialization.
+ */
+module.exports.init = function initializeProjectDotEnv(projectDir) {
+  require("dotenv").config({ path: `${projectDir}/.env` });
+
+  env = process.env;
+
+  /*
+   * Rewrite the exported init so that it cannot be further invoked.
+   * This prevents any accidental calls to it from having any effect.
+   */
+  module.exports.init = null;
 };

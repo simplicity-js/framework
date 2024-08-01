@@ -1,3 +1,7 @@
+"use strict";
+
+const fs = require("node:fs");
+
 exports.isDirectory = function isDirectory(path) {
   return pathExists(path) && pathInfo(path).isDirectory();
 };

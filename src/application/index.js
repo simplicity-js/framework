@@ -10,6 +10,7 @@ const createServer = require("../server/server");
 const { pathExists } = require("../component/file-system");
 const FrameworkServiceProvider = require(
   "../component/service-provider/framework-service-provider");
+const initDotEnv = require("../env").init;
 const { normalizePath } = require("../lib/file-system");
 const { camelCaseToSnakeCase } = require("../lib/string");
 
@@ -25,9 +26,13 @@ module.exports = class Application {
     const { web: webRoutes, api: apiRoutes, health: healthCheckRoute } = routing;
 
     const rootDir = normalizePath(basePath);
-    const config = require(`${rootDir}/config`);
-    const serviceProviders = require(`${rootDir}/bootstrap/providers`);
-    const providersDirectory = `${rootDir}/service-providers`;
+
+    initDotEnv(rootDir);
+
+    const srcDir = `${rootDir}/src`;
+    const config = require(`${srcDir}/config`);
+    const serviceProviders = require(`${srcDir}/bootstrap/providers`);
+    const providersDirectory = `${srcDir}/service-providers`;
     const providers = serviceProviders.map(function getProvider(provider) {
       if(typeof provider === "string") {
         provider = path.basename(provider, ".js");
@@ -65,7 +70,8 @@ module.exports = class Application {
     const healthCheckRoute = this.#healthCheckRoute;
 
     /*
-     * Our first action is to bootstrap (aka, register) the services.
+     * Our first action is to initialize environment variables,
+     * then bootstrap (aka, register) the services.
      * This way, any registered services are available to route handlers
      * (via req.app.resolve(serviceName)) and other files.
      */

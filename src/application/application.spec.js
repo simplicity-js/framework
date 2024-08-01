@@ -11,7 +11,7 @@ const Application = require(".");
 const currDir = path.dirname(__filename).replace(/\\/g, "/");
 const healthCheckRoute = "/up";
 const applicationBootstrapConfig = {
-  basePath: path.dirname(__dirname) + "/server/test-mocks/src",
+  basePath: path.dirname(__dirname) + "/server/test-mocks",
   routing: {
     web: {
       prefix: "/",
