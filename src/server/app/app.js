@@ -1,15 +1,15 @@
 const path = require("node:path");
 const RedisStore = require("connect-redis").default;
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const express = require("express");
-const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const { Container } = require("../../component/container");
-const Connections = require("../../connections");
-const Router = require("../../component/router");
-const view = require("../../component/view");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
+const Router = require("../../component/router");
+const view = require("../../component/view");
+const Connections = require("../../connections");
 const is = require("../../lib/is");
 
 function copyRouter(srcRouter, destRouter) {
