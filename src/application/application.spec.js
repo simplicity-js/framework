@@ -1,6 +1,8 @@
 /* eslint-env node, mocha */
 
+const childProcess = require("node:child_process");
 const path = require("node:path");
+const kill = require("tree-kill");
 const request = require("supertest");
 const { STATUS_CODES, STATUS_TEXTS } = require("../component/http");
 const { chai } = require("../lib/test-helper");
@@ -182,34 +184,26 @@ module.exports = {
           const port = 5007;
           const host = "http://localhost";
 
-          function execInBackground(command, args, stdoutFile, stderrFile) {
+          function execInBackground(command, args) {
             args = args || [];
 
-            const fs = require("node:fs");
-            const out = fs.openSync(stdoutFile, "a");
-            const err = fs.openSync(stderrFile, "a");
-
-            const ps = require("node:child_process").spawn(command, args, {
+            const ps = childProcess.spawn(command, args, {
               detached: true,
-              stdio: ["ignore", out, err],
-              shell: true
+              shell: true,
             });
 
             ps.unref();
+
+            return ps;
           };
 
           function startServer(port) {
             const command = `node -e "require('${currDir}/cli-port-argument-server').listen()"`;
 
-            return execInBackground(
-              command,
-              ["-- --port", port],
-              `${currDir}/out.log`,
-              `${currDir}/err.log`
-            );
+            return execInBackground(command, [`-- --port ${port}`]);
           }
 
-          startServer(port);
+          const child = startServer(port);
 
           setTimeout(function() {
             request(`${host}:${port}`)
@@ -222,10 +216,9 @@ module.exports = {
                 }
 
                 expect(res.text).to.match(/class="page-body"/);
-
-                done();
+                setTimeout(() => kill(child.pid, "SIGKILL", done), 0);
               });
-          }, 3000);
+          }, 5000);
 
         });
 
