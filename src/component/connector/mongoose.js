@@ -70,7 +70,7 @@ module.exports = class MongooseStore {
     try {
       debug("Connecting to MongoDB...");
 
-      this.#db = await mongoose.connect(dsn, {});
+      this.#db = mongoose.createConnection(dsn, {});
 
       debug("MongoDB connection established");
 
