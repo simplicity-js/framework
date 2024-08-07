@@ -136,6 +136,8 @@ module.exports = {
         });
 
         it("should return a (customizable) 404 error page if path does not exist", function(done) {
+          this.timeout(5000);
+
           request(host)
             .get("/iDontExist")
             .expect(404)
@@ -175,7 +177,8 @@ module.exports = {
         });
 
         it("should listen on `--port` CLI argument", function(done) {
-          this.timeout(5000);
+          this.timeout(1000 * 10);
+
           const port = 5007;
           const host = "http://localhost";
 

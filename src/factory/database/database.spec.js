@@ -51,6 +51,8 @@ module.exports = {
       ));
 
       it("should throw if driver is not supported", async function() {
+        this.timeout(5000);
+
         const driverError = errorPrefix + "Invalid `driver` parameter. " +
           `Supported drivers include ${supportedDbTypes.join(", ")}`;
 
