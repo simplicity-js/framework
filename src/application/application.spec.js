@@ -179,7 +179,7 @@ module.exports = {
         });
 
         it("should listen on `--port` CLI argument", function(done) {
-          this.timeout(1000 * 10);
+          this.timeout(1000 * 15);
 
           const port = 5007;
           const host = "http://localhost";

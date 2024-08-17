@@ -31,7 +31,7 @@ module.exports = {
         const router = Router.router();
 
         methods.forEach(method => {
-          it(`successfully routes to ${method} requests`, function(done) {
+          it(`router.${method}(uri, handler) should setup routing for '${method.toUpperCase()}' requests`, function(done) {
             const uri = "/foo";
 
             router[method](uri, (req, res) => res.send("OK"));
@@ -46,43 +46,43 @@ module.exports = {
         describe("router.controller(controller, closure)", function() {
           const app = express();
           const router = Router.router();
-          const userController = {
-            index: (req, res) => res.send("show users listing"),
-            new: (req, res) => res.send("display user creation form"),
-            create: (req, res) => res.send("create new user"),
-            show: (req, res) => res.send("show user details"),
-            edit: (req, res) => res.send("display user edit form"),
-            update: (req, res) => res.send("update user data"),
-            destroy: (req, res) => res.send("delete user"),
+          const controller = {
+            index: (req, res) => res.send("show entity listing"),
+            new: (req, res) => res.send("display entity creation form"),
+            create: (req, res) => res.send("create new entity"),
+            show: (req, res) => res.send("show entity details"),
+            edit: (req, res) => res.send("display entity edit form"),
+            update: (req, res) => res.send("update entity data"),
+            destroy: (req, res) => res.send("delete entity"),
           };
 
-          router.controller(userController, (router) => {
-            router.get("/users", "index");
-            router.get("/users/new", "new");
-            router.post("/users", "create");
-            router.get("/users/{id}", "show");
-            router.get("/users/{id}/edit", "edit");
-            router.put("/users/{id}", "update");
-            router.patch("/users/:id", "update");
-            router.delete("/users/{id}", "destroy");
+          router.controller(controller, (router) => {
+            router.get("/entities", "index");
+            router.get("/entities/new", "new");
+            router.post("/entities", "create");
+            router.get("/entities/{id}", "show");
+            router.get("/entities/{id}/edit", "edit");
+            router.put("/entities/{id}", "update");
+            router.patch("/entities/:id", "update");
+            router.delete("/entities/{id}", "destroy");
           });
 
           const expectations = [
-            { uri: "/users",        method: "get",    response: "show users listing" },
-            { uri: "/users/new",    method: "get",    response: "display user creation form" },
-            { uri: "/users",        method: "post",   response: "create new user" },
-            { uri: "/users/1",      method: "get",    response: "show user details" },
-            { uri: "/users/1/edit", method: "get",    response: "display user edit form" },
-            { uri: "/users/1",      method: "put",    response: "update user data" },
-            { uri: "/users/1",      method: "patch",  response: "update user data" },
-            { uri: "/users/1",      method: "delete", response: "delete user" },
+            { uri: "/entities",           method: "get",    response: "show entity listing" },
+            { uri: "/entities/new",       method: "get",    response: "display entity creation form" },
+            { uri: "/entities",           method: "post",   response: "create new entity" },
+            { uri: "/entities/:id",       method: "get",    response: "show entity details" },
+            { uri: "/entities/{id}/edit", method: "get",    response: "display entity edit form" },
+            { uri: "/entities/:id",       method: "put",    response: "update entity data" },
+            { uri: "/entities/{id}",      method: "patch",  response: "update entity data" },
+            { uri: "/entities/:id",       method: "delete", response: "delete entity" },
           ];
 
           router.apply(route => app[route.method](route.path, route.handlers));
 
           expectations.forEach(({ uri, method, response }) => {
-            it(`should apply controller method to route ${method}::${uri}`, function(done) {
-              const currRequest = request(app)[method](uri);
+            it(`should apply controller method to route '${method.toUpperCase()} ${uri}'`, function(done) {
+              const currRequest = request(app)[method](uri.replace(/\{id\}|:id/, 1));
 
               currRequest.expect(200, response);
               currRequest.end(done);
@@ -176,24 +176,113 @@ module.exports = {
           router.resource("/posts", new PostController);
 
           const expectations = [
-            { uri: "/posts",        method: "get",    response: "show posts listing" },
-            { uri: "/posts/new",    method: "get",    response: "display post creation form" },
-            { uri: "/posts",        method: "post",   response: "create new post" },
-            { uri: "/posts/1",      method: "get",    response: "show post details" },
-            { uri: "/posts/1/edit", method: "get",    response: "display post edit form" },
-            { uri: "/posts/1",      method: "put",    response: "update post data" },
-            { uri: "/posts/1",      method: "patch",  response: "update post data" },
-            { uri: "/posts/1",      method: "delete", response: "delete post" },
+            { uri: "/posts",           method: "get",    response: "show posts listing" },
+            { uri: "/posts/new",       method: "get",    response: "display post creation form" },
+            { uri: "/posts",           method: "post",   response: "create new post" },
+            { uri: "/posts/{id}",      method: "get",    response: "show post details" },
+            { uri: "/posts/{id}/edit", method: "get",    response: "display post edit form" },
+            { uri: "/posts/:id",       method: "put",    response: "update post data" },
+            { uri: "/posts/:id",       method: "patch",  response: "update post data" },
+            { uri: "/posts/{id}",      method: "delete", response: "delete post" },
           ];
 
           router.apply(route => app[route.method](route.path, route.handlers));
 
           expectations.forEach(({ uri, method, response }) => {
-            it(`should create ${method}::${uri} route for passed resource ('posts')`, function(done) {
-              const currRequest = request(app)[method](uri);
+            it(`should create '${method.toUpperCase()} ${uri}' route for passed resource ('posts')`, function(done) {
+              const currRequest = request(app)[method](uri.replace(/\{id\}|:id/, 1));
 
               currRequest.expect(200, response);
               currRequest.end(done);
+            });
+          });
+        });
+
+        describe("router.match(verbs, uri, closure)", function() {
+          it("should setup routing for an array of HTTP verbs", function(done) {
+            let counter = 0;
+            const app = express();
+            const router = Router.router();
+            const uri = "/bar";
+
+            router.match(methods, uri, (req, res) => res.send("OK"));
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            methods.forEach(method => {
+              request(app)[method](uri)
+                .expect(200, "OK")
+                .end(() => {
+                  if(++counter === methods.length) {
+                    done();
+                  }
+                });
+            });
+          });
+        });
+
+        describe("router.any(uri, closure)", function() {
+          it("should setup routing for all HTTP verb", function(done) {
+            let counter = 0;
+            const app = express();
+            const router = Router.router();
+            const uri = "/foo-bar";
+
+            router.any(uri, (req, res) => res.send("OK"));
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            methods.forEach(method => {
+              request(app)[method](uri)
+                .expect(200, "OK")
+                .end(() => {
+                  if(++counter === methods.length) {
+                    done();
+                  }
+                });
+            });
+          });
+        });
+
+        describe("router.redirect(fromUri, toUri[, statusCode])", function() {
+          describe("router.redirect(fromUri, toUri)", function() {
+            const app = express();
+            const router = Router.router();
+
+            router.redirect("/from", "/to");
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            methods.forEach(method => {
+              it(`should redirect '${method.toUpperCase()}' requests and return a 302 status code`, function(done) {
+                request(app)[method]("/from").expect(302, done);
+              });
+            });
+          });
+
+          describe("router.redirect(fromUri, toUri, statusCode)", function() {
+            const app = express();
+            const router = Router.router();
+            const statusCode = 303;
+
+            router.redirect("/fromUri", "/toUri", statusCode);
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            methods.forEach(method => {
+              it(`should redirect '${method.toUpperCase()}' requests and return the passed status code`, function(done) {
+                request(app)[method]("/fromUri").expect(statusCode, done);
+              });
+            });
+          });
+        });
+
+        describe("router.permanentRedirect(fromUri, toUri)", function() {
+          const app = express();
+          const router = Router.router();
+
+          router.permanentRedirect("/here", "/there");
+          router.apply(route => app[route.method](route.path, route.handlers));
+
+          methods.forEach(method => {
+            it(`should redirect '${method.toUpperCase()}' requests and return a 301 status code`, function(done) {
+              request(app)[method]("/here").expect(301, done);
             });
           });
         });

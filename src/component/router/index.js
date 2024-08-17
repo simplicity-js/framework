@@ -64,23 +64,22 @@ exports.router = function getAFreshRouterInstance() {
     });
   };
 
-  router.match = function matchRoutes(methods, uri, closure) {
-    methods.forEach(method => router[method](uri, closure));
+  router.match = function matchRoutes(methods, uri, handler) {
+    methods.forEach(method => router[method](uri, handler));
 
     return router;
   };
 
-  router.any = function anyRoute(uri, closure) {
-    return router.match(httpMethods, uri, closure);
+  router.any = function anyRoute(uri, handler) {
+    return router.match(httpMethods, uri, handler);
   };
 
   router.redirect = function redirectRoute(fromUri, toUri, statusCode) {
-    return router.get(fromUri, (req, res) => {
-      if(statusCode) {
-        return res.redirect(statusCode, toUri);
-      } else {
-        return res.redirect(toUri);
-      }
+    return router.any(fromUri, (req, res) => {
+      return (statusCode
+        ? res.redirect(statusCode, toUri)
+        : res.redirect(toUri)
+      );
     });
   };
 
