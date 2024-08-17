@@ -1,9 +1,35 @@
 /* eslint-env node, mocha */
 
 const { chai } = require("../../lib/test-helper");
-const { STATUS_CODES, STATUS_TEXTS } = require(".");
+const { METHODS, STATUS_CODES, STATUS_TEXTS } = require(".");
 
 let expect;
+
+const HTTP_METHODS = [
+  "checkout",
+  "copy",
+  "delete",
+  "get",
+  "head",
+  "lock",
+  "merge",
+  "mkactivity",
+  "mkcol",
+  "move",
+  "m-search",
+  "notify",
+  "options",
+  "patch",
+  "post",
+  "purge",
+  "put",
+  "report",
+  "search",
+  "subscribe",
+  "trace",
+  "unlock",
+  "unsubscribe"
+];
 
 const HTTP_STATUS_CODES = {
   HTTP_CONTINUE: 100,
@@ -155,6 +181,14 @@ module.exports = {
 
           expect(STATUS_TEXTS).to.have.property(key, value);
         }
+      });
+
+      it("should export HTTP Methods", function() {
+        /*for(const method of HTTP_METHODS) {
+          expect(METHODS).to.include(method);
+        }*/
+
+        expect(METHODS).to.deep.equal(HTTP_METHODS);
       });
     });
   },

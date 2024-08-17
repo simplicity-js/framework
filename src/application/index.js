@@ -102,8 +102,13 @@ module.exports = class Application {
           options: {
             port: { type: "string", short: "p" },
 
-            // Only included so our test -- --application will not throw errors
+            // Only included so our tests such as
+            // -- --application
+            // -- --component.router, etc
+            // will not throw errors
             application: { type: "boolean" },
+            component: { type: "boolean" },
+            "component.router": { type: "boolean" }
           },
         });
         const defaultPort = 8800;

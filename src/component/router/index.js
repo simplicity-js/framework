@@ -1,8 +1,10 @@
 "use strict";
 
 const createRouter = require("node-laravel-router").createRouter;
-const container = require("../../component/container");
 const { wrap } = require("../../lib/object");
+const container = require("../container");
+const httpMethods = require("../http").METHODS;
+const view = require("../view");
 const { createRequestHandler } = require("./routing-functions");
 
 exports.router = function getAFreshRouterInstance() {
@@ -60,6 +62,34 @@ exports.router = function getAFreshRouterInstance() {
       router.patch("/:id", controller.update);
       router.delete("/:id", controller.destroy);
     });
+  };
+
+  router.match = function matchRoutes(methods, uri, closure) {
+    methods.forEach(method => router[method](uri, closure));
+
+    return router;
+  };
+
+  router.any = function anyRoute(uri, closure) {
+    return router.match(httpMethods, uri, closure);
+  };
+
+  router.redirect = function redirectRoute(fromUri, toUri, statusCode) {
+    return router.get(fromUri, (req, res) => {
+      if(statusCode) {
+        return res.redirect(statusCode, toUri);
+      } else {
+        return res.redirect(toUri);
+      }
+    });
+  };
+
+  router.permanentRedirect = function permanentRedirectRoute(fromUri, toUri) {
+    return router.redirect(fromUri, toUri, 301);
+  };
+
+  router.view = function viewRoute(uri, template, options) {
+    return router.get(uri, () => view.view(template, options));
   };
 
   return router;
