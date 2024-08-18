@@ -47,7 +47,7 @@ module.exports = {
         })).to.throw(expectedErrorMessage);
       });
 
-      it("should throw if a of `routes` object is not given", function() {
+      it("should throw if a `routes` object is not given", function() {
         const expectedErrorMessage = "" +
         "createApp 'options' object expects a 'routes' object " +
         "with either or both of the following members: `web`, `api` " +
