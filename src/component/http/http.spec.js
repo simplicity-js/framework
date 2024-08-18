@@ -6,30 +6,19 @@ const { METHODS, STATUS_CODES, STATUS_TEXTS } = require(".");
 let expect;
 
 const HTTP_METHODS = [
-  "checkout",
-  "copy",
-  "delete",
-  "get",
-  "head",
-  "lock",
-  "merge",
-  "mkactivity",
-  "mkcol",
-  "move",
-  "m-search",
-  "notify",
-  "options",
-  "patch",
-  "post",
-  "purge",
-  "put",
-  "report",
-  "search",
-  "subscribe",
-  "trace",
-  "unlock",
-  "unsubscribe"
-];
+  "ACL",         "BIND",       "CHECKOUT",
+  "CONNECT",     "COPY",       "DELETE",
+  "GET",         "HEAD",       "LINK",
+  "LOCK",        "M-SEARCH",   "MERGE",
+  "MKACTIVITY",  "MKCALENDAR", "MKCOL",
+  "MOVE",        "NOTIFY",     "OPTIONS",
+  "PATCH",       "POST",       "PROPFIND",
+  "PROPPATCH",   "PURGE",      "PUT",
+  "REBIND",      "REPORT",     "SEARCH",
+  "SOURCE",      "SUBSCRIBE",  "TRACE",
+  "UNBIND",      "UNLINK",     "UNLOCK",
+  "UNSUBSCRIBE"
+].filter(method => method !== "CONNECT").map(method => method.toLowerCase());
 
 const HTTP_STATUS_CODES = {
   HTTP_CONTINUE: 100,

@@ -1,25 +1,4 @@
-module.exports = [
-  "checkout",
-  "copy",
-  "delete",
-  "get",
-  "head",
-  "lock",
-  "merge",
-  "mkactivity",
-  "mkcol",
-  "move",
-  "m-search",
-  "notify",
-  "options",
-  "patch",
-  "post",
-  "purge",
-  "put",
-  "report",
-  "search",
-  "subscribe",
-  "trace",
-  "unlock",
-  "unsubscribe"
-];
+module.exports = (require("http").METHODS
+  .filter(method => method !== "CONNECT")
+  .map(method => method.toLowerCase())
+);

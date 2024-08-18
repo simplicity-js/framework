@@ -74,7 +74,7 @@ exports.router = function getAFreshRouterInstance() {
     return router;
   };
 
-  router.any = function anyRoute(uri, handler) {
+  router.all = router.any = function anyRoute(uri, handler) {
     return router.match(httpMethods, uri, handler);
   };
 
