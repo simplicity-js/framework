@@ -3,7 +3,7 @@
 /* eslint-env node, mocha */
 
 const path = require("node:path");
-const { deleteDirectory, pathExists } = require("../../component/file-system");
+const { deleteDirectory, pathExists } = require("../../lib/file-system");
 const { chai } = require("../../lib/test-helper");
 const createCache = require("./file-cache");
 

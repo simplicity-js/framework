@@ -1,6 +1,6 @@
 const publicIp = () => import("public-ip").then(publicIp => publicIp);
-const { EOL } = require("../../component/file-system");
 const debug = require("../../lib/debug");
+const { EOL } = require("../../lib/file-system");
 
 const COLORS = { info: "\x1b[44m", error: "\x1b[41m", warn: "\x1b[43m" };
 const COLOR_TERM = "\x1b[0m"; // color terminator

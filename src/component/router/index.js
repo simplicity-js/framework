@@ -1,10 +1,14 @@
 "use strict";
 
+const os = require("node:os");
+const path = require("node:path");
 const createRouter = require("node-laravel-router").createRouter;
+const { isFile, writeToFile } = require("../../lib/file-system");
 const { wrap } = require("../../lib/object");
+const { getViewFilesExtension } = require("../../lib/resource");
+const { hash, isPath } = require("../../lib/string");
 const container = require("../container");
 const httpMethods = require("../http").METHODS;
-const view = require("../view");
 const { createRequestHandler } = require("./routing-functions");
 
 exports.router = function getAFreshRouterInstance() {
@@ -87,8 +91,37 @@ exports.router = function getAFreshRouterInstance() {
     return router.redirect(fromUri, toUri, 301);
   };
 
-  router.view = function viewRoute(uri, template, options) {
-    return router.get(uri, () => view.view(template, options));
+  /**
+   * @param {String} uri
+   * @param {String} template: either the path to the template file
+   *    or a template string.
+   */
+  router.view = function viewRoute(uri, template, ...rest) {
+    if(!isPath(template)) {
+      // create a temporary template file from the template string
+      let tmpDir;
+      let fileExt;
+
+      if(process.env.NODE_ENV === "test") {
+        fileExt = "pug";
+        tmpDir = __dirname;
+      } else {
+        fileExt = getViewFilesExtension();
+        tmpDir = os.tmpdir();
+      }
+
+      const checksum = hash(template, "md5");
+      const tmpFilename = `${checksum}.${fileExt}`;
+      const tmpFile = path.join(tmpDir, tmpFilename);
+
+      if(!isFile(tmpFile)) {
+        writeToFile(tmpFile, template.replace(/\r?\n/g, ""), { flag: "w" });
+      }
+
+      template = tmpFile.replace(/\\/g, "/");
+    }
+
+    return router.get(uri, (req, res) => res.render(template, ...rest));
   };
 
   return router;

@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const zlib = require("node:zlib");
 
 const BACKSLASH_REGEX = /\\/g;
@@ -9,6 +10,8 @@ module.exports = {
   decode: decodeFromBase,
   deflate,
   inflate,
+  hash,
+  isPath,
   LCFirst,
   stripFirstNCharsFromString,
   stripLastNCharsFromString,
@@ -57,6 +60,28 @@ function deflate(data) {
 
 function inflate(value) {
   return zlib.inflateSync(Buffer.from(value, "base64")).toString();
+}
+
+/**
+ * Creates a checksum/hash of string using specified algorithm.
+ *
+ * Possible algos: sha256, sha512, etc
+ */
+function hash(string, algo = "md5") {
+  return crypto.createHash(algo).update(string).digest("hex");
+}
+
+/**
+ * Check if the given string is a path
+ */
+function isPath(string) {
+  if(string.search(/\n/) > -1) {
+    return false; // If we find a newline character, it is not a path
+  } else if(/<[^>]*>/g.test(string)) {
+    return false; // If it contains HTML tags, it is not a path
+  } // TO DO: we need to have a test for template engine tags also
+
+  return true;
 }
 
 function LCFirst(str) {

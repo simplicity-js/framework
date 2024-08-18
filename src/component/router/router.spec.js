@@ -2,9 +2,14 @@
 
 "use strict";
 
+const fs = require("node:fs");
 const path = require("node:path");
 const express = require("express");
 const request = require("supertest");
+const { deleteFilesHavingExtension, writeToFile } = require(
+  "../../lib/file-system");
+const { hash } = require("../../lib/string");
+const { chai } = require("../../lib/test-helper");
 const overrideConsoleDotLog = require("../../server/test-mocks/console-override");
 const { METHODS } = require("../http");
 const Router = require(".");
@@ -284,6 +289,145 @@ module.exports = {
             it(`should redirect '${method.toUpperCase()}' requests and return a 301 status code`, function(done) {
               request(app)[method]("/here").expect(301, done);
             });
+          });
+        });
+
+        describe("router.view(uri, template, ...rest)", function() {
+          let expect;
+          let templateFile;
+          let templateFileContents;
+
+          before(async function() {
+            expect = (await chai()).expect;
+
+            templateFile = `${__dirname}${path.sep}page.pug`;
+            templateFileContents = `<Doctype html>
+              <html>
+                <head>
+                  <title>Template file view</title>
+                </head>
+                <body>
+                  <h1>Template file header</h1>
+                  <p>Template file body</p>
+                </body>
+              </html>`.replace(/\r?\n/g, "");
+
+            writeToFile(templateFile, templateFileContents);
+          });
+
+          after(async function() {
+            await deleteFilesHavingExtension(__dirname, [".pug"]);
+          });
+
+          it("should create a view route from a template string", function(done) {
+            const app = express();
+            const router = Router.router();
+            const uri = "/tpl-str-view";
+            const template = `<Doctype html>
+              <html>
+                <head>
+                  <title>Template string view</title>
+                </head>
+                <body>
+                  <h1>Template string header</h1>
+                  <p>Template string body</p>
+                </body>
+              </html>
+            `;
+
+            router.view(uri, template);
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            request(app)
+              .get(uri)
+              .expect(200)
+              .expect("Content-Type", "text/html; charset=utf-8")
+              .end((err, res) => {
+                if(err) {
+                  return done(err);
+                }
+
+                expect(res.text).to.equal(template.replace(/\r?\n/g, ""));
+                done();
+              });
+          });
+
+          it("should cache the view file", function(done) {
+            const app = express();
+            const router = Router.router();
+            const uri = "/tpl-str-view-cached";
+            const template = `<Doctype html>
+              <html>
+                <head>
+                  <title>Template string view: cached</title>
+                </head>
+                <body>
+                  <h1>Template string header: cached</h1>
+                  <p>Template string body: cached</p>
+                </body>
+              </html>
+            `;
+
+            router.view(uri, template);
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            const expectedHTMLOutput = template.replace(/\r?\n/g, "");
+            const checksum = hash(template, "md5");
+            const tmpFile = path.join(__dirname, `${checksum}.pug`);
+            let templateCreationTime;
+            let templateModifiedTime;
+
+            request(app)
+              .get(uri)
+              .expect(200)
+              .expect("Content-Type", "text/html; charset=utf-8")
+              .end((err, res) => {
+                if(err) {
+                  return done(err);
+                }
+
+                templateCreationTime = fs.statSync(tmpFile).ctime;
+                expect(res.text).to.equal(expectedHTMLOutput);
+
+                request(app)
+                  .get(uri)
+                  .expect(200)
+                  .expect("Content-Type", "text/html; charset=utf-8")
+                  .end((err, res) => {
+                    if(err) {
+                      return done(err);
+                    }
+
+                    templateModifiedTime = fs.statSync(tmpFile).mtime;
+                    expect(res.text).to.equal(expectedHTMLOutput);
+                    expect(templateCreationTime.getTime()).to.equal(
+                      templateModifiedTime.getTime());
+
+                    done();
+                  });
+              });
+          });
+
+          it("should create a view route from a view template file", function(done) {
+            const app = express();
+            const router = Router.router();
+            const uri = "/tpl-str-view";
+
+            router.view(uri, templateFile);
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            request(app)
+              .get(uri)
+              .expect(200)
+              .expect("Content-Type", "text/html; charset=utf-8")
+              .end((err, res) => {
+                if(err) {
+                  return done(err);
+                }
+
+                expect(res.text).to.equal(templateFileContents);
+                done();
+              });
           });
         });
       });

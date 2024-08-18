@@ -7,11 +7,10 @@ const bootstrap = require("../bootstrap");
 const container = require("../component/container");
 const { createApp, normalizePort, onError, onListening } = require("../server/app");
 const createServer = require("../server/server");
-const { pathExists } = require("../component/file-system");
 const FrameworkServiceProvider = require(
   "../component/service-provider/framework-service-provider");
 const initDotEnv = require("../env").init;
-const { normalizePath } = require("../lib/file-system");
+const { normalizePath, pathExists } = require("../lib/file-system");
 const { camelCaseToSnakeCase } = require("../lib/string");
 
 module.exports = class Application {
