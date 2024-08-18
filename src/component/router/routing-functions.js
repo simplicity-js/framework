@@ -100,8 +100,8 @@ function createRequestHandler(handler, container) {
     requestHandler = resolveRequestHandler(controller, method, container);
   } else {
     throw new TypeError(
-      `Invalid handler ${handler} specified for ${method} ${path}.
-      The handler should be a function, an array of the form [controller: string, method: string]
+      `Invalid handler ${handler} specified.
+      The handler should be a function, an array of the form [controller: string, method: string],
       or an object with two properties: controller: string, method: string.
       `
     );

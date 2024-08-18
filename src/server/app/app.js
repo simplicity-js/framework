@@ -15,6 +15,8 @@ const is = require("../../lib/is");
 function copyRouter(srcRouter, destRouter) {
   const { routes = [], routeGroups = [] } = srcRouter;
 
+  destRouter.routes = [...destRouter.routes, ...routes];
+
   routes.forEach(({ method, path, handlers }) => {
     destRouter[method].call(destRouter, path, handlers);
   });

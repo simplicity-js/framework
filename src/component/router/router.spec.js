@@ -16,7 +16,6 @@ const Router = require(".");
 
 let restoreConsoleDotLog;
 const methods = METHODS;
-const app = express();
 const currDir = path.dirname(__filename).replace(/\\/g, "/");
 
 
@@ -33,6 +32,7 @@ module.exports = {
       });
 
       describe("Basic routing via router.{method} (or router[method])", function() {
+        const app = express();
         const router = Router.router();
 
         methods.forEach(method => {
