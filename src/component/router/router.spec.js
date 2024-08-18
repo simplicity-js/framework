@@ -225,6 +225,28 @@ module.exports = {
           });
         });
 
+        describe("router.some(verbs, uri, closure)", function() {
+          it("should be an alias of 'router.match'", function(done) {
+            let counter = 0;
+            const app = express();
+            const router = Router.router();
+            const uri = "/bar/baz";
+
+            router.match(methods, uri, (req, res) => res.send("OK"));
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            methods.forEach(method => {
+              request(app)[method](uri)
+                .expect(200, "OK")
+                .end(() => {
+                  if(++counter === methods.length) {
+                    done();
+                  }
+                });
+            });
+          });
+        });
+
         describe("router.all(uri, closure)", function() {
           it("should setup routing for all HTTP verb", function(done) {
             let counter = 0;
@@ -248,7 +270,7 @@ module.exports = {
         });
 
         describe("router.any(uri, closure)", function() {
-          it("should be an alias for 'router.all'", function(done) {
+          it("should be an alias of 'router.all'", function(done) {
             let counter = 0;
             const app = express();
             const router = Router.router();

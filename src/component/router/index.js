@@ -68,7 +68,7 @@ exports.router = function getAFreshRouterInstance() {
     });
   };
 
-  router.match = function matchRoutes(methods, uri, handler) {
+  router.some = router.match = function matchRoutes(methods, uri, handler) {
     methods.forEach(method => router[method](uri, handler));
 
     return router;
