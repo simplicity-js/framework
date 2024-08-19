@@ -14,8 +14,8 @@
     "text-summary",
     "clover"
   ],
-  "branches": 0,
-  "lines": 0,
-  "functions": 0,
-  "statements": 0
+  "branches": 45,
+  "lines": 70,
+  "functions": 65,
+  "statements": 70
 }
