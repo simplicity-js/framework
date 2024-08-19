@@ -20,7 +20,7 @@ module.exports = {
 function camelCaseToSnakeCase(str, separator = "-") {
   return (
     str
-      .replace(/([A-Z])/g, `${separator}$1`)
+      .replace(/([A-Z]+)/g, (_, c) => `${separator}${c.toLowerCase()}`)
       .replace(new RegExp(`^${separator}`), "") // strip off the `-` preceding the first CAPS letter
   );
 }
