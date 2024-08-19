@@ -37,7 +37,13 @@ module.exports = {
 
         process.env.USERNAME = originalProcessUser;
 
-        expect(env("USERNAME")).to.equal(originalProcessUser);
+        if(typeof originalProcessUser !== "string") {
+          // For GitHub actions
+          expect(env("USERNAME")).to.equal(String(originalProcessUser));
+        } else {
+          expect(env("USERNAME")).to.equal(originalProcessUser);
+        }
+
         expect(env("USERNAME")).to.not.equal(username);
       });
 
