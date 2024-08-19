@@ -17,10 +17,10 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        environment: ['development', 'production']
+        environment: ['production']
         node-version: [18.x, 'latest']
         redis-version: ['7.x', 'latest']
-        mongodb-version: ['5.0', '6.x']
+        mongodb-version: ['5.0', '6.0']
         #mysql-version: ['8.3']
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         # See redis enablement at: https://github.com/marketplace/actions/actions-setup-redis#usage
