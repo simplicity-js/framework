@@ -53,12 +53,6 @@ jobs:
     #  with:
     #    mysql version: ${{ matrix.mysql-version }}
 
-    - name: 'Create env file'
-      run: |
-          set -m
-          cp .env.example .env
-          cat .env
-
     - name: Install dependencies
       run: npm ci
 
