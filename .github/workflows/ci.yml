@@ -3,7 +3,7 @@
 # For more information see:
 #   https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: tests
+name: CI
 
 on:
   push:
@@ -14,14 +14,13 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    #runs-on: ubuntu-latest
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        environment: ['development', 'staging', 'production']
-        node-version: [18.x, 20.x]
-        redis-version: ['4.0', '5.0', '6.0', '6.2', '7.x', 'latest']
-        mongodb-version: ['5.0', '6.0']
+        environment: ['development', 'production']
+        node-version: [18.x, 'latest']
+        redis-version: ['7.x', 'latest']
+        mongodb-version: ['5.0', '6.x']
         #mysql-version: ['8.3']
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         # See redis enablement at: https://github.com/marketplace/actions/actions-setup-redis#usage
@@ -59,10 +58,6 @@ jobs:
           set -m
           cp .env.example .env
           cat .env
-    # https://stackoverflow.com/a/63350136/1743192
-    #
-    # The set -m fixes github actions CLI error: "no job control"
-    # See: https://stackoverflow.com/a/46829294/1743192
 
     - name: Install dependencies
       run: npm ci
@@ -78,12 +73,4 @@ jobs:
       env:
          NODE_ENV: ${{ matrix.environment }}
          REDIS_HOST: '127.0.0.1'
-         # GitHub actions for Node.js 18.x on ubuntu was failing due to ECONNREFUSED error
-         # when attempting to connect to redis.
-         # Override the REDIS_HOST in the .env file to use 127.0.0.1
-         # which is the static host bound by actions-setup-redis.
-         # See this reply: https://github.com/shogo82148/actions-setup-redis/issues/774#issuecomment-1521844296
       #  CI: true
-        # https://docs.github.com/en/actions/learn-github-actions/variables
-        # See also:
-        # https://github.com/marketplace/actions/set-env-variables#using-configuration-variables
