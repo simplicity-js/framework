@@ -2,6 +2,7 @@ require("./node-version-check");
 
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const childProcess = require("node:child_process");
 
 const bootstrap = require("../bootstrap");
 const container = require("../component/container");
@@ -119,6 +120,28 @@ module.exports = class Application {
         );
 
         server.listen(normalizePort(listenPort));
+      }
+
+      runCommand(args) {
+        if(!!args.length && args[0] === "serve") {
+          let port;
+
+          if(args.length === 2) {
+            port = args[1].split("=")[1];
+          } else if(args.length === 3) {
+            port = args[2];
+          }
+
+          return this.listen(port);
+        }
+
+        const command = `node ${path.dirname(__dirname).replace(/\\/g, "/")}/console/src`;
+
+        return new Promise((resolve, reject) => {
+          childProcess
+            .spawn(command, args, { stdio: "inherit", shell: true })
+            .on("close", (code) => (code === 0 ? resolve(code) : reject(code)));
+        });
       }
     }
 
