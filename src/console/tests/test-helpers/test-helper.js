@@ -5,14 +5,26 @@ const path = require("node:path");
 const util = require("node:util");
 const sinon = require("sinon");
 const chai = () => import("chai").then(chai => chai);
-const { createDirectory, createFile } = require("../../src/helpers/file-system");
+const { copy, createDirectory, createFile, deleteFileOrDirectory } = require(
+  "../../src/helpers/file-system");
 
 const testsDir = path.resolve(__dirname, "..").replace(/\\/g, "/");
+const testAppDir = `${testsDir}${path.sep}test-app`;
 const logDir  = `${testsDir}/.logs`;
 const logFile = `${logDir}/console.log`;
 const errFile = `${logDir}/console.error`;
 
+before(function(done) {
+  copy(
+    `${testAppDir}${path.sep}.env.example`,
+    `${testAppDir}${path.sep}.env`
+  );
+  done();
+});
+
 after(function(done) {
+  deleteFileOrDirectory(`${testAppDir}${path.sep}.env`);
+
   /*
    * Ensure output is flushed before exiting.
    * https://github.com/nodejs/node-v0.x-archive/issues/8329#issuecomment-54778937
