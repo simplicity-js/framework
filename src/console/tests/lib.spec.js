@@ -21,11 +21,11 @@ const {
 const createAssertions = require("./test-helpers/assertions-helper");
 const { chai, spyOnConsoleOutput } = require("./test-helpers/test-helper");
 
-const httpPath = path.join(process.cwd(), "src", "app", "http");
-const controllersPath = path.join(httpPath, "controllers");
-const migrationsPath = path.join(process.cwd(), "src", "database", "migrations");
-const modelsPath = path.join(httpPath, "models");
-const routesPath = path.join(process.cwd(), "src", "routes");
+let httpPath;
+let controllersPath;
+let migrationsPath;
+let modelsPath;
+let routesPath;
 
 let assertControllerFile;
 let assertMigrationFile;
@@ -71,6 +71,12 @@ describe("lib.js", function() {
     tableExists = assertions.tableExists;
     verifyInlineRouteExists = assertions.verifyInlineRouteExists;
     normalizePath = assertions.normalizePath;
+
+    httpPath = path.join(process.cwd(), "src", "app", "http");
+    controllersPath = path.join(httpPath, "controllers");
+    migrationsPath = path.join(process.cwd(), "src", "database", "migrations");
+    modelsPath = path.join(httpPath, "models");
+    routesPath = path.join(process.cwd(), "src", "routes");
 
     [this.mongooseConnection, this.sequelizeConnection] = await Promise.all([
       getDatabaseConnection("mongodb"),

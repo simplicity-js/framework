@@ -9,7 +9,7 @@ const { print} = require("../helpers/printer");
 const { getDatabaseOptions } = require("./helpers/database");
 const createSequelizeMigrator = require("./helpers/sequelize-migrator");
 
-const migrationsPath = `${MIGRATION_FOLDER_DESTINATION.replace(/\\/g, "/")}/sequelize`;
+const getMigrationsPath = () => `${process.cwd().replace(/\\/g, "/")}/${MIGRATION_FOLDER_DESTINATION}/sequelize`;
 
 const PADDING = "  ";
 
@@ -26,7 +26,7 @@ async function createMigration(name, options) {
   let { fields, filename, table, type } = options || {};
 
   try {
-    const migrationsDir = migrationsPath;
+    const migrationsDir = getMigrationsPath();
     const date = new Date()
       .toISOString()
       .split(".")[0]
@@ -65,7 +65,7 @@ async function migrate(options) {
     const migrator = createSequelizeMigrator({
       sequelize: await getDatabaseConnection(database),
       logger: console,
-      migrationsPath: migrationsPath,
+      migrationsPath: getMigrationsPath(),
     });
 
     const data = await migrator.migrate();
@@ -87,7 +87,7 @@ async function rollback(options) {
     const migrator = createSequelizeMigrator({
       sequelize: await getDatabaseConnection(database),
       logger: console,
-      migrationsPath: migrationsPath,
+      migrationsPath: getMigrationsPath(),
     });
 
     if(typeof step === "number") {

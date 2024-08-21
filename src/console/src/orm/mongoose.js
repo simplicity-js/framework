@@ -10,10 +10,9 @@ const { print } = require("../helpers/printer");
 const { getDatabaseOptions, getMigrationFileInfo } = require("./helpers/database");
 const createMongooseMigrator = require("./helpers/mongoose-migrator");
 
-const migrationsPath = `${MIGRATION_FOLDER_DESTINATION.replace(/\\/g, "/")}/mongoose`;
+const getMigrationsPath = () => `${process.cwd().replace(/\\/g, "/")}/${MIGRATION_FOLDER_DESTINATION}/mongoose`;
 const migratorOptions = {
   collection: "migrations",
-  migrationsDir: migrationsPath,
   logErrors: true,
 };
 
@@ -25,11 +24,13 @@ async function createMigration(name, options) {
   const { connectionString } = getMongoDbConnectionString();
 
   try {
-    const migrationsDir = migrationsPath;
+    const migrationsDir = getMigrationsPath();
+
     const template = `${TEMPLATES_DIR}/mongoose/migration_${type}.stub`;
     mongooseMigrator = createMongooseMigrator({
       ...migratorOptions,
       template,
+      migrationsDir,
       dbUrl: connectionString,
     });
     const data = await mongooseMigrator.createMigration(name);
@@ -82,6 +83,7 @@ async function migrate() {
     migrator = createMongooseMigrator({
       ...migratorOptions,
       dbUrl: connectionString,
+      migrationsDir: getMigrationsPath(),
     });
 
     const data = await migrator.migrate();
@@ -112,6 +114,7 @@ async function rollback() {
     migrator = createMongooseMigrator({
       ...migratorOptions,
       dbUrl: connectionString,
+      migrationsDir: getMigrationsPath(),
     });
 
     const data = await migrator.rollback();
