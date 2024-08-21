@@ -1,0 +1,15 @@
+"use strict";
+
+const { Sequelize } = require("sequelize");
+
+module.exports = {
+  async up({ context: queryInterface }) {
+    await queryInterface.alterTable("$$TABLE_NAME$$", {
+
+    });
+  },
+
+  async down({ context: queryInterface }) {
+
+  },
+};

@@ -1,0 +1,112 @@
+"use strict";
+
+const { STATUS_CODES } = require("@simplicityjs/framework/component/http");
+const { $$MODEL_NAME$$ } = require("../models/mongoose");
+const Controller = require("./controller");
+
+module.exports = class $$CONTROLLER_NAME$$ extends Controller {
+  constructor() {
+    super();
+  }
+
+  async create(req, res) {
+    const logger = req.app.resolve("logger");
+
+    try {
+      const data = await $$MODEL_NAME$$.create(req.body);
+
+      return res.status(STATUS_CODES.HTTP_CREATED).send({
+        msg: "$$TABLE_NAME$$ created",
+        data: data,
+      });
+    } catch(error) {
+      logger.error(error);
+
+      return res.status(STATUS_CODES.HTTP_INTERNAL_SERVER_ERROR).send(error);
+    }
+  }
+
+  async findAll(req, res) {
+    const logger = req.app.resolve("logger");
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+    const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+
+    delete req.query["limit"];
+    delete req.query["page"];
+
+    try {
+      const skip = limit * page - limit;
+      const take = limit;
+      const where = { req.query };
+      const total = await $$MODEL_NAME$$.countDocuments(where);
+      const data = await $$MODEL_NAME$$.find(where, null, { skip, take }).exec();
+
+      return res.status(STATUS_CODES.HTTP_OK).send({
+        msg: "$$TABLE_NAME$$ fetched",
+        data: data,
+        page: page,
+        limit: limit,
+        total_page: Math.ceil(data.count / limit),
+      });
+    } catch(error) {
+      logger.error(error);
+
+      return res.status(STATUS_CODES.HTTP_INTERNAL_SERVER_ERROR).send(error);
+    }
+  }
+
+  async findById(req, res) {
+    const logger = req.app.resolve("logger");
+
+    try {
+      const data = await $$MODEL_NAME$$.findById(req.params.id);
+
+      return res.status(STATUS_CODES.HTTP_OK).send({
+        msg: "$$TABLE_NAME$$ fetched",
+        data: data
+      });
+    } catch(error) {
+      logger.error(error);
+
+      return res.status(STATUS_CODES.HTTP_INTERNAL_SERVER_ERROR).send(error);
+    }
+  }
+
+  async update(req, res) {
+    await User.findOneAndUpdate({ _id: userId }, updateData);
+
+    return await User.findById(userId);
+
+    const logger = req.app.resolve("logger");
+
+    try {
+      await $$MODEL_NAME$$.findOneAndUpdate({ _id: req.params.id }, req.body);
+
+      return res.status(STATUS_CODES.HTTP_OK).send({
+        msg: "$$TABLE_NAME$$ updated",
+        data: await $$MODEL_NAME$$.findById(req.params.id),
+      });
+    } catch(error) {
+      logger.error(error);
+
+      return res.status(STATUS_CODES.HTTP_INTERNAL_SERVER_ERROR).send(error);
+    }
+  }
+
+  async destroy(req, res) {
+    const logger = req.app.resolve("logger");
+
+    try {
+      const data = await $$MODEL_NAME$$.findByIdAndDelete(req.params.id);
+
+      return res.status(STATUS_CODES.HTTP_OK).send({
+        msg: "$$TABLE_NAME$$ deleted",
+        data: data,
+      });
+    } catch(error) {
+      logger.error(error);
+
+      return res.status(STATUS_CODES.HTTP_INTERNAL_SERVER_ERROR).send(error);
+    }
+  }
+}

@@ -1,0 +1,7 @@
+router.group("/$$BASE_PATH$$", (router) => {
+  router.post("/", [$$CONTROLLER_NAME$$, "create"]);
+  router.get("/", [$$CONTROLLER_NAME$$, "findAll"]);
+  router.get("/:id", [$$CONTROLLER_NAME$$, "findById"]);
+  router.put("/:id", [$$CONTROLLER_NAME$$, "update"]);
+  router.delete("/:id", [$$CONTROLLER_NAME$$, "destroy"]);
+});

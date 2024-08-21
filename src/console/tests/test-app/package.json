@@ -1,0 +1,64 @@
+{
+  "name": "@simplicityjs/simplicity",
+  "version": "1.0.0",
+  "description": "A Modern MVC Framework for Node.js ",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test LOG_TO_CONSOLE=false mocha tests/\"{,/**/}*.spec.js\"",
+    "test:coverage": "nyc npm test",
+    "build": "npm install",
+    "start": "node ./bin/start-server",
+    "start:dev": "cross-env NODE_ENV=development nodemon ./bin/start-server",
+    "commit": "git-cz",
+    "lint": "npx eslint",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simplicity-js/simplicity.git"
+  },
+  "keywords": [
+    "simplicity",
+    "expressjs",
+    "web-framework",
+    "framework",
+    "mvc",
+    "node.js"
+  ],
+  "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/simplicity-js/simplicity/issues"
+  },
+  "homepage": "https://github.com/simplicity-js/simplicity#readme",
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    },
+    "ghooks": {
+      "pre-commit": "npm run lint && npm run test:coverage"
+    }
+  },
+  "engines": {
+    "node": ">=18.18.2",
+    "npm": ">=9.8.1"
+  },
+  "dependencies": {
+    "@simplicityjs/framework": "file:../../simplicity-framework",
+    "mongoose": "8.5.2",
+    "node-cache": "5.1.2",
+    "sequelize": "6.37.3"
+  },
+  "devDependencies": {
+    "chai": "5.1.1",
+    "commitizen": "4.3.0",
+    "cross-env": "7.0.3",
+    "cz-conventional-changelog": "3.3.0",
+    "eslint": "9.7.0",
+    "ghooks": "2.0.4",
+    "mocha": "10.6.0",
+    "nodemon": "3.1.4",
+    "nyc": "17.0.0",
+    "supertest": "7.0.0"
+  }
+}

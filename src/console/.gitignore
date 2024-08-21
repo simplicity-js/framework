@@ -1,0 +1,12 @@
+# Dependency directory
+node_modules
+
+
+# misc
+.data
+.DS_Store
+.sqlite
+.github-token
+*.sqlite
+*.log
+*.logs

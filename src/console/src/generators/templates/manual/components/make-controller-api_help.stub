@@ -1,0 +1,18 @@
+Simplicity CLI - make:controller
+
+USAGE: simplicity make:controller <ControllerName> [options]
+
+Description:
+  Generate Controller file.
+
+Required:
+  <ControllerName>        The name of the controller.
+
+Options:
+  -n                      Optional filename for the controller. Defaults to the kebab-case version of ControllerName.
+  -m                      Optional Model name for the Schema and Paths Tags.
+  -t                      Optional table or collection name. Default to the lowercase version of the model name.
+  --database              The database connection to use.
+  --resource              Optional flag specifying that this is a resource controller.
+  --force                 Force replace generated files
+  --help (-h)             Show this help

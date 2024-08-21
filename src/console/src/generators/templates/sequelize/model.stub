@@ -1,0 +1,48 @@
+"use strict";
+
+const { Sequelize } = require("sequelize");
+
+const { DataTypes } = Sequelize;
+
+module.exports = class $$MODEL_NAME$$ {
+  /**
+   * The connection that should be used by the model
+   * for database operations.
+   *
+   * @var string
+   */
+  static connection = "$$CONNECTION$$";
+
+  /**
+   * The name of the model.
+   * This is the name that will be used to import the model.
+   *
+   * @var string
+   */
+  static name = "$$MODEL_NAME$$";
+
+  /**
+   * The name of the database table name
+   *
+   * @var string
+   */
+  static table = "$$TABLE_NAME$$";
+
+  /**
+   * The model's fields in <name>:<datatype> pairs
+   *
+   * @var object
+   */
+  static fields = {
+    $$MODEL_FIELDS$$
+  };
+
+  /**
+   * Helper method for defining associations.
+   * This method is not a part of Sequelize lifecycle.
+   * The `index` file will call this method automatically.
+   */
+  static associate(models) {
+    // define the model's relationships here
+  }
+};

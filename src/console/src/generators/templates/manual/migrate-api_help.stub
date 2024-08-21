@@ -1,0 +1,13 @@
+Simplicity CLI - migrate
+
+USAGE: simplicity migrate [options]
+
+Description:
+  Run database migrations.
+
+Options:
+  --rollback        Rollback the last migration.
+  --step            The number of migrations to rollback.
+  --reset           Rollback all migrations.
+  --database        The database connection to use.
+  --help (-h)       Show this help.

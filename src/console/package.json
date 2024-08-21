@@ -1,0 +1,16 @@
+{
+  "name": "simplicity-console",
+  "version": "1.0.0",
+  "description": "Simplicity MVC Framework console",
+  "main": "src/index.js",
+  "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
+  "license": "MIT",
+  "dependencies": {
+    "replace-in-file": "8.1.0",
+    "umzug": "3.8.1"
+  },
+  "engines": {
+    "node": ">=18.18.2",
+    "npm": ">=9.8.1"
+  }
+}

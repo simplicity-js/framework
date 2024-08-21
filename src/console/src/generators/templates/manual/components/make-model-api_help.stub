@@ -1,0 +1,18 @@
+Simplicity CLI - make:model
+
+USAGE: simplicity make:model <ModelName> [options]
+
+Description:
+  Generate Model files
+
+Required:
+  <ModelName>             The name of the model.
+
+Options:
+  -n                      Optional filename for generated file. Defaults to the kebab-case version of the ModelName.
+  -t                      Optional table or collection name. Default to the lowercase version of the ModelName.
+  --fields (-f)           Model fields, comma-separated key:value pairs. Ex: <name>:<type>.
+  --migration             Optional boolean option to indicate whether to create a migration for the model.
+  --database              The database connection to use.
+  --force                 Force replace generated files
+  --help (-h)             Show this help

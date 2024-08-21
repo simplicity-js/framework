@@ -1,0 +1,25 @@
+"use strict";
+
+const schema = require("../../../app/http/models/mongoose/$$MODEL_FILE_NAME$$").schema;
+
+let $$MODEL_NAME$$;
+
+module.exports = {
+  async up(connection) {
+    try {
+      $$MODEL_NAME$$ = connection.model("$$MODEL_NAME$$", schema);
+
+      await $$MODEL_NAME$$.createCollection();
+    } catch(err) {
+      console.log(err);
+    }
+  },
+
+  async down() {
+    try {
+      await $$MODEL_NAME$$.collection.drop();
+    } catch(err) {
+      console.log(err);
+    }
+  }
+};

@@ -1,0 +1,8 @@
+const Router = require("@simplicityjs/framework/component/router");
+const $$CONTROLLER_NAME$$ = require("../../app/http/controllers/$$CONTROLLER_FILE_NAME$$");
+
+const router = Router.router();
+
+router.resource($$RESOURCE$$, $$CONTROLLER_NAME$$);
+
+module.exports = router;

@@ -1,0 +1,16 @@
+Simplicity CLI
+
+USAGE: simplicity [command] [options]
+
+Commands:
+  make:controller         Generate Controllers.
+  make:model              Generate Models.
+  make:migration          Generate Migrations.
+  make:route              Generate Routes
+  migrate                 Run migrations.
+
+Options:
+  --help (-h)             Show this help manual.
+  --version (-v)          Print version information and exit.
+
+To view the help manual for each type of command type `simplicity <command> --help`

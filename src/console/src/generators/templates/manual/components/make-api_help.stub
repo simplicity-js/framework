@@ -1,0 +1,17 @@
+Simplicity CLI - make
+
+USAGE: simplicity make:<component> [options]
+
+Description:
+  Generate Model, Migration, Controller, or Route files.
+
+Components:
+  controller
+  model
+  migration
+  route
+
+Options:
+  --help (-h)       Show this help.
+
+To view the help manual for each type of component type simplicity make:<component> --help.

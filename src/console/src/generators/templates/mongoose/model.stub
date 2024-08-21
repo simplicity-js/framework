@@ -1,0 +1,101 @@
+"use strict";
+
+const mongoose = require("mongoose");
+
+const Schema = mongoose.Schema;
+
+const schemaDefinition = {
+  $$MODEL_FIELDS$$
+  meta: {
+    created_at: {
+      type: Date,
+      required: true,
+      default: Date.now,
+      set: function() {
+        if(this.isNew) {
+          return Date.now();
+        } else {
+          return this.meta.created_at;
+        }
+      },
+    },
+    updated_at: {
+      type: Date,
+      default: Date.now
+    }
+  },
+};
+
+const schema = new Schema(schemaDefinition, {
+  collection: "$$COLLECTION_NAME$$",
+  autoCreate: false,
+  autoIndex: false,
+  toObject: {
+    virtuals: true,
+    transform: function(doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+
+      return ret;
+    },
+  },
+  toJSON: {
+    virtuals: true,
+    transform: function(doc, ret, options) {
+      delete ret._id;
+      delete ret.__v;
+
+      return ret;
+    },
+  },
+});
+
+schema.pre("save", function(next) {
+  if(this.isNew) {
+    this.meta.created_at = Date.now();
+  }
+
+  this.meta.updated_at = undefined;
+  next();
+});
+
+schema.virtual("id").get(function() {
+  return this._id;
+});
+
+schema.virtual("created_at").get(function() {
+  return this.meta.created_at;
+});
+
+schema.virtual("updated_at").get(function() {
+  return this.meta.updated_at;
+})
+
+schema.statics = {
+  ...schema.statics,
+
+  /*
+   * Define any model-specific methods below
+   */
+};
+
+module.exports = class $$MODEL_NAME$$ {
+  /**
+   * The name of the model.
+   * This is the name that will be used to import the model.
+   *
+   * @var string
+   */
+  static name = "$$MODEL_NAME$$";
+
+  /**
+   * The name of the MongoDB collection
+   *
+   * @var string
+   */
+  static collection = "$$COLLECTION_NAME$$";
+
+  constructor() {}
+};
+
+module.exports.schema = schema;

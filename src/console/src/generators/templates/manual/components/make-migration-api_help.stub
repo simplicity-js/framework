@@ -1,0 +1,18 @@
+Simplicity CLI - make:migration
+
+USAGE: simplicity make:migration <MigrationName> [options]
+
+Description:
+  Generate Migration files
+
+Required:
+  <MigrationName>         The name of the migration.
+
+Options:
+  -n                      Optional filename for generated migration file. Defaults to the kebab-case version of MigratioName.
+  -t                      Optional table or collection name. Default to the lowercase version of MigrationName.
+  --database              The database connection to use.
+  --fields (-f)           Migration fields, comma-separated key:value pairs. Ex: <name>:<type>.
+  --type                  Optional migration type. Valid types are: alter-table|create-table|update-table;
+  --force                 Force replace generated files.
+  --help (-h)             Show this help

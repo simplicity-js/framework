@@ -94,6 +94,7 @@ function runTestFile(testFile, parentDir) {
 
 function runTestsInDirectory(directory) {
   fs.readdirSync(directory, { recursive: true })
+    .filter(file => !file.includes(`node_modules${path.sep}`))
     .filter(file => path.basename(file).endsWith(".spec.js"))
     .forEach(file => runTestFile(file, directory));
 }
