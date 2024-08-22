@@ -7,6 +7,8 @@ const ROUTE_TEMPLATES_DIR = `${TEMPLATES_DIR}/routes`;
 const GENERATE_COMMAND = "make";
 const MIGRATE_COMMAND = "migrate";
 
+exports.BUILDER_NAME = "bob";
+exports.FRAMEWORK_NAME = "Simplicity";
 exports.TEMPLATES_DIR = TEMPLATES_DIR;
 
 // destination target

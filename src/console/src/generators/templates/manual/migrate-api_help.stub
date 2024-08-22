@@ -1,6 +1,6 @@
-Simplicity CLI - migrate
+Bob - migrate manual
 
-USAGE: simplicity migrate [options]
+USAGE: bob migrate [options...]
 
 Description:
   Run database migrations.

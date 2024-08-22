@@ -1,12 +1,12 @@
-Simplicity CLI - make:route
+Bob - make:route manual
 
-USAGE: simplicity make:route route-name [options]
+USAGE: bob make:route [<routeName>] [options...]
 
 Description:
   Generate Route file.
 
 Required:
-  route-name              The Route name representing the path (or filename of the generated route file).
+  <routeName>            The Route name representing the path (or filename of the generated route file).
 
 Options:
   --controller (-c)       Specify optional Controller name.

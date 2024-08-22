@@ -1,6 +1,6 @@
-Simplicity CLI - make:model
+Bob - make:model manual
 
-USAGE: simplicity make:model <ModelName> [options]
+USAGE: bob make:model [<ModelName>] [options...]
 
 Description:
   Generate Model files

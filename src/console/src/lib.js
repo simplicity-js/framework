@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const {
+  BUILDER_NAME, 
   GENERATE_CONTROLLER_COMMAND, GENERATE_MIGRATION_COMMAND,
   GENERATE_MODEL_COMMAND, GENERATE_ROUTE_COMMAND,
   MIGRATION_FOLDER_DESTINATION, MIGRATION_TYPES,
@@ -68,7 +69,7 @@ exports.makeController = function createController(name, options) {
       let message = "The Controller name is required.";
 
       if(isCLI) {
-        message += ` Type simplicity ${GENERATE_CONTROLLER_COMMAND} --help for help.`;
+        message += ` Type ${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND} --help for help.`;
       }
 
       throwLibraryError(message);
@@ -144,7 +145,7 @@ exports.makeMigration = async function createMigration(name, options) {
       let message = "The Migration name is required.";
 
       if(isCLI) {
-        message += ` Type simplicity ${GENERATE_MIGRATION_COMMAND} --help for help.`;
+        message += ` Type ${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND} --help for help.`;
       }
 
       throwLibraryError(message);
@@ -234,7 +235,7 @@ exports.makeModel = async function createModel(name, options) {
       let message = "The Model name is required.";
 
       if(isCLI) {
-        message += ` Type simplicity ${GENERATE_MODEL_COMMAND} --help for help.`;
+        message += ` Type ${BUILDER_NAME} ${GENERATE_MODEL_COMMAND} --help for help.`;
       }
 
       throwLibraryError(message);
@@ -313,7 +314,7 @@ exports.makeRoute = async function createRoute(name, options) {
       let message = "The Route name is required.";
 
       if(isCLI) {
-        message += ` Type simplicity ${GENERATE_ROUTE_COMMAND} --help for help.`;
+        message += ` Type ${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND} --help for help.`;
       }
 
       throwLibraryError(message);

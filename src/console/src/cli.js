@@ -8,6 +8,7 @@ const { getArgs } = require("./helpers/cli");
 const { pathExists, readLinesFromFile } = require("./helpers/file-system");
 const { print, marker } = require("./helpers/printer");
 const {
+  BUILDER_NAME, FRAMEWORK_NAME,
   GENERATE_COMMAND, GENERATE_CONTROLLER_COMMAND, GENERATE_MODEL_COMMAND,
   GENERATE_MIGRATION_COMMAND, GENERATE_ROUTE_COMMAND,
   GENERATE_HELP, GENERATE_CONTROLLER_HELP, GENERATE_MIGRATION_HELP,
@@ -29,8 +30,8 @@ const PADDING = "  ";
 function ensureSimplicityApp(command) {
   if(!isSimplicityApp(cwd)) {
     throwLibraryError(
-      `'simplicity ${command}' can only be run ` +
-      "from within a Simplicity application directory."
+      `'${BUILDER_NAME} ${command}' can only be run ` +
+      `from within a ${FRAMEWORK_NAME} application directory.`
     );
   }
 }
@@ -75,7 +76,7 @@ async function showHelp(target) {
 
 function showVersionInfo() {
   print(
-    `${PADDING}${marker.success.text("Simplicity")}${` version ${require("../package").version} (cli)`}`
+    `${PADDING}${marker.success.text(FRAMEWORK_NAME)}${` version ${require("../package").version} (cli)`}`
   );
 
   if(isSimplicityApp(cwd)) {

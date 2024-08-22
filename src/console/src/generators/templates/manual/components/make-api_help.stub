@@ -1,6 +1,6 @@
-Simplicity CLI - make
+Bob - make manual
 
-USAGE: simplicity make:<component> [options]
+USAGE: bob make:[<component>] [options...]
 
 Description:
   Generate Model, Migration, Controller, or Route files.
@@ -14,4 +14,4 @@ Components:
 Options:
   --help (-h)       Show this help.
 
-To view the help manual for each type of component type simplicity make:<component> --help.
+To view the help manual for each type of component type bob make:<component> --help.

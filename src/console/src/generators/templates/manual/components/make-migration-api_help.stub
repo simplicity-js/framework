@@ -1,6 +1,6 @@
-Simplicity CLI - make:migration
+Bob - make:migration manual
 
-USAGE: simplicity make:migration <MigrationName> [options]
+USAGE: bob make:migration [<MigrationName>] [options...]
 
 Description:
   Generate Migration files

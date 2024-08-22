@@ -6,6 +6,7 @@ const os = require("node:os");
 const path = require("node:path");
 const util = require("node:util");
 const {
+  BUILDER_NAME, FRAMEWORK_NAME,
   GENERATE_CONTROLLER_COMMAND, GENERATE_MIGRATION_COMMAND,
   GENERATE_MODEL_COMMAND, GENERATE_ROUTE_COMMAND,
   MANUAL_HELP, MIGRATION_TYPES,
@@ -206,7 +207,7 @@ describe("cli", function() {
   describe("version (--version, -v)", function() {
     before(function(done) {
       this.parentDir = path.dirname(__dirname);
-      this.versionInfo = `${PADDING}${marker.success.text("Simplicity")}${` version ${require("../package").version} (cli)`}`;
+      this.versionInfo = `${PADDING}${marker.success.text(FRAMEWORK_NAME)}${` version ${require("../package").version} (cli)`}`;
       done();
     });
 
@@ -252,7 +253,7 @@ describe("cli", function() {
       chdir(cliTestApp);
     });
 
-    it("should also display framework version if inside a Simplicity Application directory", async function() {
+    it(`should also display framework version if inside a ${FRAMEWORK_NAME} Application directory`, async function() {
       // We are inside the cli-test-app directory, so no need to chdir
       const { sinonSpy, restore } = spyOnConsoleOutput();
       await exec(`node ${binDir}/cli -v`);
@@ -276,7 +277,7 @@ describe("cli", function() {
       done();
     });
 
-    it("should fail if invoked outside of a Simplicity application directory", async function() {
+    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
       chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -286,8 +287,8 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'simplicity ${GENERATE_CONTROLLER_COMMAND}' can only be run ` +
-        "from within a Simplicity application directory."
+        `'${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND}' can only be run ` +
+        `from within a ${FRAMEWORK_NAME} application directory.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -306,7 +307,7 @@ describe("cli", function() {
       const expected1 = new RegExp("Generating Controller...");
       const expected2 = new RegExp(
         "The Controller name is required. " +
-        `Type simplicity ${GENERATE_CONTROLLER_COMMAND} --help for help`
+        `Type ${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -457,7 +458,7 @@ describe("cli", function() {
       done();
     });
 
-    it("should fail if invoked outside of a Simplicity application directory", async function() {
+    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
       chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -467,8 +468,8 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'simplicity ${GENERATE_MIGRATION_COMMAND}' can only be run ` +
-        "from within a Simplicity application directory."
+        `'${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND}' can only be run ` +
+        `from within a ${FRAMEWORK_NAME} application directory.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -487,7 +488,7 @@ describe("cli", function() {
       const expected1 = new RegExp("Generating Migration...");
       const expected2 = new RegExp(
         "The Migration name is required. " +
-        `Type simplicity ${GENERATE_MIGRATION_COMMAND} --help for help`
+        `Type ${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -651,7 +652,7 @@ describe("cli", function() {
       });
     });
 
-    it("should fail if invoked outside of a Simplicity application directory", async function() {
+    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
       chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -659,8 +660,8 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'simplicity ${RUN_MIGRATION_COMMAND}' can only be run ` +
-        "from within a Simplicity application directory."
+        `'${BUILDER_NAME} ${RUN_MIGRATION_COMMAND}' can only be run ` +
+        `from within a ${FRAMEWORK_NAME} application directory.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -785,7 +786,7 @@ describe("cli", function() {
       done();
     });
 
-    it("should fail if invoked outside of a Simplicity application directory", async function() {
+    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
       chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -795,8 +796,8 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'simplicity ${GENERATE_MODEL_COMMAND}' can only be run ` +
-        "from within a Simplicity application directory."
+        `'${BUILDER_NAME} ${GENERATE_MODEL_COMMAND}' can only be run ` +
+        `from within a ${FRAMEWORK_NAME} application directory.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -815,7 +816,7 @@ describe("cli", function() {
       const expected1 = new RegExp("Generating Model...");
       const expected2 = new RegExp(
         "The Model name is required. " +
-        `Type simplicity ${GENERATE_MODEL_COMMAND} --help for help`
+        `Type ${BUILDER_NAME} ${GENERATE_MODEL_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -1025,7 +1026,7 @@ describe("cli", function() {
       done();
     });
 
-    it("should fail if invoked outside of a Simplicity application directory", async function() {
+    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
       chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -1035,8 +1036,8 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'simplicity ${GENERATE_ROUTE_COMMAND}' can only be run ` +
-        "from within a Simplicity application directory."
+        `'${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND}' can only be run ` +
+        `from within a ${FRAMEWORK_NAME} application directory.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -1055,7 +1056,7 @@ describe("cli", function() {
       const expected1 = /Generating Route.../;
       const expected2 = new RegExp(
         "The Route name is required. " +
-        `Type simplicity ${GENERATE_ROUTE_COMMAND} --help for help`
+        `Type ${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;

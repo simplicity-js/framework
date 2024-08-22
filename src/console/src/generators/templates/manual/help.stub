@@ -1,6 +1,6 @@
-Simplicity CLI
+Bob - The Simplicity CLI Command Runner
 
-USAGE: simplicity [command] [options]
+USAGE: bob [<command>] [options...]
 
 Commands:
   make:controller         Generate Controllers.
@@ -13,4 +13,4 @@ Options:
   --help (-h)             Show this help manual.
   --version (-v)          Print version information and exit.
 
-To view the help manual for each type of command type `simplicity <command> --help`
+To view the help manual for each type of command type `bob <command> --help`

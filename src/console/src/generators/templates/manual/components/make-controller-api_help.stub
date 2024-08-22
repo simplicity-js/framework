@@ -1,6 +1,6 @@
-Simplicity CLI - make:controller
+Bob - make:controller manual
 
-USAGE: simplicity make:controller <ControllerName> [options]
+USAGE: bob make:controller [<ControllerName>] [options...]
 
 Description:
   Generate Controller file.
