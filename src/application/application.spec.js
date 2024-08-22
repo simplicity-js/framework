@@ -26,6 +26,7 @@ const applicationBootstrapConfig = {
     health: healthCheckRoute,
   },
 };
+const DEFAULT_PORT = 8800;
 
 Application.configure(applicationBootstrapConfig);
 
@@ -256,14 +257,13 @@ module.exports = {
             });
         });
 
-        it("should listen on default port 8800 if no port specified", function(done) {
-          const defaultPort = 8800;
+        it(`should listen on default port ${DEFAULT_PORT} if no port specified`, function(done) {
           const host = "http://localhost";
           const app = Application.create();
 
           app.listen();
 
-          request(`${host}:${defaultPort}`)
+          request(`${host}:${DEFAULT_PORT}`)
             .get("/")
             .expect(200)
             .expect("Content-Type", "text/html; charset=utf-8")
@@ -275,6 +275,91 @@ module.exports = {
               expect(res.text).to.match(/class="page-body"/);
               app.stop(done);
             });
+        });
+      });
+
+      describe("runCommand", function() {
+        describe("commands", function() {
+          describe("start", function() {
+            const tests = [
+              {
+                description: `without args should serve the app on the default port ${DEFAULT_PORT}`,
+                port: DEFAULT_PORT,
+                commandArgs: [],
+              },
+              {
+                description: "with two args should serve the app on the specified port",
+                port: 6007,
+                commandArgs: ["port=6007"],
+              },
+              {
+                description: "with three args should serve the app on the specified port",
+                port: 6008,
+                commandArgs: ["port", 6008],
+              }
+            ];
+
+            tests.forEach(test => {
+              it(test.description, function(done) {
+                const app = Application.create();
+                const host = "http://localhost";
+
+                app.runCommand(["start"].concat(test.commandArgs));
+
+                request(`${host}:${test.port}`)
+                  .get("/")
+                  .expect(200)
+                  .expect("Content-Type", "text/html; charset=utf-8")
+                  .end((err, res) => {
+                    if(err) {
+                      return done(err);
+                    }
+
+                    expect(res.text).to.match(/class="page-body"/);
+                    app.stop(done);
+                  });
+              });
+            });
+          });
+
+          describe("stop", function() {
+            it("should stop the server", function(done) {
+              const app = Application.create();
+              const host = "http://localhost";
+              const port = 6009;
+
+              app.runCommand(["start", "port", port]);
+
+              request(`${host}:${port}`)
+                .get("/")
+                .expect(200)
+                .expect("Content-Type", "text/html; charset=utf-8")
+                .end((err, res) => {
+                  if(err) {
+                    return done(err);
+                  }
+
+                  expect(res.text).to.match(/class="page-body"/);
+
+                  app.runCommand(["stop"]).then(() => {
+                    request(`${host}:${port}`)
+                      .get("/")
+                      .end((err) => {
+                        const expectedErrorMessage = "ECONNREFUSED: Connection refused";
+
+                        if(!err || err.message !== expectedErrorMessage) {
+                          return done(new Error(
+                            `Expected ${expectedErrorMessage} got ${err}`
+                          ));
+                        }
+
+                        expect(err.message).to.equal(expectedErrorMessage);
+                        done();
+                      });
+                  });
+                });
+            });
+          });
         });
       });
     });

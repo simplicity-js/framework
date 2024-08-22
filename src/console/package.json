@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Simplicity MVC Framework console",
   "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
   "license": "MIT",
   "dependencies": {

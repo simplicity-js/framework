@@ -123,7 +123,11 @@ module.exports = class Application {
       }
 
       runCommand(args) {
-        if(!!args.length && args[0] === "serve") {
+        const command = !!args.length
+          ? args[0]
+          : `node ${path.dirname(__dirname).replace(/\\/g, "/")}/console`;
+
+        if(command === "start") {
           let port;
 
           if(args.length === 2) {
@@ -135,7 +139,15 @@ module.exports = class Application {
           return this.listen(port);
         }
 
-        const command = `node ${path.dirname(__dirname).replace(/\\/g, "/")}/console/src`;
+        if(command === "stop") {
+          return new Promise((resolve, reject) => {
+            try {
+              this.stop(resolve);
+            } catch(e) {
+              reject(e.code);
+            }
+          });
+        }
 
         return new Promise((resolve, reject) => {
           childProcess
