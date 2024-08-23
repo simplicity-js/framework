@@ -4,13 +4,14 @@ const { GENERATE_MODEL_COMMAND, GENERATE_MODEL_HELP } = require(
   "../helpers/constants");
 const { print } = require("../helpers/printer");
 const { makeMigration, makeModel, normalizeTableName } = require("../lib");
-const { ensureSimplicityApp, showHelp } = require("./helpers/command-helper");
+const { showHelp } = require("./helpers/command-helper");
 
 const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_MODEL_COMMAND,
   handler: processMakeModelCommand,
+  executeOnAppRootOnly: true,
 };
 
 
@@ -23,8 +24,6 @@ async function processMakeModelCommand(name, cliArgs) {
   let createMigration = false;
   let displayHelp = false;
   const params = cliArgs || {};
-
-  ensureSimplicityApp(GENERATE_MODEL_COMMAND);
 
   const OPTIONS = {
     LIST: ["help", "fields", "t", "n", "force", "database", "migration"],

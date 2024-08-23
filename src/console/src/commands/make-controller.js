@@ -4,13 +4,14 @@ const { GENERATE_CONTROLLER_COMMAND, GENERATE_CONTROLLER_HELP
 } = require("../helpers/constants");
 const { print } = require("../helpers/printer");
 const { makeController } = require("../lib");
-const { ensureSimplicityApp, showHelp } = require("./helpers/command-helper");
+const { showHelp } = require("./helpers/command-helper");
 
 const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_CONTROLLER_COMMAND,
   handler: processMakeControllerCommand,
+  executeOnAppRootOnly: true,
 };
 
 
@@ -23,8 +24,6 @@ function processMakeControllerCommand(name, cliArgs) {
   let database = "default";
   let displayHelp = false;
   const params = cliArgs || {};
-
-  ensureSimplicityApp(GENERATE_CONTROLLER_COMMAND);
 
   const OPTIONS = {
     LIST: ["help", "m", "n", "t", "force", "resource", "database"],

@@ -121,7 +121,7 @@ describe("commands", function() {
     it("should display the help manual", async function() {
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      await commands.help();
+      await commands.help.handler();
       restore();
 
       const expected = this.helpManual;
@@ -134,6 +134,7 @@ describe("commands", function() {
 
   describe("version()", function() {
     before(function(done) {
+      this.command = commands.version.handler;
       this.parentDir = path.dirname(__dirname);
       this.versionInfo = `${PADDING}${marker.success.text(FRAMEWORK_NAME)}${` version ${require("../package").version} (cli)`}`;
       done();
@@ -142,7 +143,7 @@ describe("commands", function() {
     it("should display version information", async function() {
       const { sinonSpy, restore } = spyOnConsoleOutput();
       chdir(this.parentDir);
-      commands.version();
+      this.command();
       restore();
 
       const expected = this.versionInfo.trim();
@@ -157,7 +158,7 @@ describe("commands", function() {
       // We are inside the cli-test-app directory, so no need to chdir
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      commands.version();
+      this.command();
       restore();
 
       const cwd = normalizePath(process.cwd());
@@ -175,18 +176,7 @@ describe("commands", function() {
 
   describe(`${GENERATE_CONTROLLER_COMMAND}(name, [options])`, function() {
     before(function(done) {
-      this.command = commands[GENERATE_CONTROLLER_COMMAND];
-      done();
-    });
-
-    it(`should throw if invoked outside of a ${FRAMEWORK_NAME} application directory`, function(done) {
-      chdir(currDir);
-
-      const expected = `'${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND}' can only be run ` +
-      `from within a ${FRAMEWORK_NAME} application directory.`;
-
-      expect(this.command.bind(this)).to.throw(expected);
-      chdir(commandsTestApp);
+      this.command = commands[GENERATE_CONTROLLER_COMMAND].handler;
       done();
     });
 
@@ -351,24 +341,8 @@ describe("commands", function() {
 
   describe(`${GENERATE_MIGRATION_COMMAND}(name, [options])`, function() {
     before(function(done) {
-      this.command = commands[GENERATE_MIGRATION_COMMAND];
+      this.command = commands[GENERATE_MIGRATION_COMMAND].handler;
       done();
-    });
-
-    it(`should throw if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
-      chdir(currDir);
-
-      const expected = `'${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`;
-
-      try {
-        await this.command();
-        expect(true).to.equal(false); // just ensuring it actually didn't get here.
-      } catch(err) {
-        expect(err.message).to.equal(expected);
-      }
-
-      chdir(commandsTestApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -522,29 +496,13 @@ describe("commands", function() {
 
   describe(`${RUN_MIGRATION_COMMAND}([options])`, function() {
     before(async function() {
-      this.command = commands[RUN_MIGRATION_COMMAND];
-      this.makeMigrationCommand = commands[GENERATE_MIGRATION_COMMAND];
-      this.makeModelCommand = commands[GENERATE_MODEL_COMMAND];
+      this.command = commands[RUN_MIGRATION_COMMAND].handler;
+      this.makeMigrationCommand = commands[GENERATE_MIGRATION_COMMAND].handler;
+      this.makeModelCommand = commands[GENERATE_MODEL_COMMAND].handler;
 
       await this.mongooseConnection.db.collection("migrations").deleteMany({
         //name: { $regex: "(alter|create|update)-users-table" },
       });
-    });
-
-    it(`should throw if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
-      chdir(currDir);
-
-      const expected = `'${BUILDER_NAME} ${RUN_MIGRATION_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`;
-
-      try {
-        await this.command();
-        expect(true).to.equal(false); // just ensuring it actually didn't get here.
-      } catch(err) {
-        expect(err.message).to.equal(expected);
-      }
-
-      chdir(commandsTestApp);
     });
 
     it("should run the migrations for 'database' option 'mongodb'", async function() {
@@ -658,24 +616,8 @@ describe("commands", function() {
 
   describe(`${GENERATE_MODEL_COMMAND}(name, [options])`, function() {
     before(function(done) {
-      this.command = commands[GENERATE_MODEL_COMMAND];
+      this.command = commands[GENERATE_MODEL_COMMAND].handler;
       done();
-    });
-
-    it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
-      chdir(currDir);
-
-      const expected = `'${BUILDER_NAME} ${GENERATE_MODEL_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`;
-
-      try {
-        await this.command();
-        expect(true).to.equal(false); // just ensuring it actually didn't get here.
-      } catch(err) {
-        expect(err.message).to.equal(expected);
-      }
-
-      chdir(commandsTestApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -895,24 +837,8 @@ describe("commands", function() {
 
   describe(`${GENERATE_ROUTE_COMMAND}(name, [options])`, function() {
     before(function(done) {
-      this.command = commands[GENERATE_ROUTE_COMMAND];
+      this.command = commands[GENERATE_ROUTE_COMMAND].handler;
       done();
-    });
-
-    it(`should throw if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
-      chdir(currDir);
-
-      const expected = `'${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`;
-
-      try {
-        await this.command();
-        expect(true).to.equal(false); // just ensuring it actually didn't get here.
-      } catch(err) {
-        expect(err.message).to.equal(expected);
-      }
-
-      chdir(commandsTestApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {

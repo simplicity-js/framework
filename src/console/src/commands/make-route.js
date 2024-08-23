@@ -4,13 +4,14 @@ const { GENERATE_ROUTE_COMMAND, GENERATE_ROUTE_HELP } = require(
   "../helpers/constants");
 const { print } = require("../helpers/printer");
 const { makeRoute } = require("../lib");
-const { ensureSimplicityApp, showHelp } = require("./helpers/command-helper");
+const { showHelp } = require("./helpers/command-helper");
 
 const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_ROUTE_COMMAND,
   handler: processMakeRouteCommand,
+  executeOnAppRootOnly: true,
 };
 
 
@@ -21,8 +22,6 @@ async function processMakeRouteCommand(name, cliArgs) {
   let overwrite = false;
   let displayHelp = false;
   const params = cliArgs || {};
-
-  ensureSimplicityApp(GENERATE_ROUTE_COMMAND);
 
   const ROUTE_OPTIONS = {
     LIST: ["help", "api", "c", "force", "resource"],

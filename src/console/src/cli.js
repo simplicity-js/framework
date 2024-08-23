@@ -11,7 +11,7 @@ const { GENERATE_COMMAND, GENERATE_HELP, MANUAL_HELP } = require(
   "./helpers/constants");
 const { printErrorMessage } = require("./lib");
 
-const { showHelp, showVersionInfo } = helpers;
+const { ensureSimplicityApp, showHelp, showVersionInfo } = helpers;
 
 const { values: params, positionals: list } = getArgs();
 const PARAMETER_1 = list[0];
@@ -33,16 +33,22 @@ function getAvailableCommands() {
 }
 
 
-async function main(command) {
+async function main(c) {
   const availableCommands = getAvailableCommands();
-  const COMMAND_LIST = Object.keys(availableCommands);
+  const commandList = Object.keys(availableCommands);
 
   try {
-    if(COMMAND_LIST.includes(command)) {
-      return await availableCommands[command](PARAMETER_2, params);
-    } else if(command) {
+    if(commandList.includes(c)) {
+      const command = availableCommands[c];
+
+      if(command.executeOnAppRootOnly) {
+        ensureSimplicityApp(command.name);
+      }
+
+      return await command.handler(PARAMETER_2, params);
+    } else if(c) {
       print(
-        `${PADDING}ERROR: Unkown Command '${command}' ` +
+        `${PADDING}ERROR: Unkown Command '${c}' ` +
         `pls type ${BUILDER_NAME} --help for help.`
       );
     } else if(params.version) {

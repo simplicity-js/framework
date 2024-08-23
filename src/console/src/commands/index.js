@@ -13,9 +13,9 @@ for(let i = 0; i < commandFiles.length; i++) {
   if(filesToSkip.includes(filename)) {
     continue;
   } else {
-    const { name, handler } = require(`./${filename}`);
+    const command = require(`./${filename}`);
 
-    commands[name] = handler;
+    commands[command.name] = command;
   }
 }
 

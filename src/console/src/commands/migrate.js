@@ -4,13 +4,14 @@ const { RUN_MIGRATION_COMMAND, RUN_MIGRATION_HELP } = require(
   "../helpers/constants");
 const { print } = require("../helpers/printer");
 const { migrate } = require("../lib");
-const { ensureSimplicityApp, showHelp } = require("./helpers/command-helper");
+const { showHelp } = require("./helpers/command-helper");
 
 const PADDING = "  ";
 
 module.exports = {
   name: RUN_MIGRATION_COMMAND,
   handler: processMigrateCommand,
+  executeOnAppRootOnly: true,
 };
 
 
@@ -21,8 +22,6 @@ async function processMigrateCommand(_, cliArgs) {
   let database = ""; // The database engine.
   let displayHelp = false;
   const params = cliArgs || {};
-
-  ensureSimplicityApp(RUN_MIGRATION_COMMAND);
 
   const OPTIONS = {
     LIST: ["help", "database", "reset", "rollback", "step"],

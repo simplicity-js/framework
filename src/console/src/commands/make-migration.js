@@ -4,13 +4,14 @@ const { GENERATE_MIGRATION_COMMAND, GENERATE_MIGRATION_HELP
 } = require("../helpers/constants");
 const { print } = require("../helpers/printer");
 const { makeMigration } = require("../lib");
-const { ensureSimplicityApp, showHelp } = require("./helpers/command-helper");
+const { showHelp } = require("./helpers/command-helper");
 
 const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_MIGRATION_COMMAND,
   handler: processMakeMigrationCommand,
+  executeOnAppRootOnly: true,
 };
 
 
@@ -22,8 +23,6 @@ async function processMakeMigrationCommand(name, cliArgs) {
   let type = "";
   let displayHelp = false;
   const params = cliArgs || {};
-
-  ensureSimplicityApp(GENERATE_MIGRATION_COMMAND);
 
   const MIGRATION_OPTIONS = {
     LIST: ["help", "f", "t", "n", "database", "type"],
