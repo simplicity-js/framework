@@ -15,7 +15,6 @@ const { ensureSimplicityApp, showHelp, showVersionInfo } = helpers;
 
 const { values: params, positionals: list } = getArgs();
 const PARAMETER_1 = list[0];
-const PARAMETER_2 = list[1];
 const PADDING = "  ";
 
 const otherCommands = {};
@@ -45,7 +44,7 @@ async function main(c) {
         ensureSimplicityApp(command.name);
       }
 
-      return await command.handler(PARAMETER_2, params);
+      return await command.handler(list.slice(1), params);
     } else if(c) {
       print(
         `${PADDING}ERROR: Unkown Command '${c}' ` +

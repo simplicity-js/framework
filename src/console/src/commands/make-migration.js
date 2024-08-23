@@ -15,14 +15,20 @@ module.exports = {
 };
 
 
-async function processMakeMigrationCommand(name, cliArgs) {
+/**
+ * @param {Array} list: ordered arguments, representing positional CLI arguments
+ * @param {Object} options: unordered arguments, representing named CLI options
+ */
+async function processMakeMigrationCommand(list, options) {
   let fields;
   let table;
   let filename;
   let database = "default";
   let type = "";
   let displayHelp = false;
-  const params = cliArgs || {};
+
+  const name = Array.isArray(list) && !!list.length ? list[0] : "";
+  const params = options || {};
 
   const MIGRATION_OPTIONS = {
     LIST: ["help", "f", "t", "n", "database", "type"],

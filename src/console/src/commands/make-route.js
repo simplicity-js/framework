@@ -15,13 +15,19 @@ module.exports = {
 };
 
 
-async function processMakeRouteCommand(name, cliArgs) {
+/**
+ * @param {Array} list: ordered arguments, representing positional CLI arguments
+ * @param {Object} options: unordered arguments, representing named CLI options
+ */
+async function processMakeRouteCommand(list, options) {
   let controller;
   let isApiRoute = false;
   let isResourceRoute = false;
   let overwrite = false;
   let displayHelp = false;
-  const params = cliArgs || {};
+
+  const name = Array.isArray(list) && !!list.length ? list[0] : "";
+  const params = options || {};
 
   const ROUTE_OPTIONS = {
     LIST: ["help", "api", "c", "force", "resource"],

@@ -80,6 +80,8 @@ describe("commands", function() {
   });
 
   after(async function() {
+    this.timeout(1000 * 10);
+
     expect = null;
 
     try {
@@ -92,7 +94,7 @@ describe("commands", function() {
 
       chdir(currDir);
 
-      setTimeout(() => deleteFileOrDirectory(commandsTestApp), 500);
+      setTimeout(() => deleteFileOrDirectory(commandsTestApp), 2000);
     } catch(err) {
       fs.appendFileSync(
         `${currDir}/.logs/console.error`,
@@ -209,7 +211,7 @@ describe("commands", function() {
       expect(pathExists(controllerFile)).to.be.false;
 
       // Create the controller the first time
-      this.command(controllerName);
+      this.command([controllerName]);
       restore();
 
       const r1 = `Generating Controller '${controllerName}'`;
@@ -236,7 +238,7 @@ describe("commands", function() {
       // because controllers are all stored inside the same parent directory.
       const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-      this.command(controllerName, { database: "mongodb" });
+      this.command([controllerName], { database: "mongodb" });
       restore2();
 
       const expected1 = new RegExp("Generating Controller...");
@@ -262,7 +264,7 @@ describe("commands", function() {
       expect(pathExists(controllerFile)).to.be.false;
 
       // Create the controller the first time
-      this.command(controllerName, { database: "sqlite" });
+      this.command([controllerName], { database: "sqlite" });
       restore();
 
       let r1 = `Generating Controller '${controllerName}'`;
@@ -285,7 +287,7 @@ describe("commands", function() {
       // with the 'overwrite' option set to true.
       const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-      this.command(controllerName, { database: "mongodb", force: true });
+      this.command([controllerName], { database: "mongodb", force: true });
       restore2();
 
       r1 = `Generating Controller '${controllerName}'`;
@@ -315,7 +317,7 @@ describe("commands", function() {
 
       expect(pathExists(controllerFile)).to.be.false;
 
-      this.command(controllerName);
+      this.command([controllerName]);
       restore();
 
       const r1 = `Generating Controller '${controllerName}'`;
@@ -371,7 +373,7 @@ describe("commands", function() {
       const migrationName = "command-peoples-table";
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      await this.command(migrationName, { database,type });
+      await this.command([migrationName], { database, type });
 
       restore();
 
@@ -395,7 +397,7 @@ describe("commands", function() {
       expect(pathExists(migrationFile)).to.be.false;
 
       // Create the migration the first time
-      const destination = await this.command(migrationName);
+      const destination = await this.command([migrationName]);
       restore();
 
       const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
@@ -414,7 +416,7 @@ describe("commands", function() {
 
       // Create the failing migration with same name as the first
       const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
-      await this.command(migrationName);
+      await this.command([migrationName]);
       restore2();
 
       const expected = new RegExp(
@@ -433,7 +435,7 @@ describe("commands", function() {
 
       expect(pathExists(migrationFile)).to.be.false;
 
-      const destination = await this.command(migrationName);
+      const destination = await this.command([migrationName]);
       restore();
 
       const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
@@ -469,7 +471,7 @@ describe("commands", function() {
 
           expect(pathExists(migrationFile)).to.be.false;
 
-          const destination = await this.command(migrationName, { database });
+          const destination = await this.command([migrationName], { database });
           restore();
 
           const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
@@ -518,11 +520,11 @@ describe("commands", function() {
       expect(await collectionExists(collection, connection)).to.be.false;
 
       await Promise.all([
-        this.makeMigrationCommand(migrationName, { database }),
-        this.makeModelCommand(modelName, { database })
+        this.makeMigrationCommand([migrationName], { database }),
+        this.makeModelCommand([modelName], { database })
       ]);
 
-      await this.command({ database });
+      await this.command([], { database });
       restore();
 
       expect(await collectionExists(collection, connection)).to.be.true;
@@ -530,7 +532,7 @@ describe("commands", function() {
       await connection.dropCollection(collection);
     });
 
-    it("should run the migrations for non-mongodb --database option", async function() {
+    it("should run the migrations for non-mongodb 'database' option", async function() {
       const database = "sqlite";
       const migrationName = "create-zebras-table";
       const modelName = "Zebra";
@@ -541,11 +543,11 @@ describe("commands", function() {
       expect(await tableExists(table, connection)).to.be.false;
 
       await Promise.all([
-        this.makeModelCommand(modelName, { database }),
-        this.makeMigrationCommand(migrationName, { database })
+        this.makeModelCommand([modelName], { database }),
+        this.makeMigrationCommand([migrationName], { database })
       ]);
 
-      await this.command({ database });
+      await this.command([], { database });
 
       restore();
 
@@ -554,7 +556,7 @@ describe("commands", function() {
       await connection.query(`DROP TABLE IF EXISTS \`${table}\``);
     });
 
-    it("should run the migrations for the --database option 'default'", async function() {
+    it("should run the migrations for the 'database' option 'default'", async function() {
       const database = "default";
       const migrationName = "create-penguins-table";
       const modelName = "Penguin";
@@ -565,11 +567,11 @@ describe("commands", function() {
       expect(await tableExists(table, connection)).to.be.false;
 
       await Promise.all([
-        this.makeMigrationCommand(migrationName, { database }),
-        this.makeModelCommand(modelName, { database })
+        this.makeMigrationCommand([migrationName], { database }),
+        this.makeModelCommand([modelName], { database })
       ]);
 
-      await this.command({ database });
+      await this.command([], { database });
 
       restore();
 
@@ -578,7 +580,7 @@ describe("commands", function() {
       await connection.query(`DROP TABLE IF EXISTS \`${table}\``);
     });
 
-    it("should run all migrations if the --database option is not specified", async function() {
+    it("should run all migrations if the 'database' option is not specified", async function() {
       const mongooseMigrationName = "create-ants-table";
       const mongooseModelName = "Ant";
       const mongooseConn = this.mongooseConnection;
@@ -595,10 +597,10 @@ describe("commands", function() {
       expect(await tableExists(table, sequelizeConn)).to.be.false;
 
       await Promise.all([
-        this.makeMigrationCommand(mongooseMigrationName, {database: "mongodb"  }),
-        this.makeModelCommand(mongooseModelName, { database: "mongodb" }),
-        this.makeMigrationCommand(sequelizeMigrationName, { database: "sqlite" }),
-        this.makeModelCommand(sequelizeModelName, { database: "sqlite" })
+        this.makeMigrationCommand([mongooseMigrationName], {database: "mongodb"  }),
+        this.makeModelCommand([mongooseModelName], { database: "mongodb" }),
+        this.makeMigrationCommand([sequelizeMigrationName], { database: "sqlite" }),
+        this.makeModelCommand([sequelizeModelName], { database: "sqlite" })
       ]);
 
       await this.command();
@@ -650,7 +652,7 @@ describe("commands", function() {
       expect(pathExists(modelFile)).to.be.false;
 
       // Create the model the first time
-      await this.command(modelName, { database });
+      await this.command([modelName], { database });
       restore();
 
       const r1 = `Generating Model '${modelName}'...`;
@@ -672,7 +674,7 @@ describe("commands", function() {
       // Create the failing model with the same name and same ORM as the first
       const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-      await this.command(modelName, { database });
+      await this.command([modelName], { database });
       restore2();
 
       const expected1 = new RegExp(`Generating Model '${modelName}'...`);
@@ -700,7 +702,7 @@ describe("commands", function() {
       expect(pathExists(modelFile)).to.be.false;
 
       // Create the model the first time
-      await this.command(modelName, { database });
+      await this.command([modelName], { database });
       restore();
 
       let r1 = `Generating Model '${modelName}'...`;
@@ -723,7 +725,7 @@ describe("commands", function() {
       // with the 'overwrite' option set to true.
       const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-      await this.command(modelName, { database, force: true });
+      await this.command([modelName], { database, force: true });
       restore2();
 
       r1 = `Generating Model '${modelName}'...`;
@@ -758,7 +760,7 @@ describe("commands", function() {
 
       // Create the first model with "sequelize" as the ORM
       // It will be stored in the app/http/models/sequelize directory.
-      await this.command(modelName, { database });
+      await this.command([modelName], { database });
       restore();
 
       let r1 = `Created: src > app > http > models > ${orm} > ${filename}`;
@@ -785,7 +787,7 @@ describe("commands", function() {
 
       expect(pathExists(modelFile2)).to.be.false;
 
-      await this.command(modelName, { database });
+      await this.command([modelName], { database });
       restore2();
 
       r1 = `Created: src > app > http > models > ${orm} > ${filename}`;
@@ -814,7 +816,7 @@ describe("commands", function() {
 
       expect(pathExists(modelFile)).to.be.false;
 
-      await this.command(modelName);
+      await this.command([modelName]);
       restore();
 
       const r1 = `Created: src > app > http > models > ${orm} > ${modelName.toLowerCase()}.js`;
@@ -873,7 +875,7 @@ describe("commands", function() {
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      await this.command(routeName);
+      await this.command([routeName]);
 
       restore();
 
@@ -902,7 +904,7 @@ describe("commands", function() {
       })).to.be.false;
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
-      await this.command(routeName, { api: true });
+      await this.command([routeName], { api: true });
       restore();
 
       const r1 = "Route information written to: src > routes > api.js";
@@ -930,7 +932,7 @@ describe("commands", function() {
       })).to.be.false;
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
-      await this.command(routeName, { resource: true });
+      await this.command([routeName], { resource: true });
       restore();
 
       const r1 = "Route information written to: src > routes > web.js";
@@ -958,7 +960,7 @@ describe("commands", function() {
       })).to.be.false;
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
-      await this.command(routeName, { api: true, resource: true });
+      await this.command([routeName], { api: true, resource: true });
       restore();
 
       const r1 = "Route information written to: src > routes > web.js";
@@ -997,7 +999,7 @@ describe("commands", function() {
         expect(pathExists(routeFile)).to.be.false;
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
-        await this.command(routeName);
+        await this.command([routeName]);
         restore();
 
         const r1 = `Generating Route '${routeName}'...`;
@@ -1038,7 +1040,7 @@ describe("commands", function() {
         expect(pathExists(routeFile)).to.be.false;
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
-        await this.command(routeName, {api: true });
+        await this.command([routeName], {api: true });
         restore();
 
         const r1 = `Generating Route '${routeName}'...`;
@@ -1079,7 +1081,7 @@ describe("commands", function() {
         expect(pathExists(routeFile)).to.be.false;
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
-        await this.command(routeName, { api: true, resource: true });
+        await this.command([routeName], { api: true, resource: true });
         restore();
 
         const r1 = `Generating Route '${routeName}'...`;
@@ -1120,7 +1122,7 @@ describe("commands", function() {
         expect(pathExists(routeFile)).to.be.false;
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
-        await this.command(routeName);
+        await this.command([routeName]);
         restore();
 
         const r1 = `Created: src > routes > web > ${routeName}.js`;
@@ -1149,7 +1151,7 @@ describe("commands", function() {
         // Create the failing route with the same name as the first
         const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-        await this.command(routeName);
+        await this.command([routeName]);
         restore2();
 
         const expected = new RegExp(
@@ -1164,7 +1166,7 @@ describe("commands", function() {
         deleteFileOrDirectory(routeFile);
       });
 
-      it("should overwrite an existing route if the --force option is set", async function() {
+      it("should overwrite an existing route if the 'force' option is true", async function() {
         const routeName = "weezers";
         const routeDirectory = path.join(routesPath, "api");
         const routeFile = path.join(routeDirectory, `${routeName}.js`);
@@ -1174,7 +1176,7 @@ describe("commands", function() {
         expect(pathExists(routeFile)).to.be.false;
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
-        await this.command(routeName, { api: true });
+        await this.command([routeName], { api: true });
         restore();
 
         let r1 = `Created: src > routes > api > ${routeName}.js`;
@@ -1203,7 +1205,7 @@ describe("commands", function() {
         // Re-create the route with the 'overwrite' option set to true.
         const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
 
-        await this.command(routeName, { api: true, force: true });
+        await this.command([routeName], { api: true, force: true });
 
         restore2();
 

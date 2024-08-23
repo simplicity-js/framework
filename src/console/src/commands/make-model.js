@@ -15,7 +15,11 @@ module.exports = {
 };
 
 
-async function processMakeModelCommand(name, cliArgs) {
+/**
+ * @param {Array} list: ordered arguments, representing positional CLI arguments
+ * @param {Object} options: unordered arguments, representing named CLI options
+ */
+async function processMakeModelCommand(list, options) {
   let fields;
   let table;
   let filename;
@@ -23,7 +27,9 @@ async function processMakeModelCommand(name, cliArgs) {
   let database = "default";
   let createMigration = false;
   let displayHelp = false;
-  const params = cliArgs || {};
+
+  const name = Array.isArray(list) && !!list.length ? list[0] : "";
+  const params = options || {};
 
   const OPTIONS = {
     LIST: ["help", "fields", "t", "n", "force", "database", "migration"],

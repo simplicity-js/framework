@@ -15,7 +15,11 @@ module.exports = {
 };
 
 
-function processMakeControllerCommand(name, cliArgs) {
+/**
+ * @param {Array} list: ordered arguments, representing positional CLI arguments
+ * @param {Object} options: unordered arguments, representing named CLI options
+ */
+function processMakeControllerCommand(list, options) {
   let model;
   let filename;
   let table;
@@ -23,7 +27,9 @@ function processMakeControllerCommand(name, cliArgs) {
   let isResourceController = false;
   let database = "default";
   let displayHelp = false;
-  const params = cliArgs || {};
+
+  const name = Array.isArray(list) && !!list.length ? list[0] : "";
+  const params = options || {};
 
   const OPTIONS = {
     LIST: ["help", "m", "n", "t", "force", "resource", "database"],

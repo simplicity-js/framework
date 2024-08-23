@@ -15,13 +15,18 @@ module.exports = {
 };
 
 
-async function processMigrateCommand(_, cliArgs) {
+/**
+ * @param {Array} list: ordered arguments, representing positional CLI arguments
+ * @param {Object} options: unordered arguments, representing named CLI options
+ */
+async function processMigrateCommand(_, options) {
   let rollback = false;
   let step = 0;
   let reset = false;
   let database = ""; // The database engine.
   let displayHelp = false;
-  const params = cliArgs || {};
+
+  const params = options || {};
 
   const OPTIONS = {
     LIST: ["help", "database", "reset", "rollback", "step"],
