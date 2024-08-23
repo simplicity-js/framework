@@ -11,9 +11,10 @@ module.exports = function({ expect, TEMPLATES_DIR }) {
     assertStandaloneRouteFile,
     clearInlineRoute,
     collectionExists,
+    normalizeHelpManual,
+    normalizePath,
     tableExists,
     verifyInlineRouteExists,
-    normalizePath,
   };
 
   function assertControllerFile(controllerFile, options) {
@@ -134,7 +135,15 @@ module.exports = function({ expect, TEMPLATES_DIR }) {
     }).toArray();
 
     return collections.length > 0;
-  };
+  }
+
+  function normalizeHelpManual(manual) {
+    return manual.replace(/\r?\n/gm, "");
+  }
+
+  function normalizePath(path) {
+    return path.replace(/\\/g, "/");
+  }
 
   async function tableExists(tableName, connection) {
     try {
@@ -173,9 +182,5 @@ module.exports = function({ expect, TEMPLATES_DIR }) {
     } else {
       return routeData.indexOf(parsedTemplateData) > -1;
     }
-  }
-
-  function normalizePath(path) {
-    return path.replace(/\\/g, "/");
   }
 };

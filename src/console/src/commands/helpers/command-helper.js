@@ -19,7 +19,7 @@ function ensureSimplicityApp(command) {
   if(!isSimplicityApp(process.cwd())) {
     throwLibraryError(
       `'${BUILDER_NAME} ${command}' can only be run ` +
-      `from within a ${FRAMEWORK_NAME} application directory.`
+      `from a ${FRAMEWORK_NAME} application root directory.`
     );
   }
 }

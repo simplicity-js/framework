@@ -31,9 +31,10 @@ let assertMigrationFile;
 let assertModelFile;
 let assertStandaloneRouteFile;
 let collectionExists;
+let normalizeHelpManual;
+let normalizePath;
 let tableExists;
 let verifyInlineRouteExists;
-let normalizePath;
 
 const EOL = os.EOL;
 const PADDING = "  ";
@@ -41,9 +42,6 @@ const chdir = process.chdir;
 const currDir = __dirname.replace(/\\/g, "/");
 const commandsTestApp = `${currDir}/commands-test-app`;
 
-function normalizeHelpManual(manual) {
-  return manual.replace(/\r?\n/gm, "");
-}
 
 describe("commands", function() {
   this.timeout(1000 * 120);
@@ -69,9 +67,10 @@ describe("commands", function() {
     assertModelFile = assertions.assertModelFile;
     assertStandaloneRouteFile = assertions.assertStandaloneRouteFile;
     collectionExists = assertions.collectionExists;
+    normalizeHelpManual = assertions.normalizeHelpManual;
+    normalizePath = assertions.normalizePath;
     tableExists = assertions.tableExists;
     verifyInlineRouteExists = assertions.verifyInlineRouteExists;
-    normalizePath = assertions.normalizePath;
 
     [this.mongooseConnection, this.sequelizeConnection] = await Promise.all([
       getDatabaseConnection("mongodb"),
@@ -94,7 +93,13 @@ describe("commands", function() {
 
       chdir(currDir);
 
-      setTimeout(() => deleteFileOrDirectory(commandsTestApp), 2000);
+      if(typeof this.sequelizeConnection.on === "function") {
+        this.sequelizeConnection.on("close", function() {
+          deleteFileOrDirectory(commandsTestApp);
+        });
+      } else {
+        deleteFileOrDirectory(commandsTestApp);
+      }
     } catch(err) {
       fs.appendFileSync(
         `${currDir}/.logs/console.error`,

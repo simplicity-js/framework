@@ -31,9 +31,10 @@ let assertMigrationFile;
 let assertModelFile;
 let assertStandaloneRouteFile;
 let collectionExists;
+let normalizeHelpManual;
+let normalizePath;
 let tableExists;
 let verifyInlineRouteExists;
-let normalizePath;
 
 const EOL = os.EOL;
 const PADDING = "  ";
@@ -75,8 +76,9 @@ function exec(command, args) {
   });
 };
 
-function normalizeHelpManual(manual) {
-  return manual.replace(/\r?\n/gm, "");
+function generateCommandIsValidOnAppRootOnlyMessage(command) {
+  return `'${BUILDER_NAME} ${command}' can only be run ` +
+  `from a ${FRAMEWORK_NAME} application root directory.`;
 }
 
 describe("cli", function() {
@@ -103,9 +105,10 @@ describe("cli", function() {
     assertModelFile = assertions.assertModelFile;
     assertStandaloneRouteFile = assertions.assertStandaloneRouteFile;
     collectionExists = assertions.collectionExists;
+    normalizeHelpManual = assertions.normalizeHelpManual;
+    normalizePath = assertions.normalizePath;
     tableExists = assertions.tableExists;
     verifyInlineRouteExists = assertions.verifyInlineRouteExists;
-    normalizePath = assertions.normalizePath;
 
     [this.mongooseConnection, this.sequelizeConnection] = await Promise.all([
       getDatabaseConnection("mongodb"),
@@ -125,7 +128,14 @@ describe("cli", function() {
       await this.sequelizeConnection.close();
 
       chdir(currDir);
-      deleteFileOrDirectory(cliTestApp);
+
+      if(typeof this.sequelizeConnection.on === "function") {
+        this.sequelizeConnection.on("close", function() {
+          deleteFileOrDirectory(cliTestApp);
+        });
+      } else {
+        deleteFileOrDirectory(cliTestApp);
+      }
     } catch(err) {
       fs.appendFileSync(
         `${currDir}/.logs/console.error`,
@@ -287,8 +297,7 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`
+        generateCommandIsValidOnAppRootOnlyMessage(GENERATE_CONTROLLER_COMMAND)
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -468,8 +477,7 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`
+        generateCommandIsValidOnAppRootOnlyMessage(GENERATE_MIGRATION_COMMAND)
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -660,8 +668,7 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'${BUILDER_NAME} ${RUN_MIGRATION_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`
+        generateCommandIsValidOnAppRootOnlyMessage(RUN_MIGRATION_COMMAND)
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -796,8 +803,7 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'${BUILDER_NAME} ${GENERATE_MODEL_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`
+        generateCommandIsValidOnAppRootOnlyMessage(GENERATE_MODEL_COMMAND)
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
@@ -1036,8 +1042,7 @@ describe("cli", function() {
       restore();
 
       const expected = new RegExp(
-        `'${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND}' can only be run ` +
-        `from within a ${FRAMEWORK_NAME} application directory.`
+        generateCommandIsValidOnAppRootOnlyMessage(GENERATE_ROUTE_COMMAND)
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
