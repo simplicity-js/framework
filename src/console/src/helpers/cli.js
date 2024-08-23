@@ -1,6 +1,5 @@
 const cp = require("node:child_process");
 const readline = require("node:readline");
-const { parseArgs } = require("node:util");
 
 /**
  * Prompt for confirmation on STDOUT/STDIN
@@ -41,34 +40,4 @@ exports.exec = function exec(command, args) {
       }
     });
   });
-};
-
-/**
- * Get command line arguments and options
- */
-exports.getArgs = function getArgs() {
-  const options = parseArgs({
-    tokens: true,
-    allowPositionals: true,
-    options: {
-      help      : { type: "boolean", short: "h" },
-      fields    : { type: "string",  short: "f" },
-      version   : { type: "boolean", short: "v" },
-      database  : { type: "string"  },
-      migration : { type: "boolean" },
-      rollback  : { type: "boolean" },
-      step      : { type: "string"  },
-      reset     : { type: "boolean" },
-      resource  : { type: "boolean" },
-      force     : { type: "boolean" },
-      api       : { type: "boolean" },
-      type      : { type: "string" },
-      c         : { type: "string" },
-      m         : { type: "string" },
-      n         : { type: "string" },
-      t         : { type: "string" },
-    },
-  });
-
-  return options;
 };

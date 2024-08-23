@@ -30,6 +30,19 @@ const DEFAULT_PORT = 8800;
 
 Application.configure(applicationBootstrapConfig);
 
+function execInBackground(command, args) {
+  args = args || [];
+
+  const ps = childProcess.spawn(command, args, {
+    detached: true,
+    shell: true,
+  });
+
+  ps.unref();
+
+  return ps;
+};
+
 
 module.exports = {
   Application() {
@@ -179,24 +192,11 @@ module.exports = {
             });
         });
 
-        it("should listen on `--port` CLI argument", function(done) {
-          this.timeout(1000 * 15);
+        it("should listen on `--port PORT` CLI argument", function(done) {
+          this.timeout(1000 * 20);
 
           const port = 5007;
           const host = "http://localhost";
-
-          function execInBackground(command, args) {
-            args = args || [];
-
-            const ps = childProcess.spawn(command, args, {
-              detached: true,
-              shell: true,
-            });
-
-            ps.unref();
-
-            return ps;
-          };
 
           function startServer(port) {
             const command = `node -e "require('${currDir}/cli-port-argument-server').listen()"`;
@@ -219,7 +219,7 @@ module.exports = {
                 expect(res.text).to.match(/class="page-body"/);
                 setTimeout(() => kill(child.pid, "SIGKILL", done), 0);
               });
-          }, 5000);
+          }, 1000 * 10);
 
         });
 
@@ -278,46 +278,84 @@ module.exports = {
         });
       });
 
-      describe("runCommand", function() {
+      describe("dispatch", function() {
         describe("commands", function() {
           describe("start", function() {
             const tests = [
               {
-                description: `without args should serve the app on the default port ${DEFAULT_PORT}`,
+                description: `should serve the app on the default port ${DEFAULT_PORT} if the --port option is not passed`,
                 port: DEFAULT_PORT,
                 commandArgs: [],
               },
               {
-                description: "with two args should serve the app on the specified port",
+                description: "should serve the app on the specified port using --port=PORT option",
                 port: 6007,
-                commandArgs: ["port=6007"],
+                commandArgs: ["--port=6007"],
               },
               {
-                description: "with three args should serve the app on the specified port",
+                description: "should serve the app on the specified port using --port PORT option",
                 port: 6008,
-                commandArgs: ["port", 6008],
-              }
+                commandArgs: ["--port", 6008],
+                useEval: true,
+              },
+              {
+                description: "should serve the app on the specified port using -p PORT option",
+                port: 6010,
+                commandArgs: ["-p", 6010],
+                useEval: true,
+              },
             ];
+
+            function runRequestAndTest(host, port, callback) {
+              request(`${host}:${port}`)
+                .get("/")
+                .expect(200)
+                .expect("Content-Type", "text/html; charset=utf-8")
+                .end((err, res) => {
+                  if(err) {
+                    return callback(err);
+                  }
+
+                  expect(res.text).to.match(/class="page-body"/);
+
+                  callback();
+                });
+            }
 
             tests.forEach(test => {
               it(test.description, function(done) {
+                this.timeout(1000 * 20);
+
                 const app = Application.create();
                 const host = "http://localhost";
 
-                app.runCommand(["start"].concat(test.commandArgs));
+                if(test.useEval) {
+                  const child = execInBackground(
+                    `node -e "require('${currDir}/cli-port-argument-server').dispatch()"`,
+                    ["start"].concat(test.commandArgs)
+                  );
 
-                request(`${host}:${test.port}`)
-                  .get("/")
-                  .expect(200)
-                  .expect("Content-Type", "text/html; charset=utf-8")
-                  .end((err, res) => {
+                  setTimeout(() => {
+                    runRequestAndTest(host, test.port, (err) => {
+                      setTimeout(() => kill(child.pid, "SIGKILL", () => {
+                        if(err) {
+                          done(err);
+                        } else {
+                          done();
+                        }
+                      }), 0);
+                    });
+                  }, 1000 * 10);
+                } else {
+                  app.dispatch(["start"].concat(test.commandArgs));
+                  runRequestAndTest(host, test.port, (err) => {
                     if(err) {
-                      return done(err);
+                      done(err);
+                    } else {
+                      app.stop(done);
                     }
-
-                    expect(res.text).to.match(/class="page-body"/);
-                    app.stop(done);
                   });
+                }
               });
             });
           });
@@ -326,9 +364,9 @@ module.exports = {
             it("should stop the server", function(done) {
               const app = Application.create();
               const host = "http://localhost";
-              const port = 6009;
+              const port = 6011;
 
-              app.runCommand(["start", "port", port]);
+              app.dispatch(["start", `--port=${port}`]);
 
               request(`${host}:${port}`)
                 .get("/")
@@ -341,7 +379,7 @@ module.exports = {
 
                   expect(res.text).to.match(/class="page-body"/);
 
-                  app.runCommand(["stop"]).then(() => {
+                  app.dispatch(["stop"]).then(() => {
                     request(`${host}:${port}`)
                       .get("/")
                       .end((err) => {

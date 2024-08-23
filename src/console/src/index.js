@@ -2,8 +2,16 @@
 
 "use strict";
 
+const main = require("./cli");
+const commands = require("./commands");
+
 if(require.main === module) {
-  require("./cli");
+  main();
 }
 
 module.exports = require("./lib");
+module.exports.dispatch = main;
+module.exports.commands = {
+  list: commands.list,
+  register: commands.register,
+};
