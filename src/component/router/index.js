@@ -4,12 +4,67 @@ const os = require("node:os");
 const path = require("node:path");
 const createRouter = require("node-laravel-router").createRouter;
 const { isFile, writeToFile } = require("../../lib/file-system");
+const is = require("../../lib/is");
 const { wrap } = require("../../lib/object");
 const { getViewFilesExtension } = require("../../lib/resource");
 const { hash, isPath } = require("../../lib/string");
 const container = require("../container");
 const httpMethods = require("../http").METHODS;
 const { createRequestHandler } = require("./routing-functions");
+
+/**
+ * Redefine the router so that we are able to
+ * automatically resolve controller actions from within it.
+ * This gives us greater flexibility in specifying route handlers:
+ * { controller: instanceOrClassName, method: methodName }
+ * [controllerInstance, methodName] // requires the instance to be in scope (not auto-injected)
+ * [ControllerClass, methodName]
+ * ["controllerInstance.methodName"]
+ * ["ControllerClass.methodName"]
+ * ["controllerInstance::methodName"]
+ * ["ControllerClass::methodName"]
+ * "controllerInstance.methodName",
+ * "controllerInstance::methodName"
+ * "ControllerClass.methodName",
+ * "ControllerClass::methodName"
+ */
+function normalizeRouterHandlers(router) {
+  router.routes.forEach(route => {
+    // A route is an object with 'method', 'path', and 'handlers':
+    // route.get("/", [handlers])
+    for(let i = 0; i < route.handlers.length; i++) {
+      let action = route.handlers[i];
+      let resolvedAction;
+
+      // Handle cases like:
+      //  - route.get("/", [UserCotnroller, 'create']) // Class/Constructor function name
+      //  - route.get("/", [userController, 'create']) // Object instance
+      // so that they are not seen as two separate middleware.
+      const isController = action.name?.match(/^[A-Za-z_$][\w$]+Controller$/);
+
+      if((isController || is.object(action)) && is.string(route.handlers[i + 1])) {
+        action = [route.handlers[i], route.handlers[i + 1]];
+        resolvedAction = createRequestHandler(action, container);
+
+        route.handlers[i] = resolvedAction;
+
+        // Remove the method part
+        // e.g., the 'create' part of the [UserController, 'create']
+        route.handlers.splice(i + 1);
+
+        // Alternate method (but registers the same handler twice)
+        //route.handlers[i] = route.handlers[i + 1] = resolvedAction;
+        // bypass the method part (e.g., 'create') of the Array-like handler.
+        //++i;
+      } else {
+        resolvedAction = createRequestHandler(action, container);
+        route.handlers[i] = resolvedAction;
+      }
+    }
+  });
+
+  router.routeGroups.forEach(normalizeRouterHandlers);
+}
 
 exports.router = function getAFreshRouterInstance() {
   let router = createRouter();
@@ -19,17 +74,21 @@ exports.router = function getAFreshRouterInstance() {
    * automatically resolve controller actions from within it.
    * This gives us greater flexibility in specifying route handlers:
    * { controller: instanceOrClassName, method: methodName }
-   * [controllerInstance, methodName]
+   * [controllerInstance, methodName] // requires the instance to be in scope (not auto-injected)
    * [ControllerClass, methodName]
+   * ["controllerInstance.methodName"]
+   * ["ControllerClass.methodName"]
+   * ["controllerInstance::methodName"]
+   * ["ControllerClass::methodName"]
    * "controllerInstance.methodName",
    * "controllerInstance::methodName"
    * "ControllerClass.methodName",
    * "ControllerClass::methodName"
    */
   wrap(router, "route", function wrapRouter(original, options, action) {
-    const resolvedAction = createRequestHandler(action, container);
+    normalizeRouterHandlers(router);
 
-    return original(options, resolvedAction);
+    return original(options, action);
   });
 
   router.controller = function controllerGroup(controller, closure) {
