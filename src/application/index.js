@@ -14,6 +14,8 @@ const { camelCaseToSnakeCase } = require("../lib/string");
 const { createApp, normalizePort, onError, onListening } = require("../server/app");
 const createServer = require("../server/server");
 
+let applicationInstance;
+
 module.exports = class Application {
   static #config;
   static #providers;
@@ -78,6 +80,12 @@ module.exports = class Application {
       "component.router": { type: "boolean" },
     };
 
+    // if we already have an instance of the application,
+    // return it rather than recreating a new instance.
+    if(applicationInstance) {
+      return applicationInstance;
+    }
+
     /*
      * Our first action is to initialize environment variables,
      * then bootstrap (aka, register) the services.
@@ -131,6 +139,8 @@ module.exports = class Application {
           this.listen = this.#listen;
           this.stop = this.#stop;
         }
+
+        applicationInstance = this;
       }
 
       /**
