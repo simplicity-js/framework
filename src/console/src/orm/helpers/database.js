@@ -70,5 +70,5 @@ function getMigrationFileInfo(migrationName, migrationsPath) {
 module.exports = {
   getDatabaseConfig,
   getDatabaseOptions,
-  getMigrationFileInfo, 
+  getMigrationFileInfo,
 };

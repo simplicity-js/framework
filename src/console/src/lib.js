@@ -7,7 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const {
-  BUILDER_NAME, 
+  BUILDER_NAME,
   GENERATE_CONTROLLER_COMMAND, GENERATE_MIGRATION_COMMAND,
   GENERATE_MODEL_COMMAND, GENERATE_ROUTE_COMMAND,
   MIGRATION_FOLDER_DESTINATION, MIGRATION_TYPES,

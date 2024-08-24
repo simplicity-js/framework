@@ -65,7 +65,7 @@ function inflate(value) {
 /**
  * Creates a checksum/hash of string using specified algorithm.
  *
- * Possible algos: sha256, sha512, etc
+ * Possible algos: "md5", "sha1", sha256, sha512, etc
  */
 function hash(string, algo = "md5") {
   return crypto.createHash(algo).update(string).digest("hex");

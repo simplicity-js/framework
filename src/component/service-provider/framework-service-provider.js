@@ -45,15 +45,17 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
     try {
       const controllerFiles = fs.readdirSync(dir.replace(/\\/g, "/"));
 
-      controllerFiles.forEach(function bindControllerToServiceContainer(filename) {
-        if(filename.endsWith("-controller.js") || filename.endsWith("Controller.js")) {
-          const controllerClass = require(path.join(dir, filename));
-
-          this.#bindClassInstance(container, controllerClass);
-        }
-      });
+      controllerFiles.forEach(bindControllerToServiceContainer.bind(this));
     } catch(e) {
       this.#log("error", "Unable to bind controllers to Service Container", e);
+    }
+
+    function bindControllerToServiceContainer(filename) {
+      if(filename.endsWith("-controller.js") || filename.endsWith("Controller.js")) {
+        const controllerClass = require(path.join(dir, filename));
+
+        this.#bindClassInstance(container, controllerClass);
+      }
     }
   }
 
@@ -63,26 +65,30 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
    * using the model class name.
    */
   #registerModels(container, dir) {
+    const bindModels = (function bindModels(dir) {
+      const modelFiles = fs.readdirSync(dir.replace(/\\/g, "/"));
+
+      modelFiles.forEach(filename => {
+        bindModelToServiceContainer.bind(this)(dir, filename);
+      });
+    }).bind(this);
+
     try {
       bindModels(dir);
     } catch(e) {
       this.#log("error", "Unable to bind models to Service Container", e);
     }
 
-    function bindModels(dir) {
-      const modelFiles = fs.readdirSync(dir.replace(/\\/g, "/"));
+    function bindModelToServiceContainer(dir, filename) {
+      const file = path.join(dir, filename);
 
-      modelFiles.forEach(function bindModelToServiceContainer(filename) {
-        const file = path.join(dir, filename);
+      if(isDirectory(file)) { // mongoose, sequelize, any ORM directory
+        bindModels(file);
+      } else if(filename !== "index.js") {
+        const modelClass = require(file);
 
-        if(isDirectory(file)) {
-          bindModels(file);
-        } else if(filename !== "index.js") {
-          const modelClass = require(file);
-
-          this.#bindClassInstance(container, modelClass);
-        }
-      });
+        this.#bindClassInstance(container, modelClass);
+      }
     }
   }
 
@@ -95,15 +101,17 @@ module.exports = class FrameworkServiceProvider extends ServiceProvider {
     try {
       const serviceFiles = fs.readdirSync(dir.replace(/\\/g, "/"));
 
-      serviceFiles.forEach(function bindServiceToServiceContainer(filename) {
-        if(filename.endsWith("-service.js") || filename.endsWith("Service.js")) {
-          const serviceClass = require(path.join(dir, filename));
-
-          this.#bindClassInstance(container, serviceClass);
-        }
-      });
+      serviceFiles.forEach(bindServiceToServiceContainer.bind(this));
     } catch(e) {
       this.#log("error", "Unable to bind services to Service Container", e);
+    }
+
+    function bindServiceToServiceContainer(filename) {
+      if(filename.endsWith("-service.js") || filename.endsWith("Service.js")) {
+        const serviceClass = require(path.join(dir, filename));
+
+        this.#bindClassInstance(container, serviceClass);
+      }
     }
   }
 
