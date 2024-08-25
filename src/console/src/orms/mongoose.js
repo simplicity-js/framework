@@ -253,6 +253,7 @@ function getMongoDbConnectionString() {
  * - {Array<String>} `databases`
  */
 module.exports = {
+  name: "mongoose",
   createMigration,
   migrate,
   rollback,

@@ -3,7 +3,7 @@ const path = require("node:path");
 const helpers = require("./helpers/command-helper");
 
 const commands = {};
-const otherCommands = {};
+const customCommands = {};
 const currDir = __dirname;
 const commandFiles = fs.readdirSync(currDir);
 const filesToSkip = ["helpers", "index"];
@@ -49,19 +49,29 @@ for(let i = 0; i < commandFiles.length; i++) {
  * })
  */
 function register(command) {
-  otherCommands[command.name] = command;
+  customCommands[command.name] = command;
 }
 
 /**
  * Get list of available commands (core and custom)
  */
-function list() {
-  return { ...commands, ...otherCommands };
+function list(options) {
+  let val = {};
+  const { core, custom } = options || {};
+
+  if(core) {
+    val = { ...commands };
+  } else if(custom) {
+    val = { ...customCommands };
+  } else {
+    val = { ...commands, ...customCommands };
+  }
+
+  return val;
 }
 
 
 module.exports = {
-  commands,
   helpers,
   list,
   register,

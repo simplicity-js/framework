@@ -26,13 +26,14 @@ const {
 const { print } = require("./helpers/printer");
 const { singularize, upperCaseToKebabCase } = require("./helpers/string");
 const overrideConsoleDotLog = require("./helpers/console-override");
-const SUPPORTED_ORMS = require("./orms");
+const orms = require("./orms");
 const { getDatabaseConfig, getMigrationFileInfo } = require(
   "./orms/helpers/database");
 
-const USER_ADDED_ORMS = {};
+//const USER_ADDED_ORMS = {};
 const EOL = os.EOL;
 const PADDING = "  ";
+//const SUPPORTED_ORMS = orms.list();
 
 /**
  * Generator Sequelize-based Controllers, Models, Routes
@@ -184,7 +185,8 @@ exports.makeMigration = async function createMigration(name, options) {
       }
     }
 
-    const createNewMigration = SUPPORTED_ORMS[orm].createMigration;
+    const supportedOrms = getSupportedOrms();
+    const createNewMigration = supportedOrms[orm].createMigration;
 
     if(typeof createNewMigration === "function") {
       return await createNewMigration(name, {
@@ -267,7 +269,8 @@ exports.makeModel = async function createModel(name, options) {
     const destination = `${destinationDir}/${filename}`;
 
 
-    const modelFields = await SUPPORTED_ORMS[orm].parseModelFields(fields) ?? "";
+    const supportedOrms = getSupportedOrms();
+    const modelFields = await supportedOrms[orm].parseModelFields(fields) ?? "";
     const data = readFromFile(template);
     const output = data
       .replace(/\$\$MODEL_NAME\$\$/gm, name)
@@ -485,11 +488,13 @@ exports.migrate = async function migrate(options) {
  *  - migrate (Function)
  *  - rollback (Function)
  */
-exports.setAdditionalOrms = function setSupportedOrms(orms) {
-  for(const [key, value] of Object.entries(orms)) {
-    if(!(key in USER_ADDED_ORMS)) {
+exports.setAdditionalOrms = function setSupportedOrms(additionalOrms) {
+  for(const [key, value] of Object.entries(additionalOrms)) {
+    /*if(!(key in USER_ADDED_ORMS)) {
       USER_ADDED_ORMS[key] = value;
-    }
+    }*/
+
+    orms.register({ ...value, name: key });
   }
 };
 
@@ -499,19 +504,21 @@ exports.setAdditionalOrms = function setSupportedOrms(orms) {
  * string of  user-added ORMs to remove. If no list is passed,
  * every user-added ORM is removed from the supported ORMs
  */
-exports.clearAdditionalOrms = function clearAdditionalOrms(orms) {
-  if(typeof orms === "string") {
-    orms = orms.split(/[\s+,;]+/).map(o => o.trim());
+exports.clearAdditionalOrms = function clearAdditionalOrms(ormNames) {
+  if(typeof ormNames === "string") {
+    ormNames = ormNames.split(/[\s+,;]+/).map(o => o.trim());
   }
 
-  if(!Array.isArray(orms)) {
-    orms = Object.keys(USER_ADDED_ORMS);
+  if(!Array.isArray(ormNames)) {
+    ormNames = []; //Object.keys(USER_ADDED_ORMS);
   }
 
-  for(const orm of orms) {
-    if(orm in USER_ADDED_ORMS) {
+  for(const orm of ormNames) {
+    /*if(orm in USER_ADDED_ORMS) {
       delete USER_ADDED_ORMS[orm];
-    }
+    }*/
+
+    orms.deregister(orm);
   }
 };
 
@@ -639,7 +646,7 @@ function getOrm(database, fullObject) {
 }
 
 function getSupportedOrms() {
-  return { ...SUPPORTED_ORMS, ...USER_ADDED_ORMS };
+  return orms.list(); //{ ...SUPPORTED_ORMS, ...USER_ADDED_ORMS };
 }
 
 function normalizeResourceFolder(folder) {

@@ -258,6 +258,7 @@ function generateSequelizeIdField(dataType) {
  * - {Array<String>} `databases`
  */
 module.exports = {
+  name: "sequelize",
   createMigration,
   migrate,
   rollback,

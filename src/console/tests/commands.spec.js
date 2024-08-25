@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const util = require("node:util");
-const commands = require("../src/commands").commands;
+const commandsApi = require("../src/commands");
 const {
   BUILDER_NAME, FRAMEWORK_NAME,
   GENERATE_CONTROLLER_COMMAND, GENERATE_MIGRATION_COMMAND,
@@ -40,6 +40,7 @@ const EOL = os.EOL;
 const PADDING = "  ";
 const chdir = process.chdir;
 const currDir = __dirname.replace(/\\/g, "/");
+const commands = commandsApi.list({ core: true });
 const commandsTestApp = `${currDir}/commands-test-app`;
 
 
