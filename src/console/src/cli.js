@@ -17,7 +17,9 @@ const { ensureSimplicityApp, showHelp, showVersionInfo } = helpers;
 const coreCliOptions = {
   help      : { type: "boolean", short: "h" },
   fields    : { type: "string",  short: "f" },
+  table     : { type: "string",  short: "t" },
   version   : { type: "boolean", short: "v" },
+  attributes: { type: "string"  },
   database  : { type: "string"  },
   migration : { type: "boolean" },
   rollback  : { type: "boolean" },
@@ -30,7 +32,6 @@ const coreCliOptions = {
   c         : { type: "string" },
   m         : { type: "string" },
   n         : { type: "string" },
-  t         : { type: "string" },
 };
 const customCliOptions = {};
 

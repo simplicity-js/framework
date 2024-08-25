@@ -143,14 +143,14 @@ function parseModelFields(fields, isMigrationField) {
     }
 
     if(isMigrationField) {
-      if(!["id", "created_at", "updated_at"].includes(name)) {
+      if(!["id", "createdAt", "updatedAt"].includes(name)) {
         modelFields === ""
           ? (modelFields = name + ": { type: " + dataType + " },")
           : (modelFields =
               modelFields + "\n\t\t\t" + name + ": { type: " + dataType + " },");
       }
     } else {
-      if(!["id", "created_at", "updated_at"].includes(name)) {
+      if(!["id", "createdAt", "updatedAt"].includes(name)) {
         modelFields === ""
           ? (modelFields = name + ": " + dataType + ",")
           : (modelFields += "\n\t\t" + name + ": " + dataType + ",");

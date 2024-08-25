@@ -32,10 +32,11 @@ async function processMakeModelCommand(list, options) {
   const params = options || {};
 
   const OPTIONS = {
-    LIST: ["help", "fields", "t", "n", "force", "database", "migration"],
+    LIST: ["help", "fields", "attributes", "table", "n", "force", "database", "migration"],
     HELP: "help",
     FIELDS: "fields",
-    TABLE: "t", // table name for sequelize, collection name for mongoose
+    ATTRIBUTES: "attributes",
+    TABLE: "table", // table name for sequelize, collection name for mongoose
     FILE_NAME: "n",
     FORCE: "force",
     DATABASE: "database",
@@ -53,6 +54,7 @@ async function processMakeModelCommand(list, options) {
       break;
 
     case OPTIONS.FIELDS:
+    case OPTIONS.ATTRIBUTES: 
       fields = v?.toString().split(",");
       // ["name:string", "number:integer", "date:date", "uuid:uuid", "boolean:boolean"]
       break;

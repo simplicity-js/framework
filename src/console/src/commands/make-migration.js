@@ -31,10 +31,11 @@ async function processMakeMigrationCommand(list, options) {
   const params = options || {};
 
   const MIGRATION_OPTIONS = {
-    LIST: ["help", "f", "t", "n", "database", "type"],
+    LIST: ["help", "fields", "attributes", "table", "n", "database", "type"],
     HELP: "help",
-    FIELDS: "f",
-    TABLE: "t",
+    FIELDS: "fields",
+    ATTRIBUTES: "attributes",
+    TABLE: "table",
     FILE_NAME: "n",
     TYPE: "type",
     DATABASE: "database",
@@ -51,6 +52,7 @@ async function processMakeMigrationCommand(list, options) {
       break;
 
     case MIGRATION_OPTIONS.FIELDS:
+    case MIGRATION_OPTIONS.ATTRIBUTES: 
       fields = v?.toString().split(",");
       // ["name:string", "number:integer", "date:date", "uuid:uuid", "boolean:boolean"]
       break;
