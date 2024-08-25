@@ -29,17 +29,16 @@ async function processMigrateCommand(_, options) {
   const params = options || {};
 
   const OPTIONS = {
-    LIST: ["help", "database", "reset", "rollback", "step"],
     HELP: "help",
-    DATABASE: "database",
-    RESET: "reset",
     ROLLBACK: "rollback",
     STEP: "step",
+    RESET: "reset",
+    DATABASE: "database",
   };
 
   Object.entries(params).forEach((entry) => {
     const [o, v] = entry;
-    const option = OPTIONS.LIST.includes(o) ? o : "";
+    const option = Object.values(OPTIONS).includes(o) ? o : "";
 
     switch(option) {
     case OPTIONS.HELP:

@@ -6,8 +6,8 @@ Description:
   Run database migrations.
 
 Options:
-  --rollback        Rollback the last migration.
-  --step            The number of migrations to rollback.
-  --reset           Rollback all migrations.
-  --database        The database connection to use.
+  --rollback        Rollback the last migration
+  --step            The number of migrations to rollback
+  --reset           Rollback all migrations
+  --database        The database connection to use. If not specified, the default connection is used
   --help (-h)       Show this help.

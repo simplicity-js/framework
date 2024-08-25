@@ -29,38 +29,37 @@ async function processMakeRouteCommand(list, options) {
   const name = Array.isArray(list) && !!list.length ? list[0] : "";
   const params = options || {};
 
-  const ROUTE_OPTIONS = {
-    LIST: ["help", "api", "c", "force", "resource"],
+  const OPTIONS = {
     HELP: "help",
-    CONTROLLER_NAME: "c",
     IS_API_ROUTE: "api",
-    FORCE: "force",
     IS_RESOURCE_ROUTE: "resource",
+    CONTROLLER_NAME: "controller",
+    FORCE: "force",
   };
 
   Object.entries(params).forEach((entry) => {
     const [o, v] = entry;
-    const option = ROUTE_OPTIONS.LIST.includes(o) ? o : "";
+    const option = Object.values(OPTIONS).includes(o) ? o : "";
 
     switch(option) {
-    case ROUTE_OPTIONS.HELP:
+    case OPTIONS.HELP:
       displayHelp = true;
       showHelp(GENERATE_ROUTE_HELP);
       break;
 
-    case ROUTE_OPTIONS.CONTROLLER_NAME:
+    case OPTIONS.CONTROLLER_NAME:
       controller = v?.toString();
       break;
 
-    case ROUTE_OPTIONS.IS_API_ROUTE:
+    case OPTIONS.IS_API_ROUTE:
       isApiRoute = true;
       break;
 
-    case ROUTE_OPTIONS.IS_RESOURCE_ROUTE:
+    case OPTIONS.IS_RESOURCE_ROUTE:
       isResourceRoute = true;
       break;
 
-    case ROUTE_OPTIONS.FORCE:
+    case OPTIONS.FORCE:
       overwrite = true;
       break;
 

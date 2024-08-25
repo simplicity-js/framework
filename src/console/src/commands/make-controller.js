@@ -32,19 +32,18 @@ function processMakeControllerCommand(list, options) {
   const params = options || {};
 
   const OPTIONS = {
-    LIST: ["help", "m", "n", "t", "force", "resource", "database"],
     HELP: "help",
-    MODEL: "m",
-    FILE_NAME: "n",
-    TABLE_NAME: "t",
-    FORCE: "force",
-    IS_RESOURCE_CONTROLLER: "resource",
+    FILE_NAME: "filename",
+    MODEL: "model",
     DATABASE: "database",
+    TABLE_NAME: "table",
+    IS_RESOURCE_CONTROLLER: "resource",
+    FORCE: "force",
   };
 
   Object.entries(params).forEach((entry) => {
     const [o, v] = entry;
-    const option = OPTIONS.LIST.includes(o) ? o : "";
+    const option = Object.values(OPTIONS).includes(o) ? o : "";
 
     switch(option) {
     case OPTIONS.HELP:

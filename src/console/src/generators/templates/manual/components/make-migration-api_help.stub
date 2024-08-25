@@ -9,10 +9,10 @@ Required:
   <MigrationName>         The name of the migration.
 
 Options:
-  -n                      Optional filename for generated migration file. Defaults to the kebab-case version of MigratioName.
-  -t                      Optional table or collection name. Default to the lowercase version of MigrationName.
-  --database              The database connection to use.
-  --fields (-f)           Migration fields, comma-separated key:value pairs. Ex: <name>:<type>.
-  --type                  Optional migration type. Valid types are: alter-table|create-table|update-table;
-  --force                 Force replace generated files.
+  --filename (-n)         Filename for generated migration file. Defaults to the kebab-case version of migratio name
+  --fields (-f)           Migration fields, comma-separated key:value pairs. Ex: id:integer,name:string
+  --attributes            Alias for --fields
+  --database              The database connection to use. If not specified, the default connection is used
+  --table (-t)            Table or collection name. Defaults to the snake_case version of the migration name
+  --type                  Migration type. Valid types are: alter-table|create-table|update-table;
   --help (-h)             Show this help

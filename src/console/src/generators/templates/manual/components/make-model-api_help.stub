@@ -9,10 +9,11 @@ Required:
   <ModelName>             The name of the model.
 
 Options:
-  -n                      Optional filename for generated file. Defaults to the kebab-case version of the ModelName.
-  -t                      Optional table or collection name. Default to the lowercase version of the ModelName.
-  --fields (-f)           Model fields, comma-separated key:value pairs. Ex: <name>:<type>.
-  --migration             Optional boolean option to indicate whether to create a migration for the model.
-  --database              The database connection to use.
-  --force                 Force replace generated files
+  --filename (-n)         Filename of the generated file. Defaults to the kebab-case version of the model name
+  --fields (-f)           Model fields, comma-separated key:value pairs. Ex: id:integer,name:string
+  --attributes            Alias for --fields
+  --migration             Boolean flag that signals to create a migration for the model
+  --database              The database connection to use. If not specified, the default connection is used
+  --table (-t)            Table or collection name. Defaults to the snake_case version of the model name
+  --force                 Boolean flag that signals to replace an existing model of the same name
   --help (-h)             Show this help

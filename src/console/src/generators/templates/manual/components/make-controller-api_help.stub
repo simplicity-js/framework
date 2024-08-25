@@ -9,10 +9,10 @@ Required:
   <ControllerName>        The name of the controller.
 
 Options:
-  -n                      Optional filename for the controller. Defaults to the kebab-case version of ControllerName.
-  -m                      Optional Model name for the Schema and Paths Tags.
-  -t                      Optional table or collection name. Default to the lowercase version of the model name.
-  --database              The database connection to use.
-  --resource              Optional flag specifying that this is a resource controller.
-  --force                 Force replace generated files
+  --filename (-n)         Filename for the controller. Defaults to the kebab-case version of ControllerName
+  --model (-m)            Model name for the Schema and Paths Tags
+  --database              The database connection to use. If not specified the default connection is used
+  --table (-t)            Table or collection name. Defaults to the snake_case version of the model name
+  --resource              Boolean flag that signals to create a resource controller
+  --force                 Boolean flag that signals to replace an existing controller of the same name
   --help (-h)             Show this help

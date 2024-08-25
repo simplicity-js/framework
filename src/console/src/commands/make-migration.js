@@ -30,46 +30,45 @@ async function processMakeMigrationCommand(list, options) {
   const name = Array.isArray(list) && !!list.length ? list[0] : "";
   const params = options || {};
 
-  const MIGRATION_OPTIONS = {
-    LIST: ["help", "fields", "attributes", "table", "n", "database", "type"],
+  const OPTIONS = {
     HELP: "help",
+    FILE_NAME: "filename",
     FIELDS: "fields",
     ATTRIBUTES: "attributes",
-    TABLE: "table",
-    FILE_NAME: "n",
-    TYPE: "type",
     DATABASE: "database",
+    TABLE: "table",
+    TYPE: "type",
   };
 
   Object.entries(params).forEach((entry) => {
     const [o, v] = entry;
-    const option = MIGRATION_OPTIONS.LIST.includes(o) ? o : "";
+    const option = Object.values(OPTIONS).includes(o) ? o : "";
 
     switch(option) {
-    case MIGRATION_OPTIONS.HELP:
+    case OPTIONS.HELP:
       displayHelp = true;
       showHelp(GENERATE_MIGRATION_HELP);
       break;
 
-    case MIGRATION_OPTIONS.FIELDS:
-    case MIGRATION_OPTIONS.ATTRIBUTES: 
+    case OPTIONS.FIELDS:
+    case OPTIONS.ATTRIBUTES:
       fields = v?.toString().split(",");
       // ["name:string", "number:integer", "date:date", "uuid:uuid", "boolean:boolean"]
       break;
 
-    case MIGRATION_OPTIONS.TABLE:
+    case OPTIONS.TABLE:
       table = v?.toString();
       break;
 
-    case MIGRATION_OPTIONS.FILE_NAME:
+    case OPTIONS.FILE_NAME:
       filename = v?.toString();
       break;
 
-    case MIGRATION_OPTIONS.TYPE:
+    case OPTIONS.TYPE:
       type = v?.toString();
       break;
 
-    case MIGRATION_OPTIONS.DATABASE:
+    case OPTIONS.DATABASE:
       database = v?.toString();
       break;
 

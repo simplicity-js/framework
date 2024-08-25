@@ -9,8 +9,8 @@ Required:
   <routeName>            The Route name representing the path (or filename of the generated route file).
 
 Options:
-  --controller (-c)       Specify optional Controller name.
-  --api                   Optional flag specifying that this is an API route. Routes are web (non-API) routes by default.
-  --resource              Optional flag specifying that this is a resource route. Resource routes are web routes.
-  --force                 Force replace generated files
+  --api                   Boolean flag that signals that this is an API route. Routes are web (non-API) routes by default
+  --resource              Boolean flag that signals that this is a resource route. Resource routes are always web routes
+  --controller            Specify an optional controller name.
+  --force                 Boolean flag that signals to replace an existing route of the same name where possible
   --help (-h)             Show this help
