@@ -26,9 +26,9 @@ const {
 const { print } = require("./helpers/printer");
 const { singularize, upperCaseToKebabCase } = require("./helpers/string");
 const overrideConsoleDotLog = require("./helpers/console-override");
-const SUPPORTED_ORMS = require("./orm");
+const SUPPORTED_ORMS = require("./orms");
 const { getDatabaseConfig, getMigrationFileInfo } = require(
-  "./orm/helpers/database");
+  "./orms/helpers/database");
 
 const USER_ADDED_ORMS = {};
 const EOL = os.EOL;
