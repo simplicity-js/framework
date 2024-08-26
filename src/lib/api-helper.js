@@ -1,0 +1,66 @@
+"use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
+
+
+/**
+ * Generates an extendable API (a plugin interface) from a set of files inside a directory.
+ * Each eligible file must expose/export an object with a required 'name' property
+ * and any other members (of any type) they want to be part of the generated
+ * API interface. The function then returns an object with members:
+ *   - register: a function that allows clients to register custom APIs
+ *       that conform to the API interface of the core APIs.
+ *   - deregister: a function that takes the name of a previously registered
+ *       custom API and removes it from the API interface.
+ *   - list: A function that lists the available APIs (core and custom)
+ * @param {String} apiDir (required): The directory housing the core API files
+ * @param {String[]} filesToSkip (optional): An array of files in the directory
+ *   that should not be part of the API. The file extensions of these files
+ *   should be omitted.
+ *
+ * Pro Tip:
+ *   To create a plugin interface without any core API,
+ *   just pass in an empty directory as as the first argument.
+ */
+exports.createPluginInterface = function generateExtendableApi(apiDir, filesToSkip) {
+  const coreApi = {};
+  const plugins = {};
+  const currDir = apiDir.replace(/\\/g, "/");
+  const coreApiFiles = fs.readdirSync(currDir);
+
+  for(let i = 0; i < coreApiFiles.length; i++) {
+    const filename = path.basename(coreApiFiles[i], ".js");
+
+    if(filesToSkip.includes(filename)) {
+      continue;
+    } else {
+      const api = require(`${currDir}/${filename}`);
+
+      coreApi[api.name] = api;
+    }
+  }
+
+  return {
+    register(api) {
+      plugins[api.name] = api;
+    },
+    deregister(name) {
+      delete plugins[name];
+    },
+    list(options) {
+      let val = {};
+      const { core, plugins: pluggedin } = options || {};
+
+      if(core) {
+        val = { ...coreApi };
+      } else if(pluggedin) {
+        val = { ...plugins };
+      } else {
+        val = {...coreApi, ...plugins };
+      }
+
+      return val;
+    }
+  };
+};
