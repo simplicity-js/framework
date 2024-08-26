@@ -30,10 +30,8 @@ const orms = require("./orms");
 const { getDatabaseConfig, getMigrationFileInfo } = require(
   "./orms/helpers/database");
 
-//const USER_ADDED_ORMS = {};
 const EOL = os.EOL;
 const PADDING = "  ";
-//const SUPPORTED_ORMS = orms.list();
 
 /**
  * Generator Sequelize-based Controllers, Models, Routes
@@ -478,8 +476,8 @@ exports.migrate = async function migrate(options) {
 };
 
 /**
- * @param {Object} orms object whose keys are the orm keys,
- * and whose values should be objects with members:
+ * @param {Array} additionalOrms: array of objects with members:
+ *   - name (String)
  *   - parseModelFields (Function): takes an array of fields and returns an object.
  *   - createMigration (Function): takes a name and an options object,
  *        and creates a migration inside the
@@ -487,14 +485,11 @@ exports.migrate = async function migrate(options) {
  *        of the current (aka app) directory.
  *  - migrate (Function)
  *  - rollback (Function)
+ *  - databases (Array)
  */
 exports.setAdditionalOrms = function setSupportedOrms(additionalOrms) {
-  for(const [key, value] of Object.entries(additionalOrms)) {
-    /*if(!(key in USER_ADDED_ORMS)) {
-      USER_ADDED_ORMS[key] = value;
-    }*/
-
-    orms.register({ ...value, name: key });
+  for(const orm of additionalOrms) {
+    orms.register(orm);
   }
 };
 
@@ -510,14 +505,10 @@ exports.clearAdditionalOrms = function clearAdditionalOrms(ormNames) {
   }
 
   if(!Array.isArray(ormNames)) {
-    ormNames = []; //Object.keys(USER_ADDED_ORMS);
+    ormNames = [];
   }
 
   for(const orm of ormNames) {
-    /*if(orm in USER_ADDED_ORMS) {
-      delete USER_ADDED_ORMS[orm];
-    }*/
-
     orms.deregister(orm);
   }
 };
@@ -578,6 +569,7 @@ function ensureValidOrm(orm) {
   const validOrms = Object.keys(supportedOrms);
   const opt = "'orm'";
   const ormAPI = [
+    "name",
     "createMigration",
     "migrate",
     "rollback",
@@ -603,6 +595,13 @@ function ensureValidOrm(orm) {
       if(!Array.isArray(targetOrm[api])) {
         shouldThrow = true;
         missingStr = "array";
+      }
+    } else if(api === "name") {
+      const ormName = targetOrm[api];
+
+      if(typeof ormName !== "string" || ormName.trim().length === 0) {
+        shouldThrow = true;
+        missingStr = "string";
       }
     } else {
       if(typeof targetOrm[api] !== "function") {
@@ -646,7 +645,7 @@ function getOrm(database, fullObject) {
 }
 
 function getSupportedOrms() {
-  return orms.list(); //{ ...SUPPORTED_ORMS, ...USER_ADDED_ORMS };
+  return orms.list();
 }
 
 function normalizeResourceFolder(folder) {

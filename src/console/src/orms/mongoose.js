@@ -245,6 +245,7 @@ function getMongoDbConnectionString() {
 
 /*
  * ORM API:
+ * - {String} `name`
  * - {Function} `createMigration`
  * - {Function} `migrate`
  * - {Function} `rollback`

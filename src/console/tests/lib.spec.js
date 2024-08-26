@@ -133,10 +133,10 @@ describe("lib.js", function() {
       const supportedOrms = ["mongoose", "sequelize"];
 
       for(const key of ormApiKeys) {
-        const incompleteApi = { ...ormApi };
+        const incompleteApi = { ...ormApi, name: orm };
         delete incompleteApi[key];
 
-        setAdditionalOrms({ [orm]: incompleteApi });
+        setAdditionalOrms([ incompleteApi ]);
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
         makeController(controllerName, { database: ormApi.databases[0] });
@@ -148,6 +148,10 @@ describe("lib.js", function() {
           expected = new RegExp(
             "Invalid value 'undefined' for option 'orm'. " +
             `Valid values are ${supportedOrms.join(" and ")}.`
+          );
+        } else if(key === "name") {
+          expected = new RegExp(
+            `Missing string '${key}' on '${orm}' for option 'orm'.`
           );
         } else {
           expected = new RegExp(
@@ -172,7 +176,7 @@ describe("lib.js", function() {
       const controllerName = "orm-controller";
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      setAdditionalOrms({ [orm]: ormApi });
+      setAdditionalOrms([{ ...ormApi, name: orm }]);
 
       makeController(controllerName, { database: "eloquent" });
       restore();
@@ -197,7 +201,7 @@ describe("lib.js", function() {
       const controllerName = "orm-controller";
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      setAdditionalOrms({ [orm]: ormApi });
+      setAdditionalOrms([{ ...ormApi, name: orm }]);
 
       makeController(controllerName, { database: ormApi.databases[0] });
       restore();
@@ -411,10 +415,10 @@ describe("lib.js", function() {
       const supportedOrms = ["mongoose", "sequelize"];
 
       for(const key of ormApiKeys) {
-        const incompleteApi = { ...ormApi };
+        const incompleteApi = { ...ormApi, name: orm };
         delete incompleteApi[key];
 
-        setAdditionalOrms({ [orm]: incompleteApi });
+        setAdditionalOrms([ incompleteApi ]);
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
         const destination = await makeMigration(migrationName, {
@@ -641,10 +645,10 @@ describe("lib.js", function() {
       const supportedOrms = ["mongoose", "sequelize"];
 
       for(const key of ormApiKeys) {
-        const incompleteApi = { ...ormApi };
+        const incompleteApi = { ...ormApi, name: orm };
         delete incompleteApi[key];
 
-        setAdditionalOrms({ [orm]: incompleteApi });
+        setAdditionalOrms([ incompleteApi ]);
 
         const { sinonSpy, restore } = spyOnConsoleOutput();
 
@@ -679,7 +683,7 @@ describe("lib.js", function() {
       const modelName = "Eloquent";
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      setAdditionalOrms({ [orm]: ormApi });
+      setAdditionalOrms([{ ...ormApi, name: orm }]);
 
       await makeModel(modelName, { database: ormApi.databases[0] });
       restore();
@@ -703,7 +707,7 @@ describe("lib.js", function() {
       const modelName = "Mysql";
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
-      setAdditionalOrms({ [orm]: ormApi });
+      setAdditionalOrms([{ ...ormApi, name: orm }]);
 
       await makeModel(modelName, { database: ormApi.databases[0] });
       restore();
