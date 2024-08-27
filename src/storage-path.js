@@ -2,7 +2,7 @@ let appRoot;
 
 
 module.exports = function storagePath(location) {
-  return `${appRoot}/storage` + location ? `/${location}` : "";
+  return `${appRoot}/storage/${location ?? ""}`;
 };
 
 /**
