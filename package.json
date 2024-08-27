@@ -7,6 +7,8 @@
     ".": "./src/application/index.js",
     "./env": "./src/env.js",
     "./config": "./src/config.js",
+    "./resource-path": "./src/resource-path.js",
+    "./storage-path": "./src/storage-path.js",
     "./application": "./src/application/index.js",
     "./component/*": "./src/component/*.js",
     "./component/http": "./src/component/http/index.js",
