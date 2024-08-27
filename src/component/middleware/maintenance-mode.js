@@ -9,7 +9,7 @@ const { deserialize } = serialijse;
 async function getState(appKey, config) {
   let state;
   const cacheDriver = config.get("app.maintenance").driver;
-  const cache = getCache(cacheDriver, config, `${appKey}.state`);
+  const cache = getCache(cacheDriver, config);
 
   try {
     state = deserialize(await cache.get(`${appKey}.state`, {}));

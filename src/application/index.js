@@ -11,6 +11,7 @@ const FrameworkServiceProvider = require(
   "../component/service-provider/framework-service-provider");
 const commandConsole = require("../console");
 const initDotEnv = require("../env").init;
+const initStoragePath = require("../storage-path").init;
 const { normalizePath, pathExists } = require("../lib/file-system");
 const { camelCaseToSnakeCase, hash } = require("../lib/string");
 const { createApp, normalizePort, onError, onListening } = require("../server/app");
@@ -34,6 +35,7 @@ module.exports = class Application {
     const rootDir = normalizePath(basePath);
 
     initDotEnv(rootDir);
+    initStoragePath(rootDir);
 
     const srcDir = `${rootDir}/src`;
     const config = require(`${srcDir}/config`);
@@ -77,7 +79,7 @@ module.exports = class Application {
     const apiRoutes = this.#apiRoutes;
     const healthCheckRoute = this.#healthCheckRoute;
     const cacheDriver = config.get("app.maintenance").driver;
-    const cache = getCache(cacheDriver, config, `${appKey}.state`);
+    const cache = getCache(cacheDriver, config);
     const testPatchingOptions = {
       // Only included so our tests such as
       // -- --application

@@ -5,27 +5,24 @@
  * e.g., caching information relating to maintenance mode.
  */
 
-const path = require("node:path");
 const NodeCache  = require("node-cache");
 const Connections = require("../../connections");
 const CacheFactory = require("../../factory/cache");
+const storagePath = require("../../storage-path");
 
 const nodeCache = new NodeCache();
 
 /**
- * @param {Object} config (required)
  * @param {String} driver (required): "file"|"memory"|"redis"
- * @param {String} storageFile (optional): used when driver is "file"
+ * @param {Object} config (required)
  * @return {Object} cache with methods: set, get, contains, unset, client.
  */
-module.exports = function getCacheStorage(driver, config, storageFile) {
-  storageFile = storageFile ?? "framework.cache";
-
+module.exports = function getCacheStorage(driver, config) {
   const cacheParams = { driver };
 
   switch(driver) {
   case "file":
-    cacheParams.storagePath = path.join(__dirname, storageFile);
+    cacheParams.storagePath = storagePath("framework/cache/data");
     break;
 
   case "redis":

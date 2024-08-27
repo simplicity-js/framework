@@ -8,9 +8,8 @@ const getCache = require(".");
 
 module.exports = {
   cache() {
-    describe("component.cache(driver, config[, storageFile])", function() {
+    describe("component.cache(driver, config)", function() {
       let expect;
-      let storageFile;
 
       before(async function() {
         expect = (await chai()).expect;
@@ -30,12 +29,8 @@ module.exports = {
       };
 
       drivers.forEach(driver => {
-        if(driver === "file") {
-          storageFile = "";
-        }
-
         it(`should create a ${driver}-based cache if driver is '${driver}'`, function() {
-          const cache = getCache(driver, config, storageFile);
+          const cache = getCache(driver, config);
 
           expect(cache).to.be.an("object");
           expect(cache).to.have.property("driver", driver);
