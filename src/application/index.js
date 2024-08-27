@@ -127,7 +127,7 @@ module.exports = class Application {
         commandConsole.commands.register({
           name: "down",
           description: "Puts the web server in maintenance mode",
-          handler: async (_, options) => {
+          handler: async (_, options, logger) => {
             const obj = { mode: "maintenance" };
 
             for(const option of ["refresh", "secret"]) {
@@ -142,6 +142,8 @@ module.exports = class Application {
 
             //writeToFile(stateFile, serialize(obj), { flag: "w" });
             await cache.set(`${appKey}.state`, serialize(obj));
+
+            logger.info("Application is now in maintenance mode.");
           },
           options: {
             refresh: { type: "string" },
@@ -152,9 +154,11 @@ module.exports = class Application {
         commandConsole.commands.register({
           name: "up",
           description: "Takes the web server out of maintenance mode",
-          handler: async () => {
+          handler: async (_, $, logger) => {
             //deleteFile(stateFile);
             await cache.unset(`${appKey}.state`);
+
+            logger.info("Application is now live.");
           },
         });
 
@@ -210,7 +214,7 @@ module.exports = class Application {
         bootstrap({
           appRoot,
           config,
-          container, 
+          container,
           providers: providers.concat([FrameworkServiceProvider])
         });
 

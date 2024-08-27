@@ -7,7 +7,7 @@ require("./node-version-check");
 const { parseArgs } = require("node:util");
 const { helpers, list: getAvailableCommands, register: registerCommand
 } = require("./commands");
-const { print } = require("./helpers/printer");
+const { logger, print } = require("./helpers/printer");
 const { BUILDER_NAME, GENERATE_COMMAND, GENERATE_HELP, MANUAL_HELP
 } = require("./helpers/constants");
 const { printErrorMessage } = require("./lib");
@@ -94,7 +94,7 @@ async function main(args) {
         ensureSimplicityApp(command.name);
       }
 
-      return await command.handler(list.slice(1), options);
+      return await command.handler(list.slice(1), options, logger);
     } else if(c) {
       print(
         `${PADDING}ERROR: Unkown Command '${c}' ` +

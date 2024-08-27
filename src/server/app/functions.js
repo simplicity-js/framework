@@ -1,27 +1,24 @@
+const EOL = require("node:os").EOL;
 const publicIp = () => import("public-ip").then(publicIp => publicIp);
 const debug = require("../../lib/debug");
-const { EOL } = require("../../lib/file-system");
 
-const COLORS = { info: "\x1b[44m", error: "\x1b[41m", warn: "\x1b[43m" };
-const COLOR_TERM = "\x1b[0m"; // color terminator
-
-const appConsole = {
-  log(...args) {
-    console.log.apply(console, args);
-  },
-  info(...args) {
-    args[0] = `${EOL}  ${COLORS.info}INFO${COLOR_TERM} ${args[0]}`;
-    console.log.apply(console, args);
-  },
-  error(...args) {
-    args[0] = `${EOL}  ${COLORS.error}ERROR${COLOR_TERM} ${args[0]}`;
-    console.error.apply(console, args);
-  },
-  warn(...args) {
-    args[0] = `${EOL}  ${COLORS.warn}WARN${COLOR_TERM} ${args[0]}`;
-    console.log.apply(console, allArgs);
-  },
+const colors = {
+  info    : "\x1b[44m",
+  error   : "\x1b[41m",
+  warn    : "\x1b[43m",
+  success :  "\x1b[42m"
 };
+
+const appConsole = Object.entries(colors).reduce((logger, [name, color]) => {
+  logger[name] = (msg, ...rest) => (console.log(
+    `${EOL}  ${color} ${name.toUpperCase()} \x1b[0m ${msg}`,
+    ...rest
+  ));
+
+  return logger;
+}, {});
+
+appConsole.log = console.log;
 
 
 module.exports = {
