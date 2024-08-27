@@ -13,6 +13,11 @@ const view = require("../../component/view");
 const Connections = require("../../connections");
 const is = require("../../lib/is");
 
+const defaultViewTemplatesPath = path.join(
+  path.dirname(path.dirname(__dirname)),
+  "component", "view", "templates"
+);
+
 function copyRouter(srcRouter, destRouter) {
   const { routes = [], routeGroups = [] } = srcRouter;
 
@@ -129,7 +134,7 @@ module.exports = function createApp(options) {
   /*
    * View setup
    */
-  app.set("views", config.get("view.paths"));
+  app.set("views", config.get("view.paths").concat([defaultViewTemplatesPath]));
   app.set("view engine", config.get("view.engine", "pug"));
 
   /*
@@ -188,7 +193,7 @@ module.exports = function createApp(options) {
     });
   }
 
-  app.use(maintenanceMode(appKey, config));
+  app.use(maintenanceMode(appKey, config, view.view));
 
   /*
    * Apply the routing

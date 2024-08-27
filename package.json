@@ -15,6 +15,7 @@
     "./component/middleware/*": "./src/component/middleware/*.js",
     "./component/router": "./src/component/router/index.js",
     "./component/service-provider": "./src/component/service-provider/index.js",
+    "./component/view": "./src/component/view/index.js",
     "./connections": "./src/connections/index.js",
     "./factory/cache": "./src/factory/cache/index.js",
     "./factory/database": "./src/factory/database/index.js",

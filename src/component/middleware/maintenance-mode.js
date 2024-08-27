@@ -20,7 +20,7 @@ async function getState(appKey, config) {
   return state;
 }
 
-module.exports = function createMaintenanceModeMiddleware(appKey, config) {
+module.exports = function createMaintenanceModeMiddleware(appKey, config, view) {
   return async function maintenanceModeMiddleware(req, res, next) {
     const state = await getState(appKey, config);
     const mmCookie = "maintenance-mode-bypass";
@@ -39,7 +39,9 @@ module.exports = function createMaintenanceModeMiddleware(appKey, config) {
           res.set("refresh", state.refresh);
         }
 
-        return res.send("Maintenance is ongoing");
+        return view("503", {
+          status: STATUS_CODES.HTTP_SERVICE_UNAVAILABLE,
+        });
       }
     } else {
       next();

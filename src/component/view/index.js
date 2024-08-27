@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const resourcePath = require("../resource-path");
+const resourcePath = require("../../resource-path");
 
 let localRes;
 let localConfig;
@@ -56,7 +56,7 @@ module.exports.view = function view(filename, options) {
   const { templateBase = "views", ...viewVariables } = options || {};
   const viewsDir = resourcePath(templateBase);
 
-  return res.render(`${viewsDir}/${file}`, {
+  return res.render(file, {
     ...(viewVariables || {}),
 
     /*
