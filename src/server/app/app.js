@@ -5,6 +5,7 @@ const cors = require("cors");
 const express = require("express");
 const createError = require("http-errors");
 const { Container } = require("../../component/container");
+const maintenanceMode = require("../../component/middleware/maintenance-mode");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
 const Router = require("../../component/router");
@@ -42,7 +43,7 @@ function copyRouter(srcRouter, destRouter) {
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp(options) {
-  const { config, container, routes } = options || {};
+  const { config, container, routes, appKey } = options || {};
   const { web: webRoutes, api: apiRoutes } = routes || {};
 
   if(typeof config !== "object" || typeof config.get !== "function") {
@@ -185,6 +186,8 @@ module.exports = function createApp(options) {
       });
     });
   }
+
+  app.use(maintenanceMode(appKey, config));
 
   /*
    * Apply the routing

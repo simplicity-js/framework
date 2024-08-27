@@ -2,22 +2,26 @@ require("./node-version-check");
 
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const serialijse = require("serialijse");
 
 const bootstrap = require("../bootstrap");
+const getCache = require("../component/cache");
 const container = require("../component/container");
 const FrameworkServiceProvider = require(
   "../component/service-provider/framework-service-provider");
-const console = require("../console");
+const commandConsole = require("../console");
 const initDotEnv = require("../env").init;
 const { normalizePath, pathExists } = require("../lib/file-system");
-const { camelCaseToSnakeCase } = require("../lib/string");
+const { camelCaseToSnakeCase, hash } = require("../lib/string");
 const { createApp, normalizePort, onError, onListening } = require("../server/app");
 const createServer = require("../server/server");
 
 let applicationInstance;
+const { serialize } = serialijse;
 
 module.exports = class Application {
   static #config;
+  static #appKey;
   static #providers;
   static #webRoutes;
   static #apiRoutes;
@@ -56,6 +60,7 @@ module.exports = class Application {
     });
 
     this.#config = config;
+    this.#appKey = hash(rootDir.replace(/[\/_:-]+/g, "_"), "md5");
     this.#providers = providers;
     this.#webRoutes = webRoutes;
     this.#apiRoutes = apiRoutes;
@@ -65,11 +70,14 @@ module.exports = class Application {
   }
 
   static create() {
-    let routes;
     const config = this.#config;
+    const appKey = this.#appKey;
+    const providers = this.#providers;
     const webRoutes = this.#webRoutes;
     const apiRoutes = this.#apiRoutes;
     const healthCheckRoute = this.#healthCheckRoute;
+    const cacheDriver = config.get("app.maintenance").driver;
+    const cache = getCache(cacheDriver, config, `${appKey}.state`);
     const testPatchingOptions = {
       // Only included so our tests such as
       // -- --application
@@ -86,41 +94,57 @@ module.exports = class Application {
       return applicationInstance;
     }
 
-    /*
-     * Our first action is to initialize environment variables,
-     * then bootstrap (aka, register) the services.
-     * This way, any registered services are available to route handlers
-     * (via req.app.resolve(serviceName)) and other files.
-     */
-    bootstrap(this.#config, this.#providers.concat([FrameworkServiceProvider]));
-
-    /*
-     * We are requiring the routes after the call to bootstrap
-     * So that controllers would have been registered
-     * and usable within the routes
-     */
-    routes = {
-      web: { ...webRoutes, router: require(webRoutes.definitions) },
-      api: { ...apiRoutes, router: require(apiRoutes.definitions) },
-      healthCheckRoute,
-    };
-
-    const app = createApp({ config, container, routes });
-    const server = createServer({ app, onError, onListening });
-
     return new class Simplicity {
+      #server;
+
       constructor() {
-        console.commands.register({
+        commandConsole.commands.register({
           name: "start",
           description: "Starts the web server",
-          handler: (_, options) => this.#listen(options.port),
+          handler: (_, options) => {
+            this.#listen(options.port);
+          },
           options: {
             port: { type: "string", short: "p" },
             ...testPatchingOptions,
           },
         });
 
-        console.commands.register({
+        commandConsole.commands.register({
+          name: "down",
+          description: "Puts the web server in maintenance mode",
+          handler: async (_, options) => {
+            const obj = { mode: "maintenance" };
+
+            for(const option of ["refresh", "secret"]) {
+              const value = options === "refresh"
+                ? Number(options[option])
+                : options[option]?.trim();
+
+              if(value) {
+                obj[option] = value;
+              }
+            }
+
+            //writeToFile(stateFile, serialize(obj), { flag: "w" });
+            await cache.set(`${appKey}.state`, serialize(obj));
+          },
+          options: {
+            refresh: { type: "string" },
+            secret: { type: "string" },
+          }
+        });
+
+        commandConsole.commands.register({
+          name: "up",
+          description: "Takes the web server out of maintenance mode",
+          handler: async () => {
+            //deleteFile(stateFile);
+            await cache.unset(`${appKey}.state`);
+          },
+        });
+
+        commandConsole.commands.register({
           name: "stop",
           description: "Stops the web server",
           handler: () => {
@@ -128,7 +152,7 @@ module.exports = class Application {
               try {
                 this.#stop(resolve);
               } catch(e) {
-                reject(e.code);
+                reject(e);
               }
             });
           }
@@ -140,6 +164,8 @@ module.exports = class Application {
           this.stop = this.#stop;
         }
 
+        this.#boot();
+
         applicationInstance = this;
       }
 
@@ -150,11 +176,33 @@ module.exports = class Application {
        *    https://nodejs.org/api/util.html#utilparseargsconfig
        */
       async dispatch(args) {
-        return await console.dispatch(args);
+        return await commandConsole.dispatch(args);
       }
 
-      #stop(cb) {
-        server.close(cb);
+      #boot() {
+        /*
+         * Our first action is to initialize environment variables,
+         * then bootstrap (aka, register) the services.
+         * This way, any registered services are available to route handlers
+         * (via req.app.resolve(serviceName)) and other files.
+         */
+        //bootstrap(this.#config, this.#providers.concat([FrameworkServiceProvider]));
+        bootstrap(config, providers.concat([FrameworkServiceProvider]));
+
+        /*
+         * We are requiring the routes after the call to bootstrap
+         * So that controllers would have been registered
+         * and usable within the routes
+         */
+        const routes = {
+          web: { ...webRoutes, router: require(webRoutes.definitions) },
+          api: { ...apiRoutes, router: require(apiRoutes.definitions) },
+          healthCheckRoute,
+        };
+
+        const app = createApp({ config, container, routes, appKey });
+
+        this.#server = createServer({ app, onError, onListening });
       }
 
       #listen(port) {
@@ -173,7 +221,11 @@ module.exports = class Application {
             ?? defaultPort               // default port
         );
 
-        server.listen(normalizePort(listenPort));
+        this.#server.listen(normalizePort(listenPort));
+      }
+
+      #stop(cb) {
+        this.#server.close(cb);
       }
     };
   }

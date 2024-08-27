@@ -62,6 +62,7 @@ const config = {
     case "app.allowedOrigins": return ["*"];
     case "app.rootDir": return APP_ROOT; //path.dirname(path.dirname(path.dirname(__dirname))).replace(/\\/g, "/");
     case "app.srcDir" : return SRC_DIR;
+    case "app.maintenance": return { driver: "file" };
     case "app.version": return pkg.version;
     case "app.viewsDir": return `${SRC_DIR}/views`;
     case "app.viewTemplatesEngine": return "pug";

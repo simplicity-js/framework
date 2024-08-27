@@ -92,7 +92,9 @@ function unifiedCacheInterface(driver, cache) {
      * @param {Number} [options.duration] (optional): how long (in seconds) to keep
      *   the cached value in the cache.
      */
-    async set(key, value, { duration, replace }) {
+    async set(key, value, config) {
+      const { duration, replace = true } = config || {};
+
       // The `replace` option is used by the redis driver
       return await cache.set(key, serialize(value), { duration, replace });
     },
