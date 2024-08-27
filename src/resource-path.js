@@ -2,7 +2,7 @@ let appRoot;
 
 
 module.exports = function resourcePath(location) {
-  return `${appRoot}/src/resources/${location}`;
+  return `${appRoot}/src/resources/${location ?? ""}`;
 };
 
 /**

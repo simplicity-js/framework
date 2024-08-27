@@ -9,7 +9,7 @@ module.exports = class LogFactory {
    * @param {Array} [options.levels]
    * @param {Boolean} [options.logToFile]
    * @param {String} [options.logDir]: The directory to log to if logToFile is true.
-   * @param {Boolean} [options.disableConsoleLogs]
+   * @param {Boolean} [options.logToConsole]
    * @param {Array} [options.transports]: Array of winstorn transports. Default is [Console]
    * @param {Boolean} [options.logExceptions]
    * @param {Array} [options.exceptionHandlers]
@@ -23,9 +23,9 @@ module.exports = class LogFactory {
       levels,
       logDir,
       logToFile,
+      logToConsole,
       logExceptions,
       logRejections,
-      disableConsoleLogs,
       transports: customTransports = [],
     } = options || {};
 
@@ -63,7 +63,7 @@ module.exports = class LogFactory {
     }
 
     if(logExceptions) {
-      if(!disableConsoleLogs) {
+      if(logToConsole) {
         // Cf. https://github.com/winstonjs/winston/issues/1289#issuecomment-396527779
         consoleTransport.handleExceptions = true;
         exceptionHandlers = transports.concat([consoleTransport]);
@@ -73,7 +73,7 @@ module.exports = class LogFactory {
     }
 
     if(logRejections) {
-      if(!disableConsoleLogs) {
+      if(logToConsole) {
         // Cf. https://github.com/winstonjs/winston/issues/1289#issuecomment-396527779
         consoleTransport.handleRejections = true;
         exceptionHandlers = transports.concat([consoleTransport]);
@@ -109,7 +109,13 @@ module.exports = class LogFactory {
      * Log to the `console` with the format:
      * `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
      */
-    if(!disableConsoleLogs) {
+
+    /*
+     * Make the console the default transport unless the user disabled it
+     */
+    if(transports.length === 0 && typeof logToConsole === "undefined") {
+      logger.add(consoleTransport);
+    } else if(logToConsole) {
       logger.add(consoleTransport);
     }
 

@@ -141,7 +141,7 @@ module.exports = {
         });
 
         it("should let the user disable console logging", function() {
-          let logger = LogFactory.createLogger({ disableConsoleLogs: true });
+          let logger = LogFactory.createLogger({ logToConsole: false });
           const { sinonSpy, restore } = spyOnConsoleOutput("stderr");
 
           // Call the logger.log, which internally calls console._stdout.write
