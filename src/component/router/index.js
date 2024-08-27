@@ -6,10 +6,10 @@ const createRouter = require("node-laravel-router").createRouter;
 const { isFile, writeToFile } = require("../../lib/file-system");
 const is = require("../../lib/is");
 const { wrap } = require("../../lib/object");
-const { getViewFilesExtension } = require("../../lib/resource");
 const { hash, isPath } = require("../../lib/string");
 const container = require("../container");
 const httpMethods = require("../http").METHODS;
+const { getViewFilesExtension } = require("../view");
 const { createRequestHandler } = require("./routing-functions");
 
 /**

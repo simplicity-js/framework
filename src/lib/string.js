@@ -1,11 +1,8 @@
 const crypto = require("node:crypto");
 const zlib = require("node:zlib");
 
-const BACKSLASH_REGEX = /\\/g;
-
 module.exports = {
   camelCaseToSnakeCase,
-  convertBackSlashToForwardSlash,
   encode: encodeToBase,
   decode: decodeFromBase,
   deflate,
@@ -23,10 +20,6 @@ function camelCaseToSnakeCase(str, separator = "-") {
       .replace(/([A-Z]+)/g, (_, c) => `${separator}${c.toLowerCase()}`)
       .replace(new RegExp(`^${separator}`), "") // strip off the `-` preceding the first CAPS letter
   );
-}
-
-function convertBackSlashToForwardSlash(str) {
-  return str.replace(BACKSLASH_REGEX, "/");
 }
 
 /**

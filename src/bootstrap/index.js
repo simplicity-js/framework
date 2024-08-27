@@ -1,7 +1,9 @@
 const debug = require("../lib/debug");
 
 
-module.exports = function setupServices(config, providers) {
+module.exports = function setupServices(options) {
+  const { appRoot, config, container, providers } = options || {};
+
   for(let i = 0; i < providers.length; i++) {
     const Provider = providers[i];
 
@@ -12,7 +14,7 @@ module.exports = function setupServices(config, providers) {
       );
     }
 
-    const provider = new Provider(config);
+    const provider = new Provider({ appRoot, config, container });
     const className = Object.getPrototypeOf(provider)?.name ?? Provider.name;
 
     if(typeof provider.register !== "function") {

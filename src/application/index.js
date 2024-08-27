@@ -11,7 +11,9 @@ const FrameworkServiceProvider = require(
   "../component/service-provider/framework-service-provider");
 const commandConsole = require("../console");
 const initDotEnv = require("../env").init;
+const initResourcePath = require("../resource-path").init;
 const initStoragePath = require("../storage-path").init;
+const debug = require("../lib/debug");
 const { normalizePath, pathExists } = require("../lib/file-system");
 const { camelCaseToSnakeCase, hash } = require("../lib/string");
 const { createApp, normalizePort, onError, onListening } = require("../server/app");
@@ -23,18 +25,22 @@ const { serialize } = serialijse;
 module.exports = class Application {
   static #config;
   static #appKey;
+  static #appRoot;
   static #providers;
   static #webRoutes;
   static #apiRoutes;
   static #healthCheckRoute;
 
   static configure(options) {
+    debug("Configuring application...");
+
     const { basePath, routing } = options;
     const { web: webRoutes, api: apiRoutes, health: healthCheckRoute } = routing;
 
     const rootDir = normalizePath(basePath);
 
     initDotEnv(rootDir);
+    initResourcePath(rootDir);
     initStoragePath(rootDir);
 
     const srcDir = `${rootDir}/src`;
@@ -63,10 +69,13 @@ module.exports = class Application {
 
     this.#config = config;
     this.#appKey = hash(rootDir.replace(/[\/_:-]+/g, "_"), "md5");
+    this.#appRoot = rootDir;
     this.#providers = providers;
     this.#webRoutes = webRoutes;
     this.#apiRoutes = apiRoutes;
     this.#healthCheckRoute = healthCheckRoute;
+
+    debug("Application configuration complete.");
 
     return this;
   }
@@ -74,6 +83,7 @@ module.exports = class Application {
   static create() {
     const config = this.#config;
     const appKey = this.#appKey;
+    const appRoot = this.#appRoot;
     const providers = this.#providers;
     const webRoutes = this.#webRoutes;
     const apiRoutes = this.#apiRoutes;
@@ -100,6 +110,8 @@ module.exports = class Application {
       #server;
 
       constructor() {
+        debug("Creating application...");
+
         commandConsole.commands.register({
           name: "start",
           description: "Starts the web server",
@@ -166,9 +178,13 @@ module.exports = class Application {
           this.stop = this.#stop;
         }
 
-        this.#boot();
+        debug("Application created.");
+
+        this.#server = this.#boot();
 
         applicationInstance = this;
+
+        debug("Application is ready to use!");
       }
 
       /**
@@ -182,6 +198,8 @@ module.exports = class Application {
       }
 
       #boot() {
+        debug("Running boot sequence...");
+
         /*
          * Our first action is to initialize environment variables,
          * then bootstrap (aka, register) the services.
@@ -189,7 +207,12 @@ module.exports = class Application {
          * (via req.app.resolve(serviceName)) and other files.
          */
         //bootstrap(this.#config, this.#providers.concat([FrameworkServiceProvider]));
-        bootstrap(config, providers.concat([FrameworkServiceProvider]));
+        bootstrap({
+          appRoot,
+          config,
+          container, 
+          providers: providers.concat([FrameworkServiceProvider])
+        });
 
         /*
          * We are requiring the routes after the call to bootstrap
@@ -202,9 +225,12 @@ module.exports = class Application {
           healthCheckRoute,
         };
 
-        const app = createApp({ config, container, routes, appKey });
+        const app = createApp({ appRoot, config, container, routes, appKey });
+        const server = createServer({ app, onError, onListening });
 
-        this.#server = createServer({ app, onError, onListening });
+        debug("Boot sequence complete.");
+
+        return server;
       }
 
       #listen(port) {

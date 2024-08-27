@@ -43,7 +43,7 @@ function copyRouter(srcRouter, destRouter) {
  * @return {Object} An Express app instance.
  */
 module.exports = function createApp(options) {
-  const { config, container, routes, appKey } = options || {};
+  const { appRoot, config, container, routes, appKey } = options || {};
   const { web: webRoutes, api: apiRoutes } = routes || {};
 
   if(typeof config !== "object" || typeof config.get !== "function") {
@@ -69,11 +69,15 @@ module.exports = function createApp(options) {
   /*
    * Set the default timezone
    */
-  process.env.TZ = config.get("app.timezone");
+  process.env.TZ = config.get("app.timezone", "UTC");
 
-  const allowedOrigins  = config.get("app.allowedOrigins");
+  const corsConfig = config.get("cors");
+  const allowedOrigins = corsConfig.allowedOrigins;
   const allowAllOrigins = allowedOrigins.includes("*");
   const corsOptions = {
+    credentials: corsConfig.credentials,
+    methods: corsConfig.allowedMethods,
+    allowedHeaders: corsConfig.allowedHeaders,
     origin: function (origin, callback) {
       if(!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -81,14 +85,10 @@ module.exports = function createApp(options) {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
-    methods: config.get("app.allowedMethods"),
-    allowedHeaders: config.get("app.allowedHeaders"),
   };
 
   const app = express();
   const router = Router.router();
-  const templatesDir = config.get("app.viewsDir");
 
   let sessionStore;
 
@@ -129,25 +129,26 @@ module.exports = function createApp(options) {
   /*
    * View setup
    */
-  app.set("views", templatesDir);
-  app.set("view engine", config.get("app.viewTemplatesEngine", "pug"));
+  app.set("views", config.get("view.paths"));
+  app.set("view engine", config.get("view.engine", "pug"));
 
   /*
-   * Allows us to use 'includes' and 'extends' with absolute paths in pug templates.
+   * Makes the basedir available to our template engine so it can resolve absolute paths.
+   * This allows us to use 'includes' and 'extends' with absolute paths in pug templates.
    * Otherwise, we'll get error
    * Error: the "basedir" option is required to use includes and extends with "absolute" paths
    */
-  app.locals.basedir = templatesDir;
+  app.locals.basedir = app.get("views");
 
   /*
    * Make the current environment available to template files
    */
-  app.locals.environment = config.get("app.environment"); //process.env.NODE_ENV;
+  app.locals.environment = config.get("app.environment");
 
   app.use(requestLogger(app));
   app.use(express.json());
-  app.use(view.init);
-  app.use(express.static(path.join(config.get("app.srcDir"), "public")));
+  app.use(view(config));
+  app.use(express.static(path.join(appRoot, "src", "public")));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(session(config, sessionStore));

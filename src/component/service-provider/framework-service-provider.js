@@ -12,21 +12,18 @@ const ServiceProvider = require(".");
  * Service Container.
  */
 module.exports = class FrameworkServiceProvider extends ServiceProvider {
-  #config = null;
-
-  constructor(config) {
-    super();
-
-    this.#config = config;
+  constructor(options) {
+    super(options);
   }
 
   /**
    * Register the service's dependencies in the dependency container.
    */
   register() {
-    const config = this.#config;
+    const appRoot = this.appRoot();
     const container = this.container();
-    const httpDirectory = path.join(config.get("app.srcDir"), "app", "http");
+    const srcDir = `${appRoot}/src`;
+    const httpDirectory = path.join(srcDir, "app", "http");
     const controllersDirectory = path.join(httpDirectory, "controllers");
     const modelsDirectory = path.join(httpDirectory, "models");
     const servicesDirectory = path.join(httpDirectory, "services");

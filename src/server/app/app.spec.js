@@ -1,11 +1,13 @@
 /* eslint-env node, mocha */
 
+const path = require("node:path");
 const container = require("../../component/container");
 const { chai } = require("../../lib/test-helper");
 const config = require("../test-mocks/src/config");
 const createApp = require("./app");
 
 let expect;
+const appRoot = path.join(path.dirname(__dirname), "test-mocks");
 
 module.exports = {
   createApp() {
@@ -27,6 +29,7 @@ module.exports = {
         const expectedErrorMessage = "createApp 'options' object expects a 'Container' instance.";
 
         expect(createApp.bind(null, {
+          appRoot,
           config,
           container: null,
           providers: [],
@@ -37,6 +40,7 @@ module.exports = {
         })).to.throw(expectedErrorMessage);
 
         expect(createApp.bind(null, {
+          appRoot,
           config,
           container: {},
           providers: [],
@@ -53,7 +57,7 @@ module.exports = {
         "with either or both of the following members: `web`, `api` " +
         "that must have a 'routes' array member.";
 
-        expect(createApp.bind(null, { config, container, providers: [] }))
+        expect(createApp.bind(null, { appRoot, config, container, providers: [] }))
           .to.throw(expectedErrorMessage);
       });
 
@@ -63,14 +67,15 @@ module.exports = {
         "with either or both of the following members: `web`, `api` " +
         "that must have a 'routes' array member.";
 
-        expect(createApp.bind(null, { config, container }))
+        expect(createApp.bind(null, { appRoot, config, container }))
           .to.throw(expectedErrorMessage);
-        expect(createApp.bind(null, { config, container, routes: {} }))
+        expect(createApp.bind(null, { appRoot, config, container, routes: {} }))
           .to.throw(expectedErrorMessage);
       });
 
       it("should return an Express app that doubles as a DI Container", function() {
         const app = createApp({
+          appRoot,
           config,
           container,
           routes: {

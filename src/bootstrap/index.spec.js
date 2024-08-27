@@ -8,7 +8,7 @@ let expect;
 
 module.exports = {
   bootstrap() {
-    describe("bootstrap(config, providers)", function() {
+    describe("bootstrap({ appRoot, config, container, providers })", function() {
       before(async function() {
         expect = (await chai()).expect;
       });
@@ -16,13 +16,14 @@ module.exports = {
       it("should throw if a provider is neither a constructor nor a class", function() {
         const providers = [ { register() {} } ];
 
-        expect(() => bootstrap({}, providers)).to.throw(/A Service Provider must be a class or constructor function/);
+        expect(() => bootstrap({ providers }))
+          .to.throw(/A Service Provider must be a class or constructor function/);
       });
 
       it("should throw if a provider has no register method defined", function() {
         const providers = [ function TestServiceProvider() {} ];
 
-        expect(() => bootstrap({}, providers)).to.throw(
+        expect(() => bootstrap({ providers })).to.throw(
           "Service providers must define a 'register()' method. " +
           "Service Provider 'TestServiceProvider' has no 'register()' method defined."
         );
@@ -53,11 +54,11 @@ module.exports = {
         expect(funcName).to.be.undefined;
         expect(protoFuncName).to.be.undefined;
 
-        bootstrap({}, [
+        bootstrap({ providers: [
           ClassServiceProvider,
           FunctionServiceProvider,
           ProtoFunctionServiceProvider
-        ]);
+        ]});
 
         expect(className).to.equal("ClassServiceProvider");
         expect(funcName).to.equal("FunctionServiceProvider");

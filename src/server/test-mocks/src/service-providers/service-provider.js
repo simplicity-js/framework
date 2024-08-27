@@ -4,13 +4,7 @@ class ServiceProvider extends FrameworkServiceProvider {
   #config;
 
   constructor(config) {
-    super();
-
-    this.#config = config;
-  }
-
-  config() {
-    return this.#config;
+    super(config);
   }
 }
 

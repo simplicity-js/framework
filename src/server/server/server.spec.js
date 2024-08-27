@@ -1,16 +1,19 @@
 /* eslint-env node, mocha */
 
+const path = require("node:path");
 const request = require("supertest");
 const bootstrap = require("../../bootstrap");
 const container = require("../../component/container");
 const { STATUS_CODES, STATUS_TEXTS } = require("../../component/http");
 const { chai } = require("../../lib/test-helper");
+const initResourcePath = require("../../resource-path").init;
 const config = require("../test-mocks/src/config");
 const providers = require("../test-mocks/src/service-providers");
 const { createApp } = require("../app");
 const createServer = require(".");
 
 const healthCheckRoute = "/up";
+const appRoot = path.join(path.dirname(__dirname), "test-mocks");
 
 function getRoutes() {
   const routes = {
@@ -30,7 +33,7 @@ module.exports = {
       let expect;
 
       before(async function() {
-        app = createApp({ config, container, routes: getRoutes() });
+        app = createApp({ appRoot, config, container, routes: getRoutes() });
         expect = (await chai()).expect;
       });
 
@@ -49,7 +52,7 @@ module.exports = {
 
       it("should call the `onError` function if an error occurs", function(done) {
         const SHARED_PORT = 5000;
-        const app2 = createApp({ config, container, routes: getRoutes() });
+        const app2 = createApp({ appRoot, config, container, routes: getRoutes() });
         const server1 = createServer({ app });
         const server2 = createServer({ app: app2, onError: function onError(error) {
           expect(error.code).to.equal("EADDRINUSE");
@@ -65,7 +68,7 @@ module.exports = {
 
       it("should call the `onListening` function on server listening", function(done) {
         const port = 5001;
-        const server = createServer({ app, onError: done, onListening: function onListening(server) {
+        const server = createServer({ appRoot, app, onError: done, onListening: function onListening(server) {
           expect(server).to.be.an("object");
           expect(server).to.have.property("address").to.be.a("function");
           expect(server.address()).to.be.an("object");
@@ -91,9 +94,10 @@ module.exports = {
       before(async function() {
         expect = (await chai()).expect;
 
-        bootstrap(config, providers);
+        initResourcePath(appRoot);
+        bootstrap({ appRoot, config, container, providers });
 
-        app = createApp({ config, container, routes: getRoutes() });
+        app = createApp({ appRoot, config, container, routes: getRoutes() });
         server = createServer({ app, onError: console.log });
 
         server.listen(port);

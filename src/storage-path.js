@@ -12,10 +12,4 @@ module.exports = function storagePath(location) {
  */
 module.exports.init = function initializeStoragePath(projectDir) {
   appRoot = projectDir;
-
-  /*
-   * Rewrite the exported init so that it cannot be further invoked.
-   * This prevents any accidental calls to it from having any effect.
-   */
-  module.exports.init = null;
 };

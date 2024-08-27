@@ -59,13 +59,14 @@ const config = {
   get(val) {
     switch(val) {
     case "app.name": return pkg.name;
-    case "app.allowedOrigins": return ["*"];
-    case "app.rootDir": return APP_ROOT; //path.dirname(path.dirname(path.dirname(__dirname))).replace(/\\/g, "/");
-    case "app.srcDir" : return SRC_DIR;
+    case "cors.allowedOrigins": return ["*"];
+    case "cors": return { allowedOrigins: ["*"] };
+    //case "app.rootDir": return APP_ROOT; //path.dirname(path.dirname(path.dirname(__dirname))).replace(/\\/g, "/");
+    //case "app.srcDir" : return SRC_DIR;
     case "app.maintenance": return { driver: "file" };
     case "app.version": return pkg.version;
-    case "app.viewsDir": return `${SRC_DIR}/views`;
-    case "app.viewTemplatesEngine": return "pug";
+    case "view.paths": return [`${SRC_DIR}/resources/views`];
+    case "view.engine": return "pug";
     case "cache": return cacheConfig;
     case "database": return databaseConfig;
     case "logging": return logConfig;
