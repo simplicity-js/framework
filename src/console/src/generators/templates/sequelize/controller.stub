@@ -1,8 +1,8 @@
 "use strict";
 
 const { STATUS_CODES } = require("@simplicityjs/framework/component/http");
-const { $$MODEL_NAME$$ } = require("../models/sequelize");
-const Controller = require("./controller");
+const { $$MODEL_NAME$$ } = require("app/http/models/sequelize");
+const Controller = require("app/http/controllers/controller");
 
 module.exports = class $$CONTROLLER_NAME$$ extends Controller {
   constructor() {

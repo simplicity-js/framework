@@ -1,6 +1,6 @@
 "use strict";
 
-const schema = require("../../../app/http/models/mongoose/$$MODEL_FILE_NAME$$").schema;
+const schema = require("app/http/models/mongoose/$$MODEL_FILE_NAME$$").schema;
 
 let $$MODEL_NAME$$;
 

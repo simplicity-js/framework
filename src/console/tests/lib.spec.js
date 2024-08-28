@@ -4,12 +4,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const util = require("node:util");
 const currDir = __dirname;
+const testApp = `${currDir}${path.sep}test-app`;
 
 /*
  * Change the current working directory accordingly
  * before running the tests
  */
-process.chdir(`${currDir}${path.sep}test-app`);
+process.chdir(testApp);
 
 const { MIGRATION_TYPES, TEMPLATES_DIR } = require("../src/helpers/constants");
 const { createDirectory, deleteFileOrDirectory, getFilename, pathExists
@@ -19,7 +20,8 @@ const {
   setAdditionalOrms, clearAdditionalOrms, getDatabaseConnection
 } = require("../src");
 const createAssertions = require("./test-helpers/assertions-helper");
-const { chai, spyOnConsoleOutput } = require("./test-helpers/test-helper");
+const { chai, spyOnConsoleOutput, normalizeMongooseMigrationFilesForTesting
+} = require("./test-helpers/test-helper");
 
 let httpPath;
 let controllersPath;
@@ -1394,6 +1396,7 @@ describe("lib.js", function() {
         makeMigration(migrationName, { database })
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(testApp, modelName);
       await migrate({ database });
       restore();
 
@@ -1486,6 +1489,7 @@ describe("lib.js", function() {
         makeMigration(sequelizeMigrationName, { database: "sqlite" })
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(testApp, mongooseModelName);
       await migrate();
       restore();
 

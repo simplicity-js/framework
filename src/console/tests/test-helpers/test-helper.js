@@ -5,6 +5,7 @@ const path = require("node:path");
 const util = require("node:util");
 const sinon = require("sinon");
 const chai = () => import("chai").then(chai => chai);
+const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const { copy, createDirectory, createFile, deleteFileOrDirectory } = require(
   "../../src/helpers/file-system");
 
@@ -77,7 +78,18 @@ function spyOnConsoleOutput(object = "stdout") {
   };
 }
 
+async function normalizeMongooseMigrationFilesForTesting(appDir, modelName) {
+  const replacer = await getReplaceInFile();
+
+  await replacer.replaceInFile({
+    files: `${appDir}/src/database/migrations/mongoose/*.js`,
+    from: `require("app/http/models/mongoose/${modelName.toLowerCase()}")`,
+    to: `require("../../../app/http/models/mongoose/${modelName.toLowerCase()}")`,
+  });
+}
+
 module.exports = {
   chai,
   spyOnConsoleOutput,
+  normalizeMongooseMigrationFilesForTesting,
 };

@@ -18,7 +18,8 @@ const { copy, createDirectory, deleteFileOrDirectory, getFilename, pathExists,
 const { marker } = require("../src/helpers/printer");
 const { getDatabaseConnection } = require("../src");
 const createAssertions = require("./test-helpers/assertions-helper");
-const { chai, spyOnConsoleOutput } = require("./test-helpers/test-helper");
+const { chai, spyOnConsoleOutput, normalizeMongooseMigrationFilesForTesting
+} = require("./test-helpers/test-helper");
 
 let httpPath;
 let controllersPath;
@@ -93,14 +94,7 @@ describe("commands", function() {
       await this.sequelizeConnection.close();
 
       chdir(currDir);
-
-      if(typeof this.sequelizeConnection.on === "function") {
-        this.sequelizeConnection.on("close", function() {
-          deleteFileOrDirectory(commandsTestApp);
-        });
-      } else {
-        deleteFileOrDirectory(commandsTestApp);
-      }
+      deleteFileOrDirectory(commandsTestApp);
     } catch(err) {
       fs.appendFileSync(
         `${currDir}/.logs/console.error`,
@@ -530,6 +524,7 @@ describe("commands", function() {
         this.makeModelCommand([modelName], { database })
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(commandsTestApp, modelName);
       await this.command([], { database });
       restore();
 
@@ -609,6 +604,7 @@ describe("commands", function() {
         this.makeModelCommand([sequelizeModelName], { database: "sqlite" })
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(commandsTestApp, mongooseModelName);
       await this.command();
       restore();
 

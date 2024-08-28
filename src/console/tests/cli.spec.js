@@ -18,7 +18,8 @@ const { copy, createDirectory, deleteFileOrDirectory, getFilename, pathExists,
 const { print, marker } = require("../src/helpers/printer");
 const { getDatabaseConnection } = require("../src");
 const createAssertions = require("./test-helpers/assertions-helper");
-const { chai, spyOnConsoleOutput } = require("./test-helpers/test-helper");
+const { chai, spyOnConsoleOutput, normalizeMongooseMigrationFilesForTesting
+} = require("./test-helpers/test-helper");
 
 let httpPath;
 let controllersPath;
@@ -695,6 +696,7 @@ describe("cli", function() {
         exec(this.makeModelCommand, [modelName, `--database ${database}`])
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(cliTestApp, modelName);
       await exec(this.command, [`--database ${database}`]);
       restore();
 
@@ -774,6 +776,7 @@ describe("cli", function() {
         exec(this.makeModelCommand, [sequelizeModelName, "--database sqlite"])
       ]);
 
+      await normalizeMongooseMigrationFilesForTesting(cliTestApp, mongooseModelName);
       await exec(this.command);
       restore();
 
