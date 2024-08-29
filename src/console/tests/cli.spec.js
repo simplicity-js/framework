@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const util = require("node:util");
+const { getDatabaseConnection } = require("../src");
 const {
   BUILDER_NAME, FRAMEWORK_NAME,
   GENERATE_CONTROLLER_COMMAND, GENERATE_MIGRATION_COMMAND,
@@ -12,13 +13,12 @@ const {
   MANUAL_HELP, MIGRATION_TYPES,
   RUN_MIGRATION_COMMAND, TEMPLATES_DIR
 } = require("../src/helpers/constants");
-const { copy, createDirectory, deleteFileOrDirectory, getFilename, pathExists,
-  readLinesFromFile
+const { createDirectory, deleteFileOrDirectory, pathExists, readLinesFromFile
 } = require("../src/helpers/file-system");
 const { print, marker } = require("../src/helpers/printer");
-const { getDatabaseConnection } = require("../src");
 const createAssertions = require("./test-helpers/assertions-helper");
-const { chai, spyOnConsoleOutput, normalizeMongooseMigrationFilesForTesting
+const { chai, dropCollections, escapeRegExp, spyOnConsoleOutput,
+  normalizeMongooseMigrationFilesForTesting
 } = require("./test-helpers/test-helper");
 
 let httpPath;
@@ -34,6 +34,7 @@ let assertStandaloneRouteFile;
 let collectionExists;
 let normalizeHelpManual;
 let normalizePath;
+let parseMigrationPathFromSinonCall;
 let tableExists;
 let verifyInlineRouteExists;
 
@@ -41,8 +42,8 @@ const EOL = os.EOL;
 const PADDING = "  ";
 const chdir = process.chdir;
 const currDir = __dirname.replace(/\\/g, "/");
+const testApp = `${currDir}/test-app`;
 const binDir = path.join(currDir, "..", "src").replace(/\\/g, "/");
-const cliTestApp = `${currDir}/cli-test-app`;
 
 function exec(command, args) {
   args = args || [];
@@ -90,16 +91,17 @@ describe("cli", function() {
   before(async function() {
     expect = (await chai()).expect;
 
-    copy(`${currDir}/test-app`, cliTestApp);
-    chdir(cliTestApp);
+    if(process.cwd() !== testApp) {
+      process.chdir(testApp);
+    }
+
+    const assertions = createAssertions({ expect, TEMPLATES_DIR });
 
     httpPath = path.join(process.cwd(), "src", "app", "http");
     controllersPath = path.join(httpPath, "controllers");
     migrationsPath = path.join(process.cwd(), "src", "database", "migrations");
     modelsPath = path.join(httpPath, "models");
     routesPath = path.join(process.cwd(), "src", "routes");
-
-    const assertions = createAssertions({ expect, TEMPLATES_DIR });
 
     assertControllerFile = assertions.assertControllerFile;
     assertMigrationFile = assertions.assertMigrationFile;
@@ -108,41 +110,9 @@ describe("cli", function() {
     collectionExists = assertions.collectionExists;
     normalizeHelpManual = assertions.normalizeHelpManual;
     normalizePath = assertions.normalizePath;
+    parseMigrationPathFromSinonCall = assertions.parseMigrationPathFromSinonCall;
     tableExists = assertions.tableExists;
     verifyInlineRouteExists = assertions.verifyInlineRouteExists;
-
-    [this.mongooseConnection, this.sequelizeConnection] = await Promise.all([
-      getDatabaseConnection("mongodb"),
-      getDatabaseConnection("sqlite")
-    ]);
-  });
-
-  after(async function() {
-    expect = null;
-
-    try {
-      await Promise.all([
-        this.mongooseConnection.dropCollection("migrations"),
-        this.sequelizeConnection.query("DROP TABLE IF EXISTS `SequelizeMeta`"),
-      ]);
-
-      await this.sequelizeConnection.close();
-
-      chdir(currDir);
-
-      if(typeof this.sequelizeConnection.on === "function") {
-        this.sequelizeConnection.on("close", function() {
-          deleteFileOrDirectory(cliTestApp);
-        });
-      } else {
-        deleteFileOrDirectory(cliTestApp);
-      }
-    } catch(err) {
-      fs.appendFileSync(
-        `${currDir}/.logs/console.error`,
-        util.inspect(err, { depth: 12 })
-      );
-    }
   });
 
   describe("help (--help, -h)", function() {
@@ -233,7 +203,8 @@ describe("cli", function() {
 
       expect(sinonSpy.calledOnce).to.be.true;
       expect(expected).to.equal(actual);
-      chdir(cliTestApp);
+
+      chdir(testApp);
     });
 
     it("should display version information if the --version option is passed", async function() {
@@ -247,7 +218,8 @@ describe("cli", function() {
 
       expect(sinonSpy.calledOnce).to.be.true;
       expect(expected).to.equal(actual);
-      chdir(cliTestApp);
+
+      chdir(testApp);
     });
 
     it("should display version information if the -v option is passed", async function() {
@@ -261,7 +233,8 @@ describe("cli", function() {
 
       expect(sinonSpy.calledOnce).to.be.true;
       expect(expected).to.equal(actual);
-      chdir(cliTestApp);
+
+      chdir(testApp);
     });
 
     it(`should also display framework version if inside a ${FRAMEWORK_NAME} Application directory`, async function() {
@@ -305,7 +278,7 @@ describe("cli", function() {
       expect(sinonSpy.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
 
-      chdir(cliTestApp);
+      chdir(testApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -314,21 +287,19 @@ describe("cli", function() {
       await exec(this.command);
       restore();
 
-      const expected1 = new RegExp("Generating Controller...");
-      const expected2 = new RegExp(
+      const expected = new RegExp(
         "The Controller name is required. " +
         `Type ${BUILDER_NAME} ${GENERATE_CONTROLLER_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected1);
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected2);
-      expect(sinonSpy.calledWithMatch(expected2)).to.equal(true);
+      expect(sinonSpy.getCall(0).args[0]).to.match(expected);
+      expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
       expect(pathExists(path.join(controllersPath, "undefined-controller.js")))
         .to.be.false;
     });
 
-    it("should fail if the controller exists and the --force option is not set", async function() {
+    it("should fail if the controller already exists", async function() {
       const { sinonSpy, restore } = spyOnConsoleOutput();
       const controllerName = "test-controller";
       const controllerFile = path.join(controllersPath, `${controllerName}.js`);
@@ -339,13 +310,10 @@ describe("cli", function() {
       await exec(this.command, [controllerName]);
       restore();
 
-      const r1 = `Generating Controller '${controllerName}'`;
-      const r2 = `Created: src > app > http > controllers > ${controllerName}.js`;
-      const r3 = `Controller ${normalizePath(controllerFile)} generated.`;
+      const msg = escapeRegExp(
+        `Controller [${normalizePath(controllerFile)}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(controllerFile)).to.equal(true);
       assertControllerFile(controllerFile, {
         name: "TestController",
@@ -363,67 +331,11 @@ describe("cli", function() {
       await exec(this.command, [controllerName, "--database mongodb"]);
       restore2();
 
-      const expected = new RegExp(
-        `Controller File at ${normalizePath(controllerFile)} already exists. ` +
-        "To overwrite it, use --force option."
-      );
+      const expected = new RegExp("Controller already exists.");
 
       expect(sinonSpy2.calledOnce).to.be.true;
       expect(sinonSpy2.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy2.calledWithMatch(expected)).to.equal(true);
-
-      deleteFileOrDirectory(controllerFile);
-    });
-
-    it("should overwrite an existing controller if the --force option is set", async function() {
-      const { sinonSpy, restore } = spyOnConsoleOutput();
-      const controllerName = "test-controller";
-      const controllerFile = path.join(controllersPath, `${controllerName}.js`);
-
-      expect(pathExists(controllerFile)).to.be.false;
-
-      // Create the controller the first time
-      await exec(this.command, [controllerName, "--database sqlite"]);
-      restore();
-
-      let r1 = `Generating Controller '${controllerName}'`;
-      let r2 = `Created: src > app > http > controllers > ${controllerName}.js`;
-      let r3 = `Controller ${controllerFile.replace(/\\/g, "/")} generated.`;
-
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
-      expect(pathExists(controllerFile)).to.equal(true);
-      assertControllerFile(controllerFile, {
-        name: "TestController",
-        model: "Test",
-        entity: "test",
-        orm: "sequelize",
-        isResource: false,
-      });
-
-      // Re-create the controller a second time
-      // with the 'overwrite' option set to true.
-      const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
-
-      await exec(this.command, [controllerName, "--database mongodb", "--force"]);
-      restore2();
-
-      r1 = `Generating Controller '${controllerName}'`;
-      r2 = `Replaced: src > app > http > controllers > ${controllerName}.js`;
-      r3 = `Controller ${controllerFile.replace(/\\/g, "/")} generated.`;
-
-      expect(sinonSpy2.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy2.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy2.calledWithMatch(new RegExp(r3))).to.equal(true);
-      expect(pathExists(controllerFile)).to.equal(true);
-      assertControllerFile(controllerFile, {
-        name: "TestController",
-        model: "Test",
-        entity: "test",
-        orm: "mongoose",
-        isResource: false,
-      });
 
       deleteFileOrDirectory(controllerFile);
     });
@@ -438,13 +350,10 @@ describe("cli", function() {
       await exec(this.command, [controllerName]);
       restore();
 
-      const r1 = `Generating Controller '${controllerName}'`;
-      const r2 = `Created: src > app > http > controllers > ${controllerName}.js`;
-      const r3 = `Controller ${normalizePath(controllerFile)} generated.`;
+      const msg = escapeRegExp(
+        `Controller [${normalizePath(controllerFile)}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(controllerFile)).to.equal(true);
       assertControllerFile(controllerFile, {
         name: "TestController",
@@ -459,17 +368,13 @@ describe("cli", function() {
   });
 
   describe(`${GENERATE_MIGRATION_COMMAND} name [options]`, function() {
-    function getMigrationPath(sinonSpy) {
-      return sinonSpy.getCall(0).args[0].match(/Migration (.+) generated/)[1];
-    }
-
     before(function(done) {
       this.command = `node ${binDir}/cli ${GENERATE_MIGRATION_COMMAND}`;
       done();
     });
 
     it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
-      chdir(currDir);
+      process.chdir(currDir);
 
       const { sinonSpy, restore } = spyOnConsoleOutput();
 
@@ -485,7 +390,7 @@ describe("cli", function() {
       expect(sinonSpy.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
 
-      chdir(cliTestApp);
+      process.chdir(testApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -494,16 +399,14 @@ describe("cli", function() {
       await exec(this.command);
       restore();
 
-      const expected1 = new RegExp("Generating Migration...");
-      const expected2 = new RegExp(
+      const expected = new RegExp(
         "The Migration name is required. " +
         `Type ${BUILDER_NAME} ${GENERATE_MIGRATION_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected1);
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected2);
-      expect(sinonSpy.calledWithMatch(expected2)).to.equal(true);
+      expect(sinonSpy.getCall(0).args[0]).to.match(expected);
+      expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
       expect(pathExists(path.join(migrationsPath, "undefined-migration.js")))
         .to.be.false;
     });
@@ -522,15 +425,14 @@ describe("cli", function() {
 
       restore();
 
-      const expected1 = new RegExp(`Generating Migration '${migrationName}'...`);
-      const expected2 = new RegExp(
+      const expected = new RegExp(
         `Invalid migration type '${type}' specified. ` +
         `Valid migration types include ${MIGRATION_TYPES.join(", ")}.`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected1);
-      expect(sinonSpy.calledWithMatch(expected2)).to.equal(true);
+      expect(sinonSpy.getCall(0).args[0]).to.match(expected);
+      expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
     });
 
     it("should fail if a migration with the same name already exists for given ORM", async function() {
@@ -545,13 +447,11 @@ describe("cli", function() {
       await exec(this.command, [migrationName]);
       restore();
 
-      const destination = getMigrationPath(sinonSpy);
+      const destination = parseMigrationPathFromSinonCall(sinonSpy);
 
-      const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
-      const r2 = `Migration ${destination} generated.`;
+      const msg = escapeRegExp(`Migration [${destination}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(destination)).to.equal(true);
       assertMigrationFile(destination, {
         name: migrationName,
@@ -566,9 +466,7 @@ describe("cli", function() {
       await exec(this.command, [migrationName]);
       restore2();
 
-      const expected = new RegExp(
-        `Migration '${migrationName}' already exists. Kindly use a different name.`
-      );
+      const expected = new RegExp("Migration already exists.");
 
       expect(sinonSpy2.calledOnce).to.be.true;
       expect(sinonSpy2.getCall(0).args[0]).to.match(expected);
@@ -588,13 +486,11 @@ describe("cli", function() {
       await exec(this.command, [migrationName]);
       restore();
 
-      const destination = getMigrationPath(sinonSpy);
+      const destination = parseMigrationPathFromSinonCall(sinonSpy);
 
-      const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
-      const r2 = `Migration ${destination} generated.`;
+      const msg = escapeRegExp(`Migration [${destination}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(destination)).to.equal(true);
       assertMigrationFile(destination, {
         name: migrationName,
@@ -626,13 +522,11 @@ describe("cli", function() {
           await exec(this.command, [migrationName, `--database ${database}`]);
           restore();
 
-          const destination = getMigrationPath(sinonSpy);
+          const destination = parseMigrationPathFromSinonCall(sinonSpy);
 
-          const r1 = `Created: src > database > migrations > ${orm} > ${getFilename(destination, true)}`;
-          const r2 = `Migration ${destination} generated.`;
+          const msg = escapeRegExp(`Migration [${destination}] created successfully.`);
 
-          expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-          expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+          expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
           expect(pathExists(destination)).to.equal(true);
           assertMigrationFile(destination, {
             fields: "",
@@ -656,9 +550,40 @@ describe("cli", function() {
       this.makeMigrationCommand = `node ${binDir}/cli ${GENERATE_MIGRATION_COMMAND}`;
       this.makeModelCommand = `node ${binDir}/cli ${GENERATE_MODEL_COMMAND}`;
 
-      await this.mongooseConnection.db.collection("migrations").deleteMany({
+      try {
+        [this.mongooseConnection, this.sequelizeConnection] = await Promise.all([
+          getDatabaseConnection("mongodb"),
+          getDatabaseConnection("sqlite")
+        ]);
+      } catch(err) {
+        fs.appendFileSync(
+          `${currDir}/.logs/console.error`,
+          util.inspect(err, { depth: 12 })
+        );
+      }
+
+      await dropCollections(this.mongooseConnection);
+      /*await this.mongooseConnection.db.collection("migrations").deleteMany({
         //name: { $regex: "(alter|create|update)-users-table" },
-      });
+      });*/
+    });
+
+    after(async function() {
+      try {
+        await Promise.all([
+          this.mongooseConnection.dropCollection("migrations"),
+          this.sequelizeConnection.query("DROP TABLE IF EXISTS `SequelizeMeta`"),
+        ]);
+
+        await dropCollections(this.mongooseConnection);
+
+        await this.sequelizeConnection.close();
+      } catch(err) {
+        fs.appendFileSync(
+          `${currDir}/.logs/console.error`,
+          util.inspect(err, { depth: 12 })
+        );
+      }
     });
 
     it(`should fail if invoked outside of a ${FRAMEWORK_NAME} application directory`, async function() {
@@ -676,7 +601,7 @@ describe("cli", function() {
       expect(sinonSpy.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
 
-      chdir(cliTestApp);
+      chdir(testApp);
     });
 
     it("should run the migrations for --database option 'mongodb'", async function() {
@@ -696,7 +621,7 @@ describe("cli", function() {
         exec(this.makeModelCommand, [modelName, `--database ${database}`])
       ]);
 
-      await normalizeMongooseMigrationFilesForTesting(cliTestApp, modelName);
+      await normalizeMongooseMigrationFilesForTesting(testApp, modelName);
       await exec(this.command, [`--database ${database}`]);
       restore();
 
@@ -776,7 +701,7 @@ describe("cli", function() {
         exec(this.makeModelCommand, [sequelizeModelName, "--database sqlite"])
       ]);
 
-      await normalizeMongooseMigrationFilesForTesting(cliTestApp, mongooseModelName);
+      await normalizeMongooseMigrationFilesForTesting(testApp, mongooseModelName);
       await exec(this.command);
       restore();
 
@@ -813,7 +738,7 @@ describe("cli", function() {
       expect(sinonSpy.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
 
-      chdir(cliTestApp);
+      chdir(testApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -822,20 +747,19 @@ describe("cli", function() {
       await exec(this.command);
       restore();
 
-      const expected1 = new RegExp("Generating Model...");
-      const expected2 = new RegExp(
+      const expected = new RegExp(
         "The Model name is required. " +
         `Type ${BUILDER_NAME} ${GENERATE_MODEL_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected1);
-      expect(sinonSpy.calledWithMatch(expected2)).to.equal(true);
+      expect(sinonSpy.getCall(0).args[0]).to.match(expected);
+      expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
       expect(pathExists(path.join(modelsPath, "undefined.js")))
         .to.be.false;
     });
 
-    it("should fail if the model exists and the --force option is not set", async function() {
+    it("should fail if the model already exists", async function() {
       const orm = "sequelize";
       const database = "sqlite";
       const { sinonSpy, restore } = spyOnConsoleOutput();
@@ -849,13 +773,10 @@ describe("cli", function() {
       await exec(this.command, [modelName, `--database ${database}`]);
       restore();
 
-      const r1 = `Generating Model '${modelName}'...`;
-      const r2 = `Created: src > app > http > models > ${orm} > ${filename}`;
-      const r3 = `Model ${normalizePath(modelFile)} generated.`;
+      const msg = escapeRegExp(
+        `Model [${normalizePath(modelFile)}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(modelFile)).to.equal(true);
       assertModelFile(modelFile, {
         name: modelName,
@@ -871,70 +792,11 @@ describe("cli", function() {
       await exec(this.command, [modelName, `--database ${database}`]);
       restore2();
 
-      const expected = new RegExp(
-        `Model File at ${normalizePath(modelFile)} already exists. ` +
-        "To overwrite it, use --force option."
-      );
+      const expected = new RegExp("Model already exists.");
 
       expect(sinonSpy2.calledOnce).to.be.true;
       expect(sinonSpy2.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy2.calledWithMatch(expected)).to.equal(true);
-
-      deleteFileOrDirectory(modelFile);
-    });
-
-    it("should overwrite an existing model if the --force option is set", async function() {
-      const orm = "sequelize";
-      const database = "sqlite";
-      const { sinonSpy, restore } = spyOnConsoleOutput();
-      const modelName = "OverwriteTrue";
-      const filename = "overwrite-true.js";
-      const modelFile = path.join(modelsPath, orm, filename);
-
-      expect(pathExists(modelFile)).to.be.false;
-
-      // Create the model the first time
-      await exec(this.command, [modelName, `--database ${database}`]);
-      restore();
-
-      let r1 = `Generating Model '${modelName}'...`;
-      let r2 = `Created: src > app > http > models > ${orm} > ${filename}`;
-      let r3 = `Model ${modelFile.replace(/\\/g, "/")} generated.`;
-
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
-      expect(pathExists(modelFile)).to.equal(true);
-      assertModelFile(modelFile, {
-        name: modelName,
-        table: "overwrite_trues",
-        orm: orm,
-        connection: database,
-        fields: "",
-      });
-
-      // Re-create the controller a second time
-      // with the 'overwrite' option set to true.
-      const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
-
-      await exec(this.command, [modelName, `--database ${database}`, "--force"]);
-      restore2();
-
-      r1 = `Generating Model '${modelName}'...`;
-      r2 = `Replaced: src > app > http > models > ${orm} > ${filename}`;
-      r3 = `Model ${normalizePath(modelFile)} generated.`;
-
-      expect(sinonSpy2.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy2.calledWithMatch(new RegExp(r2))).to.equal(true);
-      expect(sinonSpy2.calledWithMatch(new RegExp(r3))).to.equal(true);
-      expect(pathExists(modelFile)).to.equal(true);
-      assertModelFile(modelFile, {
-        name: modelName,
-        table: "overwrite_trues",
-        orm: orm,
-        connection: database,
-        fields: "",
-      });
 
       deleteFileOrDirectory(modelFile);
     });
@@ -955,11 +817,10 @@ describe("cli", function() {
       await exec(this.command, [modelName, `--database ${database}`]);
       restore();
 
-      let r1 = `Created: src > app > http > models > ${orm} > ${filename}`;
-      let r2 = `Model ${normalizePath(modelFile1)} generated.`;
+      let msg = escapeRegExp(
+        `Model [${normalizePath(modelFile1)}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(modelFile1)).to.equal(true);
       assertModelFile(modelFile1, {
         name: modelName,
@@ -982,11 +843,10 @@ describe("cli", function() {
       await exec(this.command, [modelName, `--database ${database}`]);
       restore2();
 
-      r1 = `Created: src > app > http > models > ${orm} > ${filename}`;
-      r2 = `Model ${normalizePath(modelFile2)} generated.`;
+      msg = escapeRegExp(
+        `Model [${normalizePath(modelFile2)}] created successfully.`);
 
-      expect(sinonSpy2.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy2.calledWithMatch(new RegExp(r2))).to.equal(true);
+      expect(sinonSpy2.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(modelFile2)).to.equal(true);
       assertModelFile(modelFile2, {
         name: modelName,
@@ -1011,11 +871,10 @@ describe("cli", function() {
       await exec(this.command, [modelName]);
       restore();
 
-      const r1 = `Created: src > app > http > models > ${orm} > ${modelName.toLowerCase()}.js`;
-      const r2 = `Model ${normalizePath(modelFile)} generated.`;
+      const msg = escapeRegExp(
+        `Model [${normalizePath(modelFile)}] created successfully.`);
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-      expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(pathExists(modelFile)).to.equal(true);
       assertModelFile(modelFile, {
         name: "Test",
@@ -1052,7 +911,7 @@ describe("cli", function() {
       expect(sinonSpy.getCall(0).args[0]).to.match(expected);
       expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
 
-      chdir(cliTestApp);
+      chdir(testApp);
     });
 
     it("should fail if the 'name' argument is missing", async function() {
@@ -1061,15 +920,14 @@ describe("cli", function() {
       await exec(this.command);
       restore();
 
-      const expected1 = /Generating Route.../;
-      const expected2 = new RegExp(
+      const expected = new RegExp(
         "The Route name is required. " +
         `Type ${BUILDER_NAME} ${GENERATE_ROUTE_COMMAND} --help for help`
       );
 
       expect(sinonSpy.calledOnce).to.be.true;
-      expect(sinonSpy.getCall(0).args[0]).to.match(expected1);
-      expect(sinonSpy.calledWithMatch(expected2)).to.equal(true);
+      expect(sinonSpy.getCall(0).args[0]).to.match(expected);
+      expect(sinonSpy.calledWithMatch(expected)).to.equal(true);
     });
 
     it("should create regular web routes by default", async function() {
@@ -1091,9 +949,9 @@ describe("cli", function() {
 
       restore();
 
-      const r1 = "Route information written to: src > routes > web.js";
+      const msg = "Route created successfully.";
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(verifyInlineRouteExists(routeFile, {
         route: routeName,
         controller: controllerName,
@@ -1119,9 +977,9 @@ describe("cli", function() {
       await exec(this.command, [routeName, "--api"]);
       restore();
 
-      const r1 = "Route information written to: src > routes > api.js";
+      const msg = "Route created successfully.";
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(verifyInlineRouteExists(routeFile, {
         route: routeName,
         controller: controllerName,
@@ -1147,9 +1005,9 @@ describe("cli", function() {
       await exec(this.command, [routeName, "--resource"]);
       restore();
 
-      const r1 = "Route information written to: src > routes > web.js";
+      const msg = "Route created successfully.";
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(verifyInlineRouteExists(routeFile, {
         route: routeName,
         controller: controllerName,
@@ -1175,9 +1033,9 @@ describe("cli", function() {
       await exec(this.command, [routeName, "--api", "--resource"]);
       restore();
 
-      const r1 = "Route information written to: src > routes > web.js";
+      const msg = "Route created successfully.";
 
-      expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
+      expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
       expect(verifyInlineRouteExists(routeFile, {
         route: routeName,
         controller: controllerName,
@@ -1214,13 +1072,9 @@ describe("cli", function() {
         await exec(this.command, [routeName]);
         restore();
 
-        const r1 = `Generating Route '${routeName}'...`;
-        const r2 = `Created: src > routes > web > ${routeName}.js`;
-        const r3 = `Route ${normalizePath(routeFile)} generated.`;
+        const msg = "Route created successfully.";
 
-        expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+        expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
 
         // Assert that the route was created inside the 'web' folder.
         expect(pathExists(routeFile)).to.equal(true);
@@ -1255,13 +1109,9 @@ describe("cli", function() {
         await exec(this.command, [routeName, "--api"]);
         restore();
 
-        const r1 = `Generating Route '${routeName}'...`;
-        const r2 = `Created: src > routes > api > ${routeName}.js`;
-        const r3 = `Route ${normalizePath(routeFile)} generated.`;
+        const msg = "Route created successfully.";
 
-        expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+        expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
 
         // Assert that the route was created inside the 'api' folder.
         expect(pathExists(routeFile)).to.equal(true);
@@ -1296,13 +1146,9 @@ describe("cli", function() {
         await exec(this.command, [routeName, "--api", "--resource"]);
         restore();
 
-        const r1 = `Generating Route '${routeName}'...`;
-        const r2 = `Created: src > routes > web > ${routeName}.js`;
-        const r3 = `Route ${normalizePath(routeFile)} generated.`;
+        const msg = "Route created successfully.";
 
-        expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r3))).to.equal(true);
+        expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
 
         // Assert that the route was created inside the 'web' folder.
         expect(pathExists(routeFile)).to.equal(true);
@@ -1324,7 +1170,7 @@ describe("cli", function() {
         deleteFileOrDirectory(routeFile);
       });
 
-      it("should fail if the route exists and the --force option is not set", async function() {
+      it("should fail if the route already exists", async function() {
         const routeName = "tenants";
         const routeDirectory = path.join(routesPath, "web");
         const routeFile = path.join(routeDirectory, `${routeName}.js`);
@@ -1337,11 +1183,9 @@ describe("cli", function() {
         await exec(this.command, [routeName]);
         restore();
 
-        const r1 = `Created: src > routes > web > ${routeName}.js`;
-        const r2 = `Route ${normalizePath(routeFile)} generated.`;
+        const msg = "Route created successfully.";
 
-        expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
+        expect(sinonSpy.calledWithMatch(new RegExp(msg))).to.equal(true);
 
         // Assert that the route was created inside the 'web' folder.
         expect(pathExists(routeFile)).to.equal(true);
@@ -1366,81 +1210,11 @@ describe("cli", function() {
         await exec(this.command, [routeName]);
         restore2();
 
-        const expected = new RegExp(
-          `Route File at ${normalizePath(routeFile)} already exists. ` +
-          "To overwrite it, use --force option."
-        );
+        const expected = new RegExp("Route already exists.");
 
         expect(sinonSpy2.calledOnce).to.be.true;
         expect(sinonSpy2.getCall(0).args[0]).to.match(expected);
         expect(sinonSpy2.calledWithMatch(expected)).to.equal(true);
-
-        deleteFileOrDirectory(routeFile);
-      });
-
-      it("should overwrite an existing route if the --force option is set", async function() {
-        const routeName = "tenants";
-        const routeDirectory = path.join(routesPath, "api");
-        const routeFile = path.join(routeDirectory, `${routeName}.js`);
-        const controllerName = "TenantController";
-        const controllerFile = "tenant-controller";
-
-        expect(pathExists(routeFile)).to.be.false;
-
-        const { sinonSpy, restore } = spyOnConsoleOutput();
-        await exec(this.command, [routeName, "--api"]);
-        restore();
-
-        let r1 = `Created: src > routes > api > ${routeName}.js`;
-        let r2 = `Route ${normalizePath(routeFile)} generated.`;
-
-        expect(sinonSpy.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy.calledWithMatch(new RegExp(r2))).to.equal(true);
-
-        // Assert that the route was created inside the 'api' folder.
-        expect(pathExists(routeFile)).to.equal(true);
-        assertStandaloneRouteFile(routeFile, {
-          name: routeName,
-          controllerName: controllerName,
-          controllerFilename: controllerFile,
-          isResourceRoute: false,
-        });
-
-        // Assert that the route was not created inside the 'api.js' file.
-        expect(verifyInlineRouteExists(routeFile, {
-          route: routeName,
-          controller: controllerName,
-          controllerFile: controllerFile,
-          isResourceRoute: false,
-        })).to.be.false;
-
-        // Re-create the route with the 'overwrite' option set to true.
-        const { sinonSpy: sinonSpy2, restore: restore2 } = spyOnConsoleOutput();
-
-        await exec(this.command, [routeName, "--api", "--force"]);
-
-        restore2();
-
-        r1 = `Replaced: src > routes > api > ${routeName}.js`;
-        r2 = `Route ${normalizePath(routeFile)} generated.`;
-
-        expect(sinonSpy2.calledWithMatch(new RegExp(r1))).to.equal(true);
-        expect(sinonSpy2.calledWithMatch(new RegExp(r2))).to.equal(true);
-        expect(pathExists(routeFile)).to.equal(true);
-        assertStandaloneRouteFile(routeFile, {
-          name: routeName,
-          controllerName: controllerName,
-          controllerFilename: controllerFile,
-          isResourceRoute: false,
-        });
-
-        // Assert that the route was not created inside the 'web.js' file.
-        expect(verifyInlineRouteExists(routeFile, {
-          route: routeName,
-          controller: controllerName,
-          controllerFile: controllerFile,
-          isResourceRoute: false,
-        })).to.be.false;
 
         deleteFileOrDirectory(routeFile);
       });

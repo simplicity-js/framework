@@ -13,6 +13,7 @@ module.exports = function({ expect, TEMPLATES_DIR }) {
     collectionExists,
     normalizeHelpManual,
     normalizePath,
+    parseMigrationPathFromSinonCall,
     tableExists,
     verifyInlineRouteExists,
   };
@@ -135,6 +136,13 @@ module.exports = function({ expect, TEMPLATES_DIR }) {
     }).toArray();
 
     return collections.length > 0;
+  }
+
+  function parseMigrationPathFromSinonCall(sinonSpy) {
+    const destination = sinonSpy.getCall(0).args[0].match(
+      /Migration (.+) created successfully/)[1];
+
+    return destination.replace(/[\[\]]+/g, "");
   }
 
   function normalizeHelpManual(manual) {

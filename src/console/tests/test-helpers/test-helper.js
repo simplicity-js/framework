@@ -9,25 +9,33 @@ const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const { copy, createDirectory, createFile, deleteFileOrDirectory } = require(
   "../../src/helpers/file-system");
 
-const testsDir = path.resolve(__dirname, "..").replace(/\\/g, "/");
-const testAppDir = `${testsDir}${path.sep}test-app`;
+const testsDir = path.dirname(__dirname).replace(/\\/g, "/");
+const testAppStub = `${testsDir}/test-app-stub`;
+const testAppDir = `${testsDir}/test-app`;
 const logDir  = `${testsDir}/.logs`;
 const logFile = `${logDir}/console.log`;
 const errFile = `${logDir}/console.error`;
 
 before(function(done) {
+  deleteFileOrDirectory(testAppDir);
+  copy(testAppStub, testAppDir);
   copy(
-    `${testAppDir}${path.sep}.env.example`,
-    `${testAppDir}${path.sep}.env`
+    `${testAppDir}/.env.example`,
+    `${testAppDir}/.env`
   );
+
+  if(process.cwd() !== testAppDir) {
+    process.chdir(testAppDir);
+  }
+
   done();
 });
 
 after(function(done) {
-  deleteFileOrDirectory(`${testAppDir}${path.sep}.env`);
+  deleteFileOrDirectory(testAppDir);
 
   /*
-   * Ensure output is flushed before exiting.
+   * Ensure output is flushed before exiting (call to done()).
    * https://github.com/nodejs/node-v0.x-archive/issues/8329#issuecomment-54778937
    */
   process.nextTick(() => process.exit(0));
@@ -35,6 +43,10 @@ after(function(done) {
 });
 
 (createDirectory(logDir) && createFile(logFile) && createFile(errFile)) || process.exit(1);
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function spyOnConsoleOutput(object = "stdout") {
   object = `_${object}`;
@@ -78,6 +90,22 @@ function spyOnConsoleOutput(object = "stdout") {
   };
 }
 
+async function dropCollections(connection, collectionNames) {
+  if(Array.isArray(collectionNames)) {
+    await Promise.all(collectionNames.map((collectionName) => {
+      return connection.dropCollection(collectionName);
+    }));
+  } else {
+    const collections = await connection.db.collections();
+
+    await Promise.all(collections.map((collection) => {
+      const collectionName = collection.s.namespace.collection;
+
+      return connection.dropCollection(collectionName);
+    }));
+  }
+}
+
 async function normalizeMongooseMigrationFilesForTesting(appDir, modelName) {
   const replacer = await getReplaceInFile();
 
@@ -90,6 +118,8 @@ async function normalizeMongooseMigrationFilesForTesting(appDir, modelName) {
 
 module.exports = {
   chai,
+  dropCollections,
+  escapeRegExp,
   spyOnConsoleOutput,
   normalizeMongooseMigrationFilesForTesting,
 };
