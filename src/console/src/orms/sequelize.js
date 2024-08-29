@@ -51,6 +51,106 @@ async function createMigration(name, options) {
   }
 }
 
+async function pending(options) {
+  const { database } = options || {};
+
+  try {
+    const migrator = createSequelizeMigrator({
+      sequelize: await getDatabaseConnection(database),
+      logger: console,
+      migrationsPath: getMigrationsPath(),
+    });
+
+    return await migrator.pending();
+  } catch(err) {
+    if(err.code === "ENOENT") {
+      printErrorMessage({
+        type: "libError",
+        message: `Could not find any files at path [${err.path}]`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ETIMEDOUT" || err.original?.code === "ETIMEDOUT") {
+      printErrorMessage({
+        type: "libError",
+        code: "ETIMEDOUT",
+        message: `Unable to connect to ${database} database. Reason: connection timed out.`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ECONNREFUSED" ||  err.original?.code === "ECONNREFUSED") {
+      printErrorMessage({
+        type: "libError",
+        code: "ECONNREFUSED",
+        message: `Unable to connect to ${database} database. Reason: connection refused.`,
+      });
+
+      return [];
+    }
+
+    printErrorMessage(
+      err,
+      `Error getting list of pending migrations for database '${database}'`
+    );
+
+    return [];
+  }
+}
+
+async function executed(options) {
+  const { database } = options || {};
+
+  try {
+    const migrator = createSequelizeMigrator({
+      sequelize: await getDatabaseConnection(database),
+      logger: console,
+      migrationsPath: getMigrationsPath(),
+    });
+
+    return await migrator.executed();
+  } catch(err) {
+    if(err.code === "ENOENT") {
+      printErrorMessage({
+        type: "libError",
+        message: `Could not find any files at path [${err.path}]`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ETIMEDOUT" || err.original?.code === "ETIMEDOUT") {
+      printErrorMessage({
+        type: "libError",
+        code: "ETIMEDOUT",
+        message: `Unable to connect to ${database} database. Reason: connection timeout.`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ECONNREFUSED" ||  err.original?.code === "ECONNREFUSED") {
+      printErrorMessage({
+        type: "libError",
+        code: "ECONNREFUSED",
+        message: `Unable to connect to ${database} database. Reason: connection refused.`,
+      });
+
+      return [];
+    }
+
+    printErrorMessage(
+      err,
+      `Error getting list of executed migrations for database '${database}'`
+    );
+
+    return [];
+  }
+}
+
 async function migrate(options) {
   try {
     const { database, /*step, reset*/ } = options || {};
@@ -63,10 +163,6 @@ async function migrate(options) {
 
     const data = await migrator.migrate();
 
-    /*[{
-      name: '20240809081958-create-pets-table.js',
-      path: '\test-app\\src\\database\\migrations\\sequelize\\20240809081958-create-pets-table.js'
-    }]*/
     return data;
   } catch(err) {
     return printErrorMessage(err, "Error running Sequelize-based migrations");
@@ -247,6 +343,8 @@ function generateSequelizeIdField(dataType) {
  * - {Function} `createMigration`
  * - {Function} `migrate`
  * - {Function} `rollback`
+ * - {Function} `pending`
+ * - {Function} `executed`
  * - {Function} `parseModelFields`
  * - {Function} `getDatabaseConnection`
  * - {Array<String>} `databases`
@@ -256,6 +354,8 @@ module.exports = {
   createMigration,
   migrate,
   rollback,
+  pending,
+  executed,
   parseModelFields,
   getDatabaseConnection,
   databases: ["db2", "mariadb", "memory", "mssql", "mysql", "oracle", "postgres", "sqlite"],

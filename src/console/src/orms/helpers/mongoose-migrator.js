@@ -34,8 +34,20 @@ module.exports = function getMigrator(opts) {
      * ]
      *
      */
-    async list() {
-      return await migrator.list();
+    async list(options) {
+      const { pending, executed } = options || {};
+
+      const data = await migrator.list();
+
+      if(pending) {
+        return data.filter(data => data.state === "down");
+      }
+
+      if(executed) {
+        return data.filter(data => data.state === "up");
+      }
+
+      return data;
     },
 
     /**
@@ -55,6 +67,14 @@ module.exports = function getMigrator(opts) {
 
     async close() {
       return await migrator.close();
+    },
+
+    async pending() {
+      return await this.list({ pending: true });
+    },
+
+    async executed() {
+      return await this.list({ executed: true });
     }
   };
 };

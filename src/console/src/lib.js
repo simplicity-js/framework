@@ -4,7 +4,6 @@ require("./node-version-check");
 
 const fs = require("node:fs");
 const os = require("node:os");
-const path = require("node:path");
 const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const {
   BUILDER_NAME,
@@ -24,7 +23,6 @@ const {
   normalizeModelName, normalizeTableName,
 } = require("./helpers/normalizers");
 const { singularize, upperCaseToKebabCase } = require("./helpers/string");
-const overrideConsoleDotLog = require("./helpers/console-override");
 const orms = require("./orms");
 const { getDatabaseConfig, getMigrationFileInfo } = require(
   "./orms/helpers/database");
@@ -351,7 +349,7 @@ exports.makeRoute = async function createRoute(name, options) {
         ],
         to: [
           [
-            `const ${controllerName} = require("../app/http/controllers/${controllerFilename}");${EOL}`,
+            `const ${controllerName} = require("app/http/controllers/${controllerFilename}");${EOL}`,
             //`const ${controllerObject} = new ${controllerName}();`,
             "const router = Router.router();"
           ].join(""),
@@ -388,28 +386,28 @@ exports.migrate = async function migrate(options) {
   const operation = rollback ? "rollback" : "migrate";
 
   try {
+    let migrationsExist = false;
     const dbConfig = getDatabaseConfig();
     const databases = Object.keys(dbConfig.connections);
 
-    if(database === "default") {
-      database = getDefaultDatabase();
-      enqueueDatabaseMigration(database);
-    } else if(database && databases.includes(database)) {
-      enqueueDatabaseMigration(database);
+    if(database) {
+      if(database === "default") {
+        migrationsExist = await migrateSingleDatabase(getDefaultDatabase());
+      } else if(databases.includes(database)) {
+        migrationsExist = await migrateSingleDatabase(database);
+      }
     } else {
-      databases.forEach(enqueueDatabaseMigration);
+      const migrations = await Promise.all(databases.map(migrateSingleDatabase));
+      migrationsExist = migrations.some(Boolean);
     }
 
-    // Suppress the output from the migration libraries we are using.
-    // This will enable us declutter the user's output screen
-    // and output our own custom message instead.
-    const logFile = path.join(path.dirname(__dirname), ".logs", "console.log");
-    const restoreConsoleLog = overrideConsoleDotLog(logFile);
-    const data = await Promise.all(promises);;
-    restoreConsoleLog();
+    if(!migrationsExist) {
+      return throwLibraryError("No pending migrations to run.", "info");
+    }
+
+    const data = await Promise.all(promises);
 
     return data;
-
   } catch(err) {
     return printErrorMessage(err, "Error applying migrations");
   }
@@ -422,6 +420,22 @@ exports.migrate = async function migrate(options) {
     const fn = supportedOrms[orm][operation];
 
     promises.push(fn({ database, step, reset }));
+  }
+
+  async function migrateSingleDatabase(database) {
+    const orm = getOrm(database);
+
+    ensureValidOrm(orm);
+
+    const runner = supportedOrms[orm];
+    const pendingMigrations = await runner.pending({ database });
+
+    if(pendingMigrations?.length > 0) {
+      enqueueDatabaseMigration(database);
+      return true;
+    } else {
+      return false;
+    }
   }
 };
 

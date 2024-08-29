@@ -64,6 +64,118 @@ async function createMigration(name, options) {
   }
 }
 
+async function pending() {
+  let migrator;
+  const { connectionString } = getMongoDbConnectionString();
+
+  try {
+    migrator = createMongooseMigrator({
+      ...migratorOptions,
+      dbUrl: connectionString,
+      migrationsDir: getMigrationsPath(),
+    });
+
+    const data = await migrator.pending();
+    return data;
+  } catch(err) {
+    if(err.code === "ENOENT") {
+      printErrorMessage({
+        type: "libError",
+        message: `Could not find any files at path [${err.path}]`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ETIMEDOUT" || err.original?.code === "ETIMEDOUT") {
+      printErrorMessage({
+        type: "libError",
+        code: "ETIMEDOUT",
+        message: "Unable to connect to mongodb database. Reason: connection timeout.",
+      });
+
+      return [];
+    }
+
+    if(err.code === "ECONNREFUSED" ||  err.original?.code === "ECONNREFUSED") {
+      printErrorMessage({
+        type: "libError",
+        code: "ECONNREFUSED",
+        message: "Unable to connect to mongodb database. Reason: connection refused.",
+      });
+
+      return [];
+    }
+
+    printErrorMessage(
+      err,
+      "Error getting list of pending migrations for database 'mongodb'"
+    );
+
+    return [];
+  } finally {
+    if(migrator) {
+      await migrator.close();
+    }
+  }
+}
+
+async function executed() {
+  let migrator;
+  const { connectionString } = getMongoDbConnectionString();
+
+  try {
+    migrator = createMongooseMigrator({
+      ...migratorOptions,
+      dbUrl: connectionString,
+      migrationsDir: getMigrationsPath(),
+    });
+
+    const data = await migrator.executed();
+    return data;
+  } catch(err) {
+    if(err.code === "ENOENT") {
+      printErrorMessage({
+        type: "libError",
+        message: `Could not find any files at path [${err.path}]`,
+      });
+
+      return [];
+    }
+
+    if(err.code === "ETIMEDOUT" || err.original?.code === "ETIMEDOUT") {
+      printErrorMessage({
+        type: "libError",
+        code: "ETIMEDOUT",
+        message: "Unable to connect to mongodb database. Reason: connection timeout.",
+      });
+
+      return [];
+    }
+
+    if(err.code === "ECONNREFUSED" ||  err.original?.code === "ECONNREFUSED") {
+      printErrorMessage({
+        type: "libError",
+        code: "ECONNREFUSED",
+        message: "Unable to connect to mongodb database. Reason: connection refused.",
+      });
+
+      return [];
+    }
+
+    printErrorMessage(
+      err,
+      "Error getting list of executed migrations for database 'mongodb'"
+    );
+
+    return [];
+  } finally {
+    if(migrator) {
+      await migrator.close();
+    }
+  }
+}
+
 async function migrate() {
   let migrator;
   const { connectionString } = getMongoDbConnectionString();
@@ -77,14 +189,6 @@ async function migrate() {
 
     const data = await migrator.migrate();
 
-    migrator.close();
-
-    /*[{
-        state: 'up|down',
-        name: 'migration-name',
-        createdAt: YYYY-mm-ddThh:mm:ss.230Z,
-        filename: 'timestamp-migration-name.js'
-    }]*/
     return data;
   } catch(err) {
     return printErrorMessage(err, "Error running mongoose-based migrations");
@@ -199,12 +303,6 @@ async function getDatabaseConnection() {
   const mongooseConn = await mongoose.connect(connectionString, connectionOptions);
   const connection = mongooseConn.connection;
 
-  /*const database = authParams.substring(
-    authParams.lastIndexOf("/") + 1
-  );*/
-
-  //connection.url = connection.url || authParams;
-
   return connection;
 }
 
@@ -238,6 +336,8 @@ function getMongoDbConnectionString() {
  * - {Function} `createMigration`
  * - {Function} `migrate`
  * - {Function} `rollback`
+ * - {Function} `pending`
+ * - {Function} `executed`
  * - {Function} `parseModelFields`
  * - {Function} `getDatabaseConnection`
  * - {Array<String>} `databases`
@@ -247,6 +347,8 @@ module.exports = {
   createMigration,
   migrate,
   rollback,
+  pending,
+  executed,
   parseModelFields,
   getDatabaseConnection,
   databases: ["mongodb"],

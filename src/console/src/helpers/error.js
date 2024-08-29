@@ -1,20 +1,25 @@
 const util = require("node:util");
-const { marker, print } = require("./printer");
+const { logger, marker } = require("./printer");
 
-const PADDING = "  ";
 
 exports.printErrorMessage = function printErrorMessage(err, prefix) {
   const color = marker.error;
+  const logMethod = err.logAs in logger ? err.logAs : "error";
   const errMessage = err.type === "libError"
     ? err.message
     : color.text(`${prefix}: ${util.format(err)}.`);
 
-  print(`${PADDING}${color.background("ERROR")} ${errMessage}`);
+  logger[logMethod](errMessage);
 };
 
-exports.throwLibraryError = function throwLibraryError(message) {
+/**
+ * @param {String} message (required): The error message
+ * @param {String} logType (optional): The logger method to call
+ */
+exports.throwLibraryError = function throwLibraryError(message, logType) {
   throw {
-    type: "libError",
     message,
+    type: "libError",
+    logAs: logType ?? "error"
   };
 };

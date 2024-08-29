@@ -17,7 +17,13 @@ module.exports = function getMigrationHelper(opts) {
   });
 
   return {
-    async list() {
+    async list(options) {
+      if(options.executed) {
+        return await umzug.executed();
+      } else if(options.pending) {
+        return await umzug.pending();
+      }
+
       const [pending, executed] = await Promise.all([
         umzug.pending(),
         umzug.executed()
@@ -32,6 +38,14 @@ module.exports = function getMigrationHelper(opts) {
 
     async rollback(opts) {
       return await umzug.down(opts);
-    }
+    },
+
+    async pending() {
+      return await this.list({ pending: true });
+    },
+
+    async executed() {
+      return await this.list({ executed: true });
+    },
   };
 };
