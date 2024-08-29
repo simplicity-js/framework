@@ -74,4 +74,6 @@ async function processMigrateCommand(_, options, logger) {
       logger.info("Migrations applied successfully.");
     }
   }
+
+  return 0;
 }

@@ -4,5 +4,9 @@ const { showVersionInfo } = require("./helpers/command-helper");
 
 module.exports = {
   name: "version",
-  handler: showVersionInfo,
+  handler: () => {
+    showVersionInfo();
+
+    return 0;
+  },
 };

@@ -113,4 +113,6 @@ async function processMakeModelCommand(list, options, logger) {
       }
     }
   }
+
+  return 0;
 }

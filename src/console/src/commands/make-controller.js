@@ -84,4 +84,6 @@ function processMakeControllerCommand(list, options, logger) {
       logger.info(`Controller [${controller}] created successfully.`);
     }
   }
+
+  return 0;
 }

@@ -91,4 +91,6 @@ async function processMakeMigrationCommand(list, options, logger) {
       logger.info(`Migration [${migration}] created successfully.`);
     }
   }
+
+  return 0;
 }

@@ -74,4 +74,6 @@ async function processMakeRouteCommand(list, options, logger) {
       logger.info("Route created successfully.");
     }
   }
+
+  return 0;
 }

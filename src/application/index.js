@@ -144,6 +144,8 @@ module.exports = class Application {
             await cache.set(`${appKey}.state`, serialize(obj));
 
             logger.info("Application is now in maintenance mode.");
+
+            return 0;
           },
           options: {
             refresh: { type: "string" },
@@ -159,6 +161,8 @@ module.exports = class Application {
             await cache.unset(`${appKey}.state`);
 
             logger.info("Application is now live.");
+
+            return 0;
           },
         });
 
