@@ -2,11 +2,9 @@
 
 const { GENERATE_MIGRATION_COMMAND, GENERATE_MIGRATION_HELP
 } = require("../helpers/constants");
-const { print } = require("../helpers/printer");
 const { makeMigration } = require("../lib");
 const { showHelp } = require("./helpers/command-helper");
 
-const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_MIGRATION_COMMAND,
@@ -18,8 +16,10 @@ module.exports = {
 /**
  * @param {Array} list: ordered arguments, representing positional CLI arguments
  * @param {Object} options: unordered arguments, representing named CLI options
+ * @param {Object} logger: Object to log important messages to the console.
+ *   The object provides the following methods: info, success, warn, and error.
  */
-async function processMakeMigrationCommand(list, options) {
+async function processMakeMigrationCommand(list, options, logger) {
   let fields;
   let table;
   let filename;
@@ -79,10 +79,16 @@ async function processMakeMigrationCommand(list, options) {
   });
 
   if(!displayHelp) {
-    const suffix = name ? ` '${name}'...` : "...";
+    const migration = await makeMigration(name, {
+      table,
+      filename,
+      fields,
+      type,
+      database, isCLI: true
+    });
 
-    print(`${PADDING}Generating Migration${suffix}`);
-
-    return await makeMigration(name, { table, filename, fields, type, database, isCLI: true });
+    if(migration) {
+      logger.info(`Migration [${migration}] created successfully.`);
+    }
   }
 }

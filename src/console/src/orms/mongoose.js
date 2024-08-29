@@ -3,20 +3,16 @@ const getReplaceInFile = () => import("replace-in-file").then(rif => rif);
 const { MIGRATION_FOLDER_DESTINATION, MONGOOSE_DATA_TYPES, TEMPLATES_DIR
 } = require("../helpers/constants");
 const { printErrorMessage, throwLibraryError } = require("../helpers/error");
-const { getFilename } = require("../helpers/file-system");
 const { normalizeModelName, normalizeFileName } = require(
   "../helpers/normalizers");
-const { print } = require("../helpers/printer");
 const { getDatabaseOptions, getMigrationFileInfo } = require("./helpers/database");
 const createMongooseMigrator = require("./helpers/mongoose-migrator");
 
 const getMigrationsPath = () => `${process.cwd().replace(/\\/g, "/")}/${MIGRATION_FOLDER_DESTINATION}/mongoose`;
 const migratorOptions = {
   collection: "migrations",
-  logErrors: true,
+  logErrors: false,
 };
-
-const PADDING = "  ";
 
 async function createMigration(name, options) {
   let mongooseMigrator;
@@ -44,7 +40,6 @@ async function createMigration(name, options) {
     const replacer = await getReplaceInFile();
     const migrationFileInfo = getMigrationFileInfo(name, migrationsDir);
     const destination = migrationFileInfo.filePath;
-    const filename = getFilename(destination, true);
     const modelName = normalizeModelName(collection);
 
     await replacer.replaceInFile({
@@ -58,12 +53,6 @@ async function createMigration(name, options) {
         normalizeFileName(modelName),
       ],
     });
-
-    // Register the model so that when we call migrate later,
-    // calling this("<MODEL>")... in the up|down methods, it will work.
-
-    print(`${PADDING}Created: src > database > migrations > mongoose > ${filename}`);
-    print(`${PADDING}Migration ${destination} generated.`);
 
     return destination;
   } catch(err) {

@@ -23,7 +23,6 @@ const {
   normalizeControllerName, normalizeFileName,
   normalizeModelName, normalizeTableName,
 } = require("./helpers/normalizers");
-const { print } = require("./helpers/printer");
 const { singularize, upperCaseToKebabCase } = require("./helpers/string");
 const overrideConsoleDotLog = require("./helpers/console-override");
 const orms = require("./orms");
@@ -31,7 +30,6 @@ const { getDatabaseConfig, getMigrationFileInfo } = require(
   "./orms/helpers/database");
 
 const EOL = os.EOL;
-const PADDING = "  ";
 
 /**
  * Generator Sequelize-based Controllers, Models, Routes
@@ -54,14 +52,12 @@ const PADDING = "  ";
  *   and two files must be present in this folder:
  *   controller.stub and resource-controller.stub
  *   which will be used to generate the controllers for the given ORM.
- * @param {Boolean} [options.overwrite] (optional): if the controller exists, overwrite it.
  * @param {Boolean} [options.isResource](optional): is this a resource controller.
  * @return {String} the path where the controller file is stored.
  */
 exports.makeController = function createController(name, options) {
   let orm;
-  let { model, table, filename, database, overwrite, isResource, isCLI
-  } = options || {};
+  let { model, table, filename, database, isResource, isCLI } = options || {};
 
   try {
     if(!name) {
@@ -92,36 +88,22 @@ exports.makeController = function createController(name, options) {
     const templateFile = isResource ? "resource-controller" : "controller";
     const template = `${templatePath}/${templateFile}.stub`;
 
+    if(fs.existsSync(destination)) {
+      throwLibraryError("Controller already exists.");
+    }
+
     ensureValidOrm(orm);
     ensureOrmTemplateDirectory(templatePath, orm);
     ensureTemplateFile(template, templatePath);
 
     const data = readFromFile(template);
-
     const output = data
       .replace(/\$\$CONTROLLER_NAME\$\$/gm, name)
       .replace(/\$\$MODEL_NAME\$\$/gm, model)
       .replace(/\$\$TABLE_ENTITY\$\$/gm, singularize(table));
 
-    if(fs.existsSync(destination) && !overwrite) {
-      let message = `Controller File at ${destination} already exists. `;
-
-      if(isCLI) {
-        message += "To overwrite it, use --force option.";
-      } else {
-        message += "To overwrite it, set the 'overwrite' option to true.";
-      }
-
-      throwLibraryError(message);
-    }
-
     createDirectory(destinationDir);
     writeToFile(destination, output, { flag: "w" });
-
-    const action = overwrite ? "Replaced" : "Created";
-
-    print(`${PADDING}${action}: src > app > http > controllers > ${filename}`);
-    print(`${PADDING}Controller ${destination} generated.`);
 
     return destination;
   } catch(err) {
@@ -220,15 +202,13 @@ exports.makeMigration = async function createMigration(name, options) {
  *   must exist inside the generators/templates/ directory.
  *   and the file named 'model.stub' must be present in this folder.
  *   It will be used to generate the models for the given ORM.
- * @param {Boolean} [options.overwrite] (optional): if the model exists, overwrite it.
  * @param {Boolean} [options.isCLI] (optional):
  *   whether the function is invoked from the CLI or programatically from a file.
  * @return {String} the path where the model file is stored.
  */
 exports.makeModel = async function createModel(name, options) {
   let orm;
-  let { table, filename, fields, database, overwrite, isCLI
-  } = options || {};
+  let { table, filename, fields, database, isCLI } = options || {};
 
   try {
     if(!name) {
@@ -266,6 +246,9 @@ exports.makeModel = async function createModel(name, options) {
     const destinationDir = normalizeResourceFolder(MODEL_FOLDER_DESTINATION) + `/${orm.toLowerCase()}`;
     const destination = `${destinationDir}/${filename}`;
 
+    if(fs.existsSync(destination)) {
+      throwLibraryError("Model already exists.");
+    }
 
     const supportedOrms = getSupportedOrms();
     const modelFields = await supportedOrms[orm].parseModelFields(fields) ?? "";
@@ -279,25 +262,8 @@ exports.makeModel = async function createModel(name, options) {
     // -a option
     // output = output.replace("$$MODEL_ASSOCIATION$$", ASSOCITION_OPTION);
 
-    if(fs.existsSync(destination) && !overwrite) {
-      let message = `Model File at ${destination} already exists. `;
-
-      if(isCLI) {
-        message += "To overwrite it, use --force option.";
-      } else {
-        message += "To overwrite it, set the 'overwrite' option to true.";
-      }
-
-      throwLibraryError(message);
-    }
-
     createDirectory(destinationDir);
     writeToFile(destination, output, { flag: "w" });
-
-    const action = overwrite ? "Replaced" : "Created";
-
-    print(`${PADDING}${action}: src > app > http > models > ${orm} > ${filename}`);
-    print(`${PADDING}Model ${destination} generated.`);
 
     return destination;
   } catch(err) {
@@ -307,8 +273,7 @@ exports.makeModel = async function createModel(name, options) {
 
 exports.makeRoute = async function createRoute(name, options) {
   let controllerFilename;
-  let { controllerName, isApiRoute, isResourceRoute, overwrite, isCLI
-  } = options || {};
+  let { controllerName, isApiRoute, isResourceRoute, isCLI } = options || {};
 
   try {
     if(!name) {
@@ -340,8 +305,12 @@ exports.makeRoute = async function createRoute(name, options) {
         : ROUTE_TEMPLATE;
 
       const destination = `${routeFolder}/${filename}`;
-      const data = readFromFile(TEMPLATE_FILE);
 
+      if(fs.existsSync(destination)) {
+        throwLibraryError("Route already exists.");
+      }
+
+      const data = readFromFile(TEMPLATE_FILE);
       output = data
         .replace(/\$\$CONTROLLER_FILE_NAME\$\$/gm, controllerFilename)
         .replace(/\$\$CONTROLLER_NAME\$\$/gm, controllerName);
@@ -353,24 +322,7 @@ exports.makeRoute = async function createRoute(name, options) {
         //.replace(/\$\$CONTROLLER_OBJECT\$\$/gm, LCFirst(controllerName));
       }
 
-      if(fs.existsSync(destination) && !overwrite) {
-        let message = `Route File at ${destination} already exists. `;
-
-        if(isCLI) {
-          message += "To overwrite it, use --force option.";
-        } else {
-          message += "To overwrite it, set the 'overwrite' option to true.";
-        }
-
-        throwLibraryError(message);
-      }
-
       writeToFile(destination, output, { flag: "w" });
-
-      const action = overwrite ? "Replaced" : "Created";
-
-      print(`${PADDING}${action}: src > routes > ${getFilename(routeFolder)} > ${filename}`);
-      print(`${PADDING}Route ${destination} generated.`);
 
       return destination;
     } else {
@@ -409,8 +361,6 @@ exports.makeRoute = async function createRoute(name, options) {
           ].join("")
         ]
       });
-
-      print(`${PADDING}Route information written to: src > routes > ${filename}`);
 
       return output;
     }
@@ -549,9 +499,7 @@ function ensureUniqueMigrationName(name, migrationsDir) {
   const migrationName = migrationFileInfo.migrationName;
 
   if(migrationName.toLowerCase() === name.toLowerCase()) {
-    throwLibraryError(
-      `Migration '${migrationName}' already exists. Kindly use a different name.`
-    );
+    throwLibraryError("Migration already exists.");
   }
 }
 

@@ -2,11 +2,8 @@
 
 const { GENERATE_CONTROLLER_COMMAND, GENERATE_CONTROLLER_HELP
 } = require("../helpers/constants");
-const { print } = require("../helpers/printer");
 const { makeController } = require("../lib");
 const { showHelp } = require("./helpers/command-helper");
-
-const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_CONTROLLER_COMMAND,
@@ -18,12 +15,13 @@ module.exports = {
 /**
  * @param {Array} list: ordered arguments, representing positional CLI arguments
  * @param {Object} options: unordered arguments, representing named CLI options
+ * @param {Object} logger: Object to log important messages to the console.
+ *   The object provides the following methods: info, success, warn, and error.
  */
-function processMakeControllerCommand(list, options) {
+function processMakeControllerCommand(list, options, logger) {
   let model;
   let filename;
   let table;
-  let overwrite = false;
   let isResourceController = false;
   let database = "default";
   let displayHelp = false;
@@ -38,7 +36,6 @@ function processMakeControllerCommand(list, options) {
     DATABASE: "database",
     TABLE_NAME: "table",
     IS_RESOURCE_CONTROLLER: "resource",
-    FORCE: "force",
   };
 
   Object.entries(params).forEach((entry) => {
@@ -71,10 +68,6 @@ function processMakeControllerCommand(list, options) {
       database = v?.toString();
       break;
 
-    case OPTIONS.FORCE:
-      overwrite = true;
-      break;
-
     default:
       // console.log("no options");
       break;
@@ -82,13 +75,13 @@ function processMakeControllerCommand(list, options) {
   });
 
   if(!displayHelp) {
-    const suffix = name ? ` '${name}'...` : "...";
-
-    print(`${PADDING}Generating Controller${suffix}`);
-
-    return makeController(name, { model, table, filename, database, overwrite,
+    const controller = makeController(name, { model, table, filename, database,
       isResource: isResourceController,
       isCLI: true,
     });
+
+    if(controller) {
+      logger.info(`Controller [${controller}] created successfully.`);
+    }
   }
 }

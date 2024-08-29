@@ -2,11 +2,8 @@
 
 const { RUN_MIGRATION_COMMAND, RUN_MIGRATION_HELP } = require(
   "../helpers/constants");
-const { print } = require("../helpers/printer");
 const { migrate } = require("../lib");
 const { showHelp } = require("./helpers/command-helper");
-
-const PADDING = "  ";
 
 module.exports = {
   name: RUN_MIGRATION_COMMAND,
@@ -18,8 +15,10 @@ module.exports = {
 /**
  * @param {Array} list: ordered arguments, representing positional CLI arguments
  * @param {Object} options: unordered arguments, representing named CLI options
+ * @param {Object} logger: Object to log important messages to the console.
+ *   The object provides the following methods: info, success, warn, and error.
  */
-async function processMigrateCommand(_, options) {
+async function processMigrateCommand(_, options, logger) {
   let rollback = false;
   let step = 0;
   let reset = false;
@@ -69,8 +68,10 @@ async function processMigrateCommand(_, options) {
   });
 
   if(!displayHelp) {
-    print(`${PADDING}Running migrations...`);
+    const data = await migrate({ database, rollback, step, reset });
 
-    return await migrate({ database, rollback, step, reset });
+    if(data) {
+      logger.info("Migrations applied successfully.");
+    }
   }
 }

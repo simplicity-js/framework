@@ -5,13 +5,10 @@ const { printErrorMessage, throwLibraryError } = require("../helpers/error");
 const { readFromFile, writeToFile } = require("../helpers/file-system");
 const { normalizeFileName, normalizeTableName } = require(
   "../helpers/normalizers");
-const { print} = require("../helpers/printer");
 const { getDatabaseOptions } = require("./helpers/database");
 const createSequelizeMigrator = require("./helpers/sequelize-migrator");
 
 const getMigrationsPath = () => `${process.cwd().replace(/\\/g, "/")}/${MIGRATION_FOLDER_DESTINATION}/sequelize`;
-
-const PADDING = "  ";
 
 /**
  * @param {String} name: The migration name
@@ -47,10 +44,6 @@ async function createMigration(name, options) {
       .replace(/\$\$MIGRATION_FIELDS\$\$/gm, migrationFields);
 
     writeToFile(destination, output, { flag: "w" });
-    print(
-      `${PADDING}Created: src > database > migrations > sequelize > ${filename}`
-    );
-    print(`${PADDING}Migration ${destination} generated.`);
 
     return destination;
   } catch(err) {

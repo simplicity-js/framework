@@ -2,11 +2,8 @@
 
 const { GENERATE_ROUTE_COMMAND, GENERATE_ROUTE_HELP } = require(
   "../helpers/constants");
-const { print } = require("../helpers/printer");
 const { makeRoute } = require("../lib");
 const { showHelp } = require("./helpers/command-helper");
-
-const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_ROUTE_COMMAND,
@@ -18,12 +15,13 @@ module.exports = {
 /**
  * @param {Array} list: ordered arguments, representing positional CLI arguments
  * @param {Object} options: unordered arguments, representing named CLI options
+ * @param {Object} logger: Object to log important messages to the console.
+ *   The object provides the following methods: info, success, warn, and error.
  */
-async function processMakeRouteCommand(list, options) {
+async function processMakeRouteCommand(list, options, logger) {
   let controller;
   let isApiRoute = false;
   let isResourceRoute = false;
-  let overwrite = false;
   let displayHelp = false;
 
   const name = Array.isArray(list) && !!list.length ? list[0] : "";
@@ -34,7 +32,6 @@ async function processMakeRouteCommand(list, options) {
     IS_API_ROUTE: "api",
     IS_RESOURCE_ROUTE: "resource",
     CONTROLLER_NAME: "controller",
-    FORCE: "force",
   };
 
   Object.entries(params).forEach((entry) => {
@@ -59,10 +56,6 @@ async function processMakeRouteCommand(list, options) {
       isResourceRoute = true;
       break;
 
-    case OPTIONS.FORCE:
-      overwrite = true;
-      break;
-
     default:
       // console.log("no options");
       break;
@@ -70,12 +63,15 @@ async function processMakeRouteCommand(list, options) {
   });
 
   if(!displayHelp) {
-    const suffix = name ? ` '${name}'...` : "...";
-
-    print(`${PADDING}Generating Route${suffix}`);
-
-    return await makeRoute(name, { controller, isApiRoute, isResourceRoute, overwrite,
+    const route = await makeRoute(name, {
+      controller,
+      isApiRoute,
+      isResourceRoute,
       isCLI: true,
     });
+
+    if(route) {
+      logger.info("Route created successfully.");
+    }
   }
 }

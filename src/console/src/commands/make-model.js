@@ -2,11 +2,9 @@
 
 const { GENERATE_MODEL_COMMAND, GENERATE_MODEL_HELP } = require(
   "../helpers/constants");
-const { print } = require("../helpers/printer");
 const { makeMigration, makeModel, normalizeTableName } = require("../lib");
 const { showHelp } = require("./helpers/command-helper");
 
-const PADDING = "  ";
 
 module.exports = {
   name: GENERATE_MODEL_COMMAND,
@@ -18,12 +16,13 @@ module.exports = {
 /**
  * @param {Array} list: ordered arguments, representing positional CLI arguments
  * @param {Object} options: unordered arguments, representing named CLI options
+ * @param {Object} logger: Object to log important messages to the console.
+ *   The object provides the following methods: info, success, warn, and error.
  */
-async function processMakeModelCommand(list, options) {
+async function processMakeModelCommand(list, options, logger) {
   let fields;
   let table;
   let filename;
-  let overwrite = false;
   let database = "default";
   let createMigration = false;
   let displayHelp = false;
@@ -39,7 +38,6 @@ async function processMakeModelCommand(list, options) {
     MIGRATION: "migration",
     DATABASE: "database",
     TABLE: "table", // table name for sequelize, collection name for mongoose
-    FORCE: "force",
   };
 
   Object.entries(params).forEach((entry) => {
@@ -74,10 +72,6 @@ async function processMakeModelCommand(list, options) {
       database = v?.toString().toLowerCase();
       break;
 
-    case OPTIONS.FORCE:
-      overwrite = true;
-      break;
-
     default:
       // console.log("no options");
       break;
@@ -85,25 +79,38 @@ async function processMakeModelCommand(list, options) {
   });
 
   if(!displayHelp) {
-    const suffix = name ? ` '${name}'...` : "...";
 
-    print(`${PADDING}Generating Model${suffix}`);
-
-    const retVal = await makeModel(name, { table, filename, fields, database, overwrite,
+    const model = await makeModel(name, {
+      table,
+      filename,
+      fields,
+      database,
       isCLI: true,
     });
 
-    if(createMigration) {
-      const migrationName = `create-${normalizeTableName(name)}-table`
-        .replace(/_/g, "-");
+    if(model) {
+      let migration;
 
-      makeMigration(migrationName, { table, filename, fields, database,
-        model: name,
-        type : "create-table",
-        isCLI: true,
-      });
+      if(createMigration) {
+        const migrationName = `create-${normalizeTableName(name)}-table`
+          .replace(/_/g, "-");
+
+        migration = await makeMigration(migrationName, {
+          table,
+          filename,
+          fields,
+          database,
+          model: name,
+          type : "create-table",
+          isCLI: true,
+        });
+      }
+
+      logger.info(`Model [${model}] created successfully.`);
+
+      if(migration) {
+        logger.info(`Migration [${migration}] created successfully.`);
+      }
     }
-
-    return retVal;
   }
 }
