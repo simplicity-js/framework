@@ -16,7 +16,7 @@ module.exports = class $$CONTROLLER_NAME$$ extends Controller {
       const data = await $$MODEL_NAME$$.create(req.body);
 
       return res.status(STATUS_CODES.HTTP_CREATED).send({
-        msg: "$$TABLE_NAME$$ created",
+        msg: "$$TABLE_ENTITY$$ created",
         data: data,
       });
     } catch(error) {
@@ -37,12 +37,12 @@ module.exports = class $$CONTROLLER_NAME$$ extends Controller {
     try {
       const skip = limit * page - limit;
       const take = limit;
-      const where = { req.query };
+      const where = req.query;
       const total = await $$MODEL_NAME$$.countDocuments(where);
       const data = await $$MODEL_NAME$$.find(where, null, { skip, take }).exec();
 
       return res.status(STATUS_CODES.HTTP_OK).send({
-        msg: "$$TABLE_NAME$$ fetched",
+        msg: "$$TABLE_ENTITY$$ fetched",
         data: data,
         page: page,
         limit: limit,
@@ -62,7 +62,7 @@ module.exports = class $$CONTROLLER_NAME$$ extends Controller {
       const data = await $$MODEL_NAME$$.findById(req.params.id);
 
       return res.status(STATUS_CODES.HTTP_OK).send({
-        msg: "$$TABLE_NAME$$ fetched",
+        msg: "$$TABLE_ENTITY$$ fetched",
         data: data
       });
     } catch(error) {
@@ -83,7 +83,7 @@ module.exports = class $$CONTROLLER_NAME$$ extends Controller {
       await $$MODEL_NAME$$.findOneAndUpdate({ _id: req.params.id }, req.body);
 
       return res.status(STATUS_CODES.HTTP_OK).send({
-        msg: "$$TABLE_NAME$$ updated",
+        msg: "$$TABLE_ENTITY$$ updated",
         data: await $$MODEL_NAME$$.findById(req.params.id),
       });
     } catch(error) {
@@ -100,7 +100,7 @@ module.exports = class $$CONTROLLER_NAME$$ extends Controller {
       const data = await $$MODEL_NAME$$.findByIdAndDelete(req.params.id);
 
       return res.status(STATUS_CODES.HTTP_OK).send({
-        msg: "$$TABLE_NAME$$ deleted",
+        msg: "$$TABLE_ENTITY$$ deleted",
         data: data,
       });
     } catch(error) {
