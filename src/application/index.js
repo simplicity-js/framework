@@ -2,6 +2,7 @@ require("./node-version-check");
 
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const chokidar = require("chokidar");
 const serialijse = require("serialijse");
 
 const bootstrap = require("../bootstrap");
@@ -117,6 +118,10 @@ module.exports = class Application {
           description: "Starts the web server",
           handler: (_, options) => {
             this.#listen(options.port);
+
+            if(process.env.NODE_ENV === "development") {
+              this.#watch(options);
+            }
           },
           options: {
             port: { type: "string", short: "p" },
@@ -241,6 +246,10 @@ module.exports = class Application {
         return server;
       }
 
+      #restart(options) {
+        this.#stop(() => this.#listen(options.port));
+      }
+
       #listen(port) {
         const options = parseArgs({
           allowPositionals: true,
@@ -262,6 +271,15 @@ module.exports = class Application {
 
       #stop(cb) {
         this.#server.close(cb);
+      }
+
+      #watch(options) {
+        const watcher = chokidar.watch([`${appRoot}/src`,`${appRoot}/.env`], {
+          ignored: `${appRoot}/*.spec.js`,
+          ignoreInitial: true,
+        });
+
+        watcher.on("all", () => this.#restart(options));
       }
     };
   }
