@@ -1,0 +1,8 @@
+extends layouts/framework-layout
+
+block content
+  h1= 404
+  p Not Found
+
+  if err && environment === "development"
+    div= err.stack

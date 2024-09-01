@@ -12,6 +12,7 @@ const Router = require("../../component/router");
 const view = require("../../component/view");
 const Connections = require("../../connections");
 const is = require("../../lib/is");
+const getServerInfo = require("../../lib/server-info");
 
 const defaultViewTemplatesPath = path.join(
   path.dirname(path.dirname(__dirname)),
@@ -171,25 +172,26 @@ module.exports = function createApp(options) {
   });
 
   if(routes.healthCheckRoute) {
-    const uri = routes.healthCheckRoute;
-    const middleware = require("../../component/middleware/server-status");
-
-    router.get({ uri, middleware }, (req, res) => {
+    router.get(routes.healthCheckRoute, (req, res) => {
       const config = req.app.resolve("config");
-      const { application, server } = res.serverState;
+      const serverState = getServerInfo();
+      const { application, server } = serverState;
       const { status, uptime, utilization } = server;
 
-      return res.json({
-        application: {
-          ...application,
-          name: config.get("app.name"),
-        },
-        server: {
-          status,
-          uptime,
-          utilization,
-        },
-      });
+      if(req.query.format?.toLowerCase() === "json") {
+        res.status(200);
+        res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Expires", "-1");
+        res.setHeader("Pragma", "no-cache");
+
+        return res.json({
+          application: { ...application, name: config.get("app.name") },
+          server: { status, uptime, utilization },
+        });
+      } else {
+        return view.view("health", { status, uptime, utilization });
+      }
     });
   }
 

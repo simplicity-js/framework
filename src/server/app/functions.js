@@ -18,7 +18,7 @@ const appConsole = Object.entries(colors).reduce((logger, [name, color]) => {
   return logger;
 }, {});
 
-appConsole.log = console.log;
+appConsole.log = (...args) => console.log.apply(null, args);
 
 
 module.exports = {

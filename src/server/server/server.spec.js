@@ -159,9 +159,25 @@ module.exports = {
       });
 
       describe(`Health Check Route (${healthCheckRoute})`, function serverHealthRoute() {
-        it("should get the server's health status", function(done) {
+        it("should server the HTML web page by default", function(done) {
           request(host)
             .get(healthCheckRoute)
+            .expect(200)
+            .expect("Content-Type", "text/html; charset=utf-8")
+            .end((err, res) => {
+              if(err) {
+                return done(err);
+              }
+
+              expect(res.text).to.match(/Application up/);
+              expect(res.text).to.match(/Uptime \d+ days, \d+ hours, \d+ minutes, \d+ seconds./);
+              done();
+            });
+        });
+
+        it("should send a JSON response if the 'format' query string is set to 'json'", function(done) {
+          request(host)
+            .get(`${healthCheckRoute}?format=json`)
             .expect(200)
             .expect("Content-Type", "application/json; charset=utf-8")
             .end((err, res) => {

@@ -1,0 +1,35 @@
+doctype html
+
+head
+  meta(http-equiv='Content-Type' content='text/html; charset=utf-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1')
+  link(href='https://fonts.googleapis.com/css?family=Montserrat:700,800' rel='stylesheet')
+  link(href='https://fonts.googleapis.com/css?family=Quattrocento+Sans' rel='stylesheet')
+  title Service Unavailable
+  style(type='text/css').
+    body { height: 100vh; display: flex; align-items: center; justify-content: center; color: #333; overflow: hidden; }
+    #wrapper { display: grid; place-items: center; }
+    h1, p { font-family: 'Quattrocento Sans', Arial; font-size: 20px; color: #a0aec0; color: rgba(160,174,192, 1); }
+    h1 { font-weight: normal; }
+    p  { line-height: 15px; text-transform: uppercase; }
+    @keyframes pulsingCircle {
+      from {
+        transform: scale(.5, .5);
+        opacity: .5;
+      }
+      to {
+        transform: scale(2.5, 2.5);
+        opacity: 0;
+      }
+    }
+    .dot { border-radius: 50%; width: 8px; height: 8px; position: absolute; }
+    .pulsing-dot-container { display: flex; align-items: center; justify-content: center; overflow: hidden;
+      position: relative; width: 20px; height: 20px; border-radius:50%;
+    }
+    .pulsing-dot { background-color: rgb(74 222 128 / 1);}
+    .dot.pulse { opacity: 0;
+      animation: pulsingCircle 2s infinite cubic-bezier(.36, .11, .89, .32);
+      border-width: thick; border-style: solid; border-color: rgb(74 222 128 / 1);
+    }
+#wrapper
+  block content

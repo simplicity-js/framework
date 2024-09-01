@@ -1,0 +1,11 @@
+extends layouts/framework-layout
+
+block content
+  if status === "healthy"
+    h1(style="color:#222; font-weight: 600;") Application up
+
+    p(style="text-transform: none; font-size:18px;") Uptime #{ uptime }.
+
+    .pulsing-dot-container
+      div(class="dot pulsing-dot")
+      div(class="dot pulsing-dot pulse" style="animation-delay: -1s")

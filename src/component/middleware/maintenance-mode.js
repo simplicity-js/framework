@@ -26,18 +26,26 @@ module.exports = function createMaintenanceModeMiddleware(appKey, config, view) 
     const mmCookie = "maintenance-mode-bypass";
 
     if(state.mode === "maintenance") {
-      if(state.secret && req.path.endsWith(state.secret)) {
-        res.cookie(mmCookie, state.secret);
+      if(state.refresh) {
+        res.set("refresh", state.refresh);
+      }
 
-        return res.redirect(req.path.replace(state.secret, ""));
-      } else if(req.cookies[mmCookie] === state.secret) {
-        next();
+      if(state.secret) {
+        if(req.path.endsWith(state.secret)) {
+          res.cookie(mmCookie, state.secret, { expires: 0 });
+
+          return res.redirect(req.path.replace(state.secret, ""));
+        } else if(req.cookies[mmCookie] === state.secret) {
+          next();
+        } else {
+          res.status(STATUS_CODES.HTTP_SERVICE_UNAVAILABLE);
+
+          return view("503", {
+            status: STATUS_CODES.HTTP_SERVICE_UNAVAILABLE,
+          });
+        }
       } else {
         res.status(STATUS_CODES.HTTP_SERVICE_UNAVAILABLE);
-
-        if(state.refresh) {
-          res.set("refresh", state.refresh);
-        }
 
         return view("503", {
           status: STATUS_CODES.HTTP_SERVICE_UNAVAILABLE,

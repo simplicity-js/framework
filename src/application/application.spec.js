@@ -61,6 +61,11 @@ module.exports = {
         done();
       });
 
+      beforeEach(function(done) {
+        overrideConsoleDotLog(`${currDir}/console.log`);
+        done();
+      });
+
       describe("Routing", function() {
         let app;
 
@@ -129,9 +134,25 @@ module.exports = {
         });
 
         describe(`Health Check Route (${healthCheckRoute})`, function serverHealthRoute() {
-          it("should get the server's health status", function(done) {
+          it("should server the HTML web page by default", function(done) {
             request(host)
               .get(healthCheckRoute)
+              .expect(200)
+              .expect("Content-Type", "text/html; charset=utf-8")
+              .end((err, res) => {
+                if(err) {
+                  return done(err);
+                }
+
+                expect(res.text).to.match(/Application up/);
+                expect(res.text).to.match(/Uptime \d+ days, \d+ hours, \d+ minutes, \d+ seconds./);
+                done();
+              });
+          });
+
+          it("should send a JSON response if the 'format' query string is set to 'json'", function(done) {
+            request(host)
+              .get(`${healthCheckRoute}?format=json`)
               .expect(200)
               .expect("Content-Type", "application/json; charset=utf-8")
               .end((err, res) => {
@@ -280,7 +301,7 @@ module.exports = {
 
       describe("dispatch", function() {
         describe("commands", function() {
-          describe("start", function() {
+          describe("[\"start\"]", function() {
             const tests = [
               {
                 description: `should serve the app on the default port ${DEFAULT_PORT} if the --port option is not passed`,
@@ -294,8 +315,8 @@ module.exports = {
               },
               {
                 description: "should serve the app on the specified port using --port PORT option",
-                port: 6008,
-                commandArgs: ["--port", 6008],
+                port: 6009,
+                commandArgs: ["--port", 6009],
                 useEval: true,
               },
               {
@@ -360,11 +381,141 @@ module.exports = {
             });
           });
 
-          describe("stop", function() {
+          describe("[\"down\"]", function() {
+            const tests = [
+              {
+                description: "send a 503 Service Unavailable response",
+                port: 6011,
+                commandArgs: [],
+              },
+              {
+                description: "send a refresh header if passed the --refresh option",
+                port: 6012,
+                commandArgs: ["--refresh=15"],
+                expectation: async (res, done) => {
+                  expect(Number(res.headers["refresh"])).to.equal(15);
+                  await done();
+                }
+              },
+              {
+                description: "allow access with a secret if passed a --secret option",
+                port: 6013,
+                commandArgs: ["--secret=secret"],
+                expectation: (res, done) => {
+                  request("http://localhost:6013")
+                    .get("/secret")
+                    .expect(302)
+                    .expect("Location", "/")
+                    .end((err) => err ? done(err) : done());
+                }
+              },
+            ];
+
+            function runRequestAndTest(host, port, callback) {
+              request(`${host}:${port}`)
+                .get("/")
+                .expect(503)
+                .end((err, res) => {
+                  if(err) {
+                    return callback(err);
+                  }
+
+                  expect(res.text).to.match(/Service Unavailable/);
+
+                  callback(res);
+                });
+            }
+
+            tests.forEach(async test => {
+              it(`should put the server in maintenance mode and ${test.description}`, function(done) {
+                this.timeout(1000 * 20);
+
+                const app = Application.create();
+                const host = "http://localhost";
+                const port = test.port;
+
+                app.dispatch(["start"].concat([`--port=${port}`]));
+
+                request(`${host}:${port}`)
+                  .get("/")
+                  .expect(200)
+                  .expect("Content-Type", "text/html; charset=utf-8")
+                  .end(async (err) => {
+                    if(err) {
+                      return done(err);
+                    }
+
+                    await app.dispatch(["down"].concat(test.commandArgs));
+
+                    runRequestAndTest(host, port, (res) => {
+                      if(test.expectation) {
+                        test.expectation(res, err => {
+                          if(err) {
+                            app.dispatch(["up"]);
+                            done(err);
+                          } else {
+                            app.dispatch(["up"]);
+                            app.stop(done);
+                          }
+                        });
+                      } else {
+                        app.dispatch(["up"]);
+                        app.stop(done);
+                      }
+                    });
+                  });
+              });
+            });
+          });
+
+          describe("[\"up\"]", function() {
+            it("should take the server out of maintenance mode", function(done) {
+              this.timeout(1000 * 20);
+
+              const app = Application.create();
+              const host = "http://localhost";
+              const port = 6014;
+
+              app.dispatch(["start"].concat([`--port=${port}`]));
+
+              request(`${host}:${port}`)
+                .get("/")
+                .expect(200)
+                .expect("Content-Type", "text/html; charset=utf-8")
+                .end(async (err) => {
+                  if(err) {
+                    return done(err);
+                  }
+
+                  await app.dispatch(["down"]);
+
+                  request(`${host}:${port}`)
+                    .get("/")
+                    .expect(503)
+                    .end(async (err, res) => {
+                      if(err) {
+                        return done(err);
+                      }
+
+                      expect(res.text).to.match(/Service Unavailable/);
+
+                      await app.dispatch(["up"]);
+
+                      request(`${host}:${port}`)
+                        .get("/")
+                        .expect(200)
+                        .expect("Content-Type", "text/html; charset=utf-8")
+                        .end((err) => err ? done(err) : app.stop(done));
+                    });
+                });
+            });
+          });
+
+          describe("[\"stop\"]", function() {
             it("should stop the server", function(done) {
               const app = Application.create();
               const host = "http://localhost";
-              const port = 6011;
+              const port = 6015;
 
               app.dispatch(["start", `--port=${port}`]);
 
