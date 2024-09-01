@@ -48,6 +48,7 @@ module.exports = function createMaintenanceModeMiddleware(appKey, config, view) 
         res.status(STATUS_CODES.HTTP_SERVICE_UNAVAILABLE);
 
         return view("503", {
+          pageTitle: "Service Unavailable",
           status: STATUS_CODES.HTTP_SERVICE_UNAVAILABLE,
         });
       }

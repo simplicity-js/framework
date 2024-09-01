@@ -190,7 +190,12 @@ module.exports = function createApp(options) {
           server: { status, uptime, utilization },
         });
       } else {
-        return view.view("health", { status, uptime, utilization });
+        return view.view("health", {
+          status,
+          uptime,
+          utilization,
+          pageTitle: "Application Up", 
+        });
       }
     });
   }
