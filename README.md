@@ -1,4 +1,6 @@
-# SimpliCity
+# Simplicity
+
+The Framework Repository for the Simplicity MVC Framework.
 
 
 ## Development
@@ -13,10 +15,10 @@
 - Test a directory: `npm test -- --<directory>`.
 
   Examples:
-    - `npm test -- --service-providers`
-    - `npm test -- --framework`
+    - `npm test -- --application`
+    - `npm test -- --component`
 - Test a module: `npm test -- --<module_name>`.
-  Example: `npm test -- --app`.
+  Example: `npm test -- --env`.
 
   **Note:** To test the `config` module (as opposed to testing one of its methods),
   use `npm test -- --config::*`. This is because `npm test -- --config`
@@ -32,17 +34,15 @@
   `npm test -- --<directory.<ModuleName>[::<method_name>]`
 
   Examples:
-    - Test the router (*src/framework/router.js* file) methods: `npm test -- --framework.router`.
-    - Test the `group` method of the router module: `npm test -- --framework.router::group`.
+    - Test the router (*src/component/router/index.js* file) methods: `npm test -- --component.router`.
 
 #### Example tests
 ```bash
-npm test -- --framework                           // Run all tests inside the src/framework/ directory
-npm test -- --framework.factory.cache             // Run all tests inside the src/framework/factory/cache/ directory.
-npm test -- --framework.factory.cache.file-cache  // Run only the tests within the file-cache.spec.js file
-npm test -- --framework.factory.cache.FileCache   // Ditto
-npm test -- --framework.component.router          // Test only the methods of the router module (src/framework/component/router.js)
-npm test -- --framework.component.router::group   // Test only the group method of the router
+npm test                                // Run all tests inside the src/ directory
+npm test -- --factory.cache             // Run all tests inside the src/factory/cache/ directory.
+npm test -- --factory.cache.file-cache  // Run only the tests within the file-cache.spec.js file
+npm test -- --factory.cache.FileCache   // Ditto
+npm test -- --component.router          // Test only the methods of the router module (src/component/router.js)
 ```
 
 ### Committing and Pushing changes
