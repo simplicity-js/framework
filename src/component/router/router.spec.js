@@ -47,7 +47,7 @@ module.exports = {
         });
       });
 
-      describe("Extended features", function() {
+      describe("Advanced Routing Methods", function() {
         describe("router.controller(controller, closure)", function() {
           const app = express();
           const router = Router.router();

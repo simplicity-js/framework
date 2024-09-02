@@ -4,9 +4,10 @@ const { freezeObject, getObjectValue, setObjectValue } = require("./lib/object")
 
 module.exports = function() {
   let appConfig;
+  let config;
 
   return function createConfig(configDir, filesToExclude) {
-    const config = createConfigObject(configDir, filesToExclude);
+    config = createConfigObject(configDir, filesToExclude);
 
     appConfig = config;
 
@@ -18,7 +19,7 @@ module.exports = function() {
   };
 
 
-  // Helper functions 
+  // Helper functions
   function createConfigObject(configDir, filesToExclude = []) {
     return (fs.readdirSync(configDir)
       .filter(file => !filesToExclude.includes(file))

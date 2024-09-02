@@ -17,8 +17,8 @@ const specialValues =  {
 };
 
 module.exports = {
-  createApp() {
-    describe("createApp", function createApp_Spec() {
+  env() {
+    describe("env(key [, defaultValue])", function createApp_Spec() {
       before(async function() {
         expect = (await chai()).expect;
       });
@@ -69,7 +69,7 @@ module.exports = {
         expect(env("NULL")).to.equal(null);
       });
 
-      it("should return passed undefined if specified env variable does not exist", function() {
+      it("should return undefined if specified env variable does not exist", function() {
         expect(env("NON_EXISTENT_VAR")).to.equal(undefined);
       });
 
