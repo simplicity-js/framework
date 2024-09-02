@@ -6,7 +6,8 @@
   ],
   "exclude": [
     "**/*.spec.js",
-    "**/*.test.js"
+    "**/*.test.js",
+    "src/console/tests/test-app-stub"
   ],
   "reporter": [
     "json",
@@ -14,7 +15,7 @@
     "text-summary",
     "clover"
   ],
-  "branches": 45,
+  "branches": 50,
   "lines": 70,
   "functions": 65,
   "statements": 70
