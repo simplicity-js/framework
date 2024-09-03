@@ -135,8 +135,7 @@ async function publish({ version, preview }) {
      * reinstall the packages,
      * and run the tests to ensure everything still works
      */
-    fs.rmSync(`${rootDir}/node_modules`, { force: true });
-    await execInherit("npm install");
+    await execInherit("npm ci");
     await execInherit("npm run test:coverage");
 
     /*
