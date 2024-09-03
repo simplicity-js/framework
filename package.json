@@ -72,6 +72,7 @@
     "public-ip": "6.0.2",
     "pug": "3.0.3",
     "redis": "4.6.14",
+    "semver": "7.6.3",
     "sequelize": "6.37.3",
     "serialijse": "0.3.0",
     "sqlite3": "5.1.7",
