@@ -29,7 +29,16 @@
     "postinstall": "cd src/console && npm install",
     "commit": "git-cz",
     "lint": "npx eslint src/**/*.js",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "changelog:major": "changelog -M",
+    "changelog:minor": "changelog -m",
+    "changelog:patch": "changelog -p",
+    "bump-version": "npm --no-git-tag-version version --",
+    "version:major": "npm run changelog:major && npm run bump-version major",
+    "version:minor": "npm run changelog:minor && npm run bump-version minor",
+    "version:patch": "npm run changelog:patch && npm run bump-version patch",
+    "release": "node ./scripts/publish.js",
+    "release:dry-run": "node ./scripts/publish.js --preview"
   },
   "keywords": [
     "API",
@@ -76,6 +85,7 @@
     "cross-env": "7.0.3",
     "cz-conventional-changelog": "3.3.0",
     "eslint": "9.4.0",
+    "generate-changelog": "1.8.0",
     "ghooks": "2.0.4",
     "mocha": "10.4.0",
     "nyc": "15.1.0",
