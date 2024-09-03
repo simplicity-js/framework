@@ -8,9 +8,12 @@ const srcDir = `${rootDir}/src`;
 const ignoreData = [
   "**/*.spec.js",
   "**/*.test.js",
-  `${rootDir}/scripts`,
-  `${srcDir}/console/tests`,
-  `${srcDir}/server/test-mocks`
+  "**/*scripts",
+  "**/*tests",
+  "**/*test-mocks",
+  "scripts",
+  "tests",
+  "test-mocks"
 ];
 
 function copy(src, dest) {
