@@ -1,10 +1,12 @@
+"use strict";
+
 require("./node-version-check");
 
+const cp = require("node:child_process");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const chokidar = require("chokidar");
 const serialijse = require("serialijse");
-
 const bootstrap = require("../bootstrap");
 const getCache = require("../component/cache");
 const container = require("../component/container");
@@ -17,10 +19,11 @@ const initStoragePath = require("../storage-path").init;
 const debug = require("../lib/debug");
 const { normalizePath, pathExists } = require("../lib/file-system");
 const { camelCaseToSnakeCase, hash } = require("../lib/string");
-const { createApp, normalizePort, onError, onListening } = require("../server/app");
+const { appConsole, createApp, normalizePort, onError, onListening
+} = require("../server/app");
 const createServer = require("../server/server");
 
-let applicationInstance;
+//let applicationInstance;
 const { serialize } = serialijse;
 
 module.exports = class Application {
@@ -103,9 +106,9 @@ module.exports = class Application {
 
     // if we already have an instance of the application,
     // return it rather than recreating a new instance.
-    if(applicationInstance) {
+    /*if(applicationInstance) {
       return applicationInstance;
-    }
+    }*/
 
     return new class Simplicity {
       #server;
@@ -195,7 +198,7 @@ module.exports = class Application {
 
         this.#server = this.#boot();
 
-        applicationInstance = this;
+        //applicationInstance = this;
 
         debug("Application is ready to use!");
       }
@@ -219,7 +222,6 @@ module.exports = class Application {
          * This way, any registered services are available to route handlers
          * (via req.app.resolve(serviceName)) and other files.
          */
-        //bootstrap(this.#config, this.#providers.concat([FrameworkServiceProvider]));
         bootstrap({
           appRoot,
           config,
@@ -247,7 +249,14 @@ module.exports = class Application {
       }
 
       #restart(options) {
-        this.#stop(() => this.#listen(options.port));
+        this.#stop(() => {
+          appConsole.warnText("Change detected. Restarting...");
+
+          cp.spawn(`node ${appRoot}/bob start`, [`--port=${options.port}`], {
+            shell: true,
+            stdio: "inherit",
+          });
+        });
       }
 
       #listen(port) {
@@ -279,7 +288,13 @@ module.exports = class Application {
           ignoreInitial: true,
         });
 
-        watcher.on("all", () => this.#restart(options));
+        watcher.on("all", async () => {
+          // Guard against registering multiple watchers;
+          // Close this watcher. Another will be created on restart.
+          await watcher.close();
+
+          this.#restart(options);
+        });
       }
     };
   }

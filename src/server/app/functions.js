@@ -1,19 +1,32 @@
+"use strict";
+
 const EOL = require("node:os").EOL;
 const publicIp = () => import("public-ip").then(publicIp => publicIp);
 const debug = require("../../lib/debug");
 
+function UCFirst(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const colors = {
-  info    : "\x1b[44m",
-  error   : "\x1b[41m",
-  warn    : "\x1b[43m",
-  success :  "\x1b[42m"
+  info    : { bg: "\x1b[44m", fg: "\x1b[34m" },
+  error   : { bg: "\x1b[41m", fg: "\x1b[31m" },
+  warn    : { bg: "\x1b[43m", fg: "\x1b[33m" },
+  success : { bg: "\x1b[42m", fg: "\x1b[32m" },
 };
 
 const appConsole = Object.entries(colors).reduce((logger, [name, color]) => {
   logger[name] = (msg, ...rest) => (console.log(
-    `${EOL}  ${color} ${name.toUpperCase()} \x1b[0m ${msg}`,
+    `${EOL}  ${color.bg} ${name.toUpperCase()} \x1b[0m ${msg}`,
     ...rest
   ));
+
+  logger[`${name}Text`] = (msg, ...rest) => (console.log(
+    `${EOL}  ${color.fg}${msg}\x1b[0m`,
+    ...rest
+  ));
+
+  logger[`make${UCFirst(name)}Text`] = (msg) => `${color.fg}${msg}\x1b[0m`;
 
   return logger;
 }, {});
@@ -93,8 +106,19 @@ function onListening(server) {
   debug("Server Listening on ", bind);
 
   (async function() {
+    let colorer;
     const port = addr.port;
-    let message = `Server running: ${EOL}` +
+    const environment = process.env.NODE_ENV;
+
+    switch(environment) {
+    case "development" : colorer = "WarnText"; break;
+    case "staging"     : colorer = "InfoText"; break;
+    case "production"  : colorer = "SuccessText"; break;
+    default            : colorer = "WarnText"; break;
+    }
+
+    let message = "Server running " +
+    `[${appConsole[`make${colorer}`](environment)}]:${EOL}` +
     `       Loopback address [http://127.0.0.1:${port}].${EOL}`;
 
     if(process.env.NODE_ENV !== "test") {
