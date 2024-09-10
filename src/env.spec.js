@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-env node, mocha */
 
 const { chai } = require("./lib/test-helper");

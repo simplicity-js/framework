@@ -1,3 +1,5 @@
+"use strict";
+
 const path = require("node:path");
 const RedisStore = require("connect-redis").default;
 const cookieParser = require("cookie-parser");
@@ -8,6 +10,7 @@ const { Container } = require("../../component/container");
 const maintenanceMode = require("../../component/middleware/maintenance-mode");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
+const validation = require("../../component/middleware/validation");
 const Router = require("../../component/router");
 const view = require("../../component/view");
 const Connections = require("../../connections");
@@ -155,10 +158,11 @@ module.exports = function createApp(options) {
   app.use(express.json());
   app.use(view(config));
   app.use(express.static(path.join(appRoot, "src", "public")));
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(session(config, sessionStore));
   app.use(cors(corsOptions));
+  app.use(validation());
 
   /*
    * Setup Routing
@@ -194,7 +198,7 @@ module.exports = function createApp(options) {
           status,
           uptime,
           utilization,
-          pageTitle: "Application Up", 
+          pageTitle: "Application Up",
         });
       }
     });

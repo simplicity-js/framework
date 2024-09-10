@@ -47,8 +47,16 @@
     "REST API",
     "Web Service"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simplicity-js/framework.git"
+  },
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/simplicity-js/framework/issues"
+  },
+  "homepage": "https://github.com/simplicity-js/framework#readme",
   "dependencies": {
     "awilix": "10.0.2",
     "chokidar": "3.6.0",

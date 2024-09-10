@@ -1,4 +1,4 @@
-//const env = require("./dotenv");
+"use strict";
 
 let env;
 const specialTypes = {
@@ -36,14 +36,18 @@ module.exports = function getEnv(name, defaultValue) {
  * This method should only be called once and only from inside application/index.js
  * during the application initialization.
  */
-module.exports.init = function initializeProjectDotEnv(projectDir) {
-  require("dotenv").config({ path: `${projectDir}/.env` });
-
-  env = process.env;
+module.exports.init = (projectDir) => {
+  initializeProjectDotEnv(projectDir);
 
   /*
    * Rewrite the exported init so that it cannot be further invoked.
-   * This prevents any accidental calls to it from having any effect.
+   * This prevents any accidental external calls to it from having any effect.
    */
-  module.exports.init = null;
+  //initializeProjectDotEnv = null;
+};
+
+function initializeProjectDotEnv(projectDir) {
+  require("dotenv").config({ path: `${projectDir}/.env` });
+
+  env = process.env;
 };
