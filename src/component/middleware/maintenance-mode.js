@@ -1,10 +1,7 @@
 "use strict";
 
-const serialijse = require("serialijse");
 const getCache = require("../cache");
 const { STATUS_CODES } = require("../http");
-
-const { deserialize } = serialijse;
 
 async function getState(appKey, config) {
   let state;
@@ -12,7 +9,7 @@ async function getState(appKey, config) {
   const cache = getCache(cacheDriver, config);
 
   try {
-    state = deserialize(await cache.get(`${appKey}.state`, {}));
+    state = await cache.get(`${appKey}.state`, {});
   } catch {
     state = {};
   }

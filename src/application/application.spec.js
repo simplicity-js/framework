@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-env node, mocha */
 
 const childProcess = require("node:child_process");

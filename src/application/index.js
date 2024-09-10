@@ -6,7 +6,6 @@ const cp = require("node:child_process");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
 const chokidar = require("chokidar");
-const serialijse = require("serialijse");
 const bootstrap = require("../bootstrap");
 const getCache = require("../component/cache");
 const container = require("../component/container");
@@ -23,8 +22,6 @@ const { appConsole, createApp, normalizePort, onError, onListening
 } = require("../server/app");
 const createServer = require("../server/server");
 
-//let applicationInstance;
-const { serialize } = serialijse;
 
 module.exports = class Application {
   static #config;
@@ -104,12 +101,6 @@ module.exports = class Application {
       "component.router": { type: "boolean" },
     };
 
-    // if we already have an instance of the application,
-    // return it rather than recreating a new instance.
-    /*if(applicationInstance) {
-      return applicationInstance;
-    }*/
-
     return new class Simplicity {
       #server;
 
@@ -148,8 +139,7 @@ module.exports = class Application {
               }
             }
 
-            //writeToFile(stateFile, serialize(obj), { flag: "w" });
-            await cache.set(`${appKey}.state`, serialize(obj));
+            await cache.set(`${appKey}.state`, obj);
 
             logger.info("Application is now in maintenance mode.");
 
@@ -165,7 +155,6 @@ module.exports = class Application {
           name: "up",
           description: "Takes the web server out of maintenance mode",
           handler: async (_, $, logger) => {
-            //deleteFile(stateFile);
             await cache.unset(`${appKey}.state`);
 
             logger.info("Application is now live.");
@@ -188,7 +177,9 @@ module.exports = class Application {
           }
         });
 
-        if(process.env.NODE_ENV === "test") {
+        const environment = process.env.NODE_ENV;
+
+        if(environment === "test") {
           // So we can test the #listen and #stop methods
           this.listen = this.#listen;
           this.stop = this.#stop;
@@ -196,9 +187,11 @@ module.exports = class Application {
 
         debug("Application created.");
 
-        this.#server = this.#boot();
-
-        //applicationInstance = this;
+        if(process.argv.slice(2)[0] === "start" || environment === "test") {
+          // Only boot the server
+          // if twe are "dispatching" the "start" "command"
+          this.#server = this.#boot();
+        }
 
         debug("Application is ready to use!");
       }
@@ -217,8 +210,7 @@ module.exports = class Application {
         debug("Running boot sequence...");
 
         /*
-         * Our first action is to initialize environment variables,
-         * then bootstrap (aka, register) the services.
+         * Our first action is to bootstrap (aka, register) the services.
          * This way, any registered services are available to route handlers
          * (via req.app.resolve(serviceName)) and other files.
          */
