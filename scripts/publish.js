@@ -14,20 +14,35 @@ const prePublish = require("./prepublish");
 const currDir = __dirname.replace(/\\/g, "/");
 const rootDir = path.dirname(currDir).replace(/\\/g, "/");
 
-function exec(command, args) {
+function exec(command, args, options) {
   args = args || [];
   let stdout = "";
   let stderr = "";
+  const followLogs = options?.followLogs;
   const ps = cp.spawn(command, args, { shell: true });
 
   return new Promise((resolve, reject) => {
-    ps.stdout.on("data", data => stdout += data);
-    ps.stderr.on("data", data => stderr += data);
+    ps.stdout.on("data", data => {
+      if(followLogs) {
+        console.log(data);
+      } else {
+        stdout += data;
+      }
+    });
+
+    ps.stderr.on("data", data => {
+      if(followLogs) {
+        console.error(data);
+      } else {
+        stderr += data;
+      }
+    });
+
     ps.on("close", (code) => {
       if(code === 0) {
-        resolve(stdout.trim());
+        resolve(followLogs ? true : stdout.trim());
       } else {
-        reject(stderr.trim());
+        reject(followLogs ? false : stderr.trim());
       }
     });
   });
@@ -112,12 +127,24 @@ async function publish({ version, preview }) {
     await exec("git fetch origin");
 
     /*
+     * Make sure that the release branch and the main branch are in sync.
+     */
+    if(await exec("git rev-parse HEAD") !== await exec("git rev-parse main")) {
+      console.error(
+        "Your branch is out of date with the `main` branch. " +
+        "Kindly reconcile the differences before proceeding."
+      );
+
+      process.exit(1);
+    }
+
+    /*
      * Make sure that release branch is in sync with origin.
      */
     if(await exec("git rev-parse HEAD") !== await exec(`git rev-parse origin/${RELEASE_BRANCH}`)) {
       console.error(
         "Your branch is out of date with its upstream. " +
-        "Did you forget to pull or push any changes before releasing?"
+        "Kindly pull or push any changes before releasing."
       );
 
       process.exit(1);
@@ -141,10 +168,10 @@ async function publish({ version, preview }) {
     /*
      * Tag Framework
      */
-    await execInherit(`git tag ${VERSION}`);
+    await execInherit(`git tag -a ${VERSION} -m :bookmark: create release tag ${VERSION}`);
 
     if(!preview) {
-      await execInherit(`git push origin --tags ${VERSION}`);
+      await execInherit(`git push origin ${VERSION}`);
     }
 
     prePublish();
