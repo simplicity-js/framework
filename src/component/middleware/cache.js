@@ -1,3 +1,5 @@
+"use strict";
+
 const hash = require("object-hash");
 const { deflate, inflate } = require("../../lib/string");
 

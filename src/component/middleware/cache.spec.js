@@ -1,3 +1,5 @@
+"use strict";
+
 /* eslint-env node, mocha */
 
 const NodeCache = require("node-cache");

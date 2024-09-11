@@ -160,15 +160,16 @@ module.exports = function createApp(options) {
   app.use(express.static(path.join(appRoot, "src", "public")));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use(session(config, sessionStore));
   app.use(cors(corsOptions));
   app.use(validation());
 
   /*
    * Setup Routing
    */
-  router.group(webRoutes.prefix ?? "/", function setupWebRoutes(router) {
-    copyRouter(webRoutes.router, router);
+  router.middleware(session(config, sessionStore), (router) => {
+    router.group(webRoutes.prefix ?? "/", function setupWebRoutes(router) {
+      copyRouter(webRoutes.router, router);
+    });
   });
 
   router.group(apiRoutes.prefix ?? "/api", function setupApiRoutes(router) {

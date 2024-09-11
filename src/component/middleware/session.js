@@ -1,4 +1,6 @@
-const session         = require("express-session");
+"use strict";
+
+const session = require("express-session");
 const { v4: uuidv4 }  = require("uuid");
 
 
