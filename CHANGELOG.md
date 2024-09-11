@@ -1,5 +1,16 @@
-# 1.0.0 (2024-09-03)
+# 1.1.0 (2024-09-11)
 
+### New Features
+
+* **validation:**  :sparkles: Validate incoming requests ([a15fe6f9](https://github.com/simplicity-js/framework/commit/a15fe6f9b1c6bce5a8cb69db680acd6cbe7d56dc))
+
+### Bug Fixes
+
+* **fix:**  :bug: create components (using `node bob make:*`) in any order ([fb24f2bd](https://github.com/simplicity-js/framework/commit/fb24f2bdf755615c7c4f69f64489183e9c78269b))
+* **fix:**  :bug: in development mode, see latest updates on restart due to file system changes ([8f87c926](https://github.com/simplicity-js/framework/commit/8f87c926400b5e63e9e95277d382e7180ba1a712))
+
+
+# 1.0.0 (2024-09-03)
 
 ### Features
 * :sparkles: Modular
