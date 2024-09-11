@@ -34,9 +34,9 @@
     "changelog:minor": "changelog -m",
     "changelog:patch": "changelog -p",
     "bump-version": "npm --no-git-tag-version version --",
-    "version:major": "npm run changelog:major && npm run bump-version major",
-    "version:minor": "npm run changelog:minor && npm run bump-version minor",
-    "version:patch": "npm run changelog:patch && npm run bump-version patch",
+    "version:breaking-change": "npm run changelog:major && npm run bump-version major",
+    "version:new-feature": "npm run changelog:minor && npm run bump-version minor",
+    "version:bug-fix": "npm run changelog:patch && npm run bump-version patch",
     "release": "node ./scripts/publish.js",
     "release:dry-run": "node ./scripts/publish.js --preview"
   },
