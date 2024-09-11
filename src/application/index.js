@@ -89,6 +89,7 @@ module.exports = class Application {
     const webRoutes = this.#webRoutes;
     const apiRoutes = this.#apiRoutes;
     const healthCheckRoute = this.#healthCheckRoute;
+    const defaultPort = 8800;
     const cacheDriver = config.get("app.maintenance").driver;
     const cache = getCache(cacheDriver, config);
     const testPatchingOptions = {
@@ -244,7 +245,8 @@ module.exports = class Application {
         this.#stop(() => {
           appConsole.warnText("Change detected. Restarting...");
 
-          cp.spawn(`node ${appRoot}/bob start`, [`--port=${options.port}`], {
+          const port = options.port ?? defaultPort;
+          cp.spawn(`node ${appRoot}/bob start`, [`--port=${port}`], {
             shell: true,
             stdio: "inherit",
           });
@@ -259,7 +261,7 @@ module.exports = class Application {
             ...testPatchingOptions,
           },
         });
-        const defaultPort = 8800;
+
         const listenPort = (
           port                           // argument passed to `listen(port)`
             ?? options.values.port       // CLI option
