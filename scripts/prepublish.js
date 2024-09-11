@@ -11,6 +11,7 @@ const ignoreData = [
   "scripts",
   "src/application/cli-port-argument-server.js",
   "src/console/tests",
+  "src/validators/tests",
   "src/lib/test-helper.js",
   "src/server/test-mocks",
   "src/test-runner.js",

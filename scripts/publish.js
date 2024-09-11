@@ -23,6 +23,8 @@ function exec(command, args, options) {
 
   return new Promise((resolve, reject) => {
     ps.stdout.on("data", data => {
+      data = data.toString();
+
       if(followLogs) {
         console.log(data);
       } else {
@@ -31,6 +33,8 @@ function exec(command, args, options) {
     });
 
     ps.stderr.on("data", data => {
+      data = data.toString();
+
       if(followLogs) {
         console.error(data);
       } else {
