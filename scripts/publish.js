@@ -162,8 +162,8 @@ async function publish({ version, preview }) {
      * reinstall the packages,
      * and run the tests to ensure everything still works
      */
-    await execInherit("npm ci");
-    await execInherit("npm run test:coverage");
+    await exec("npm ci", [], { followLogs: true });
+    await exec("npm run test:coverage", [], { followLogs: true });
 
     /*
      * Tag Framework
