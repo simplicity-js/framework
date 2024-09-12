@@ -7,6 +7,7 @@ const cors = require("cors");
 const express = require("express");
 const createError = require("http-errors");
 const { Container } = require("../../component/container");
+const compression = require("../../component/middleware/compression");
 const maintenanceMode = require("../../component/middleware/maintenance-mode");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
@@ -155,6 +156,7 @@ module.exports = function createApp(options) {
   app.locals.environment = config.get("app.environment");
 
   app.use(requestLogger(app));
+  app.use(compression(config));
   app.use(express.json());
   app.use(view(config));
   app.use(express.static(path.join(appRoot, "src", "public")));

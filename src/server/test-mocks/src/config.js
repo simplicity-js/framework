@@ -1,7 +1,7 @@
 const path = require("node:path");
 const NodeCache = require("node-cache");
 const pkg = require("../../../../package.json");
-const APP_ROOT = path.dirname(__dirname); //require("app-root-path");
+const APP_ROOT = path.dirname(__dirname);
 const SRC_DIR = `${APP_ROOT}/src`.replace(/\\/g, "/");
 
 const cacheConfig = {
@@ -21,6 +21,18 @@ const cacheConfig = {
       driver: "redis",
     },
   },
+};
+
+const compressionConfig = {
+  types: [
+    "css", "html", "javascript", "json", "text", "dart", "image/svg+xml",
+    "application/x-font-ttf", "application/vnd.ms-opentype",
+    "application/vnd.ms-fontobject"
+  ],
+  threshold: 0,
+  level: -1,
+  bypassHeader: "x-no-compression",
+  disable: false,
 };
 
 const databaseConfig = {
@@ -71,6 +83,7 @@ const config = {
     case "database": return databaseConfig;
     case "logging": return logConfig;
     case "session": return sessionConfig;
+    case "compression": return compressionConfig;
     }
   },
 };

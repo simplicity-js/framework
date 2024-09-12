@@ -553,6 +553,31 @@ module.exports = {
           });
         });
       });
+
+      it("should compress responses", function(done) {
+        const app = Application.create();
+        const port = 6016;
+        const host =`http://localhost:${port}`;
+
+        app.listen(port);
+
+        request(host)
+          .get("/")
+          .set("Accept-Encoding", "gzip")
+          .expect(200)
+          .expect("Content-Encoding", "gzip")
+          .end((err) => {
+            if(err) {
+              return done(err);
+            }
+
+            request(host)
+              .get("/api")
+              .set("Accept-Encoding", "deflate")
+              .expect(200)
+              .expect("Content-Encoding", "deflate", done);
+          });
+      });
     });
   },
 };
