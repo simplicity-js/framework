@@ -1,6 +1,5 @@
 "use strict";
 
-const path = require("node:path");
 const resourcePath = require("../../resource-path");
 
 let localRes;
@@ -52,9 +51,9 @@ module.exports.download = function download(file, options) {
 module.exports.view = function view(filename, options) {
   const res = localRes;
   const ext = getViewFilesExtension(localConfig);
-  const file = `${path.basename(filename, ext)}.${ext}`;
   const { templateBase = "views", ...viewVariables } = options || {};
   const viewsDir = resourcePath(templateBase);
+  const file = filename.replace(new RegExp(`^${viewsDir}\/?`), "") + `.${ext}`;
 
   return res.render(file, {
     ...(viewVariables || {}),
