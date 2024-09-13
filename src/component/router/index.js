@@ -115,6 +115,12 @@ exports.router = function getAFreshRouterInstance() {
   };
 
   router.resource = function resourceGroup(resource, controller, ...rest) {
+    if(typeof controller === "function") {
+      // we are dealing with a constructor function, a controller class.
+      const className = controller.name;
+      controller = container.resolve(className);
+    }
+
     return router.group({ prefix: resource, ...rest }, (router) => {
       router.get("/", controller.index);
       router.get("/new", controller.new);
