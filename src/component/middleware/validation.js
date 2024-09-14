@@ -2,52 +2,13 @@
 
 const is = require("../../lib/is");
 const validators = require("../../validators");
-
-function generateReadonlyApi(object) {
-  object = object ?? {};
-  const methods = {
-    get: (name) => name ? object[name] : object,
-    has: (name) => typeof object[name] !== "undefined",
-    contains: (name) => this.has(name),
-    includes: (name) => this.has(name)
-  };
-
-  Object.entries(methods).forEach(([n, m]) => object[n] = m.bind(object));
-
-  return object;
-}
-
-function getRequestType(req) {
-  let type;
-  const contentType = req.get("Content-Type") || "";
-
-  switch(contentType) {
-  case "application/javascript":
-    type = "javascript";
-    break;
-
-  case "application/json":
-    type = "json";
-    break;
-
-  case "text/plain":
-    type = "text";
-    break;
-
-  case "application/x-www-form-urlencoded":
-    type = "form";
-    break;
-
-  default:
-    type = "unknown";
-  }
-
-  if(contentType.startsWith("multipart/form-data; boundary=")) {
-    type = "upload";
-  }
-
-  return type;
-}
+const { getRequestType } = require("../http/methods");
+const {
+  generateErrors, generateReadonlyApi,
+  flashErrors, flashFormValues,
+  unflashErrors, unflashFormValues,
+  trim
+} = require("./middleware-helpers");
 
 class RequestField {
   constructor(name) {
@@ -329,9 +290,9 @@ module.exports = function getValidationMiddleware() {
   return function validationMiddleware(req, res, next) {
     req.input = function requestInput(input) {
       if(input) {
-        return req.body[input] || req.params[input] || req.query[input];
+        return trim(req.body[input] || req.params[input] || req.query[input]);
       } else {
-        return { ...req.body, ...req.params, ...req.query };
+        return trim({ ...req.body, ...req.params, ...req.query });
       }
     };
 
@@ -390,11 +351,14 @@ module.exports = function getValidationMiddleware() {
           get() {
             // Guard agains attempts to get the value(s) of validated fields
             // while validation has not passed.
-            if(res.errors?.ValidationError || res.locals.errors?.ValidationError) {
-              throw {
-                name: "ValidationError",
-                errors: res.errors?.ValidationError || res.locals.errors?.ValidationError, 
-              };
+            const validationErrors = (
+              res.locals.errors?.InvalidCSRFTokenError ||
+              res.errors?.ValidationError ||
+              res.locals.errors?.ValidationError
+            );
+
+            if(validationErrors) {
+              throw validationErrors;
             }
 
             return req.input(field);
@@ -402,23 +366,24 @@ module.exports = function getValidationMiddleware() {
         });
       }
 
-      if(Object.keys(validationErrors).length > 0) {
+      if(Object.keys(validationErrors).length === 0) {
+        unflashErrors(req, res);
+        unflashFormValues(req, res);
+      } else {
         const requestType = getRequestType(req);
-
         if(["javascript", "json", "text", "unknown"].includes(requestType)) {
-          const existingErrors = { ...(res.errors || {}) };
-
-          res.errors = {
-            ...existingErrors,
-            ValidationError: generateReadonlyApi(validationErrors),
-          };
+          res.errors = generateErrors(res, {
+            fields: validationErrors,
+            name: "ValidationError"
+          });
         } else if(["form", "upload"].includes(requestType)) {
-          const existingErrors = { ...(res.locals.errors || {}) };
+          res.locals.errors = generateErrors(res.locals, {
+            fields: validationErrors,
+            name: "ValidationError"
+          });
 
-          res.locals.errors = {
-            ...existingErrors,
-            ValidationError: generateReadonlyApi(validationErrors),
-          };
+          flashErrors(req, res);
+          flashFormValues(req);
         }
       }
 

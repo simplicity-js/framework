@@ -72,7 +72,7 @@ const config = {
     switch(val) {
     case "app.name": return pkg.name;
     case "cors.allowedOrigins": return ["*"];
-    case "cors": return { allowedOrigins: ["*"] };
+    case "cors": return { allowedOrigins: ["*"], allowedHeaders: ["*"] };
     //case "app.rootDir": return APP_ROOT; //path.dirname(path.dirname(path.dirname(__dirname))).replace(/\\/g, "/");
     //case "app.srcDir" : return SRC_DIR;
     case "app.maintenance": return { driver: "file" };

@@ -64,6 +64,7 @@
     "connect-redis": "7.1.1",
     "cookie-parser": "1.4.6",
     "cors": "2.8.5",
+    "csrf-sync": "4.0.3",
     "debug": "4.3.5",
     "dotenv": "16.4.5",
     "express": "4.19.2",

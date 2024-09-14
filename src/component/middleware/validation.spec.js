@@ -110,9 +110,11 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              title: [
-                "The title field is required."
-              ],
+              fields: {
+                title: [
+                  "The title field is required."
+                ],
+              }
             }
           },
         },
@@ -125,7 +127,9 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              email: ["The email must be a valid email address." ]
+              fields: {
+                email: ["The email must be a valid email address." ]
+              }
             },
           },
         },
@@ -140,16 +144,18 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              firstname: [
-                "The firstname must consist of only numbers.",
-              ],
-              id: [
-                "The id must consist of only alphabets, underscores, and dashes.",
-                "The id must be at least 6 characters long.",
-              ],
-              route: [
-                "The route must consist of only uppercase characters.",
-              ],
+              fields: {
+                firstname: [
+                  "The firstname must consist of only numbers.",
+                ],
+                id: [
+                  "The id must consist of only alphabets, underscores, and dashes.",
+                  "The id must be at least 6 characters long.",
+                ],
+                route: [
+                  "The route must consist of only uppercase characters.",
+                ],
+              }
             }
           },
         },
@@ -162,9 +168,11 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              password: [
-                "The password field is required."
-              ],
+              fields: {
+                password: [
+                  "The password field is required."
+                ],
+              }
             }
           },
         },
@@ -177,9 +185,11 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              lastname: [
-                "The lastname field is required.",
-              ]
+              fields: {
+                lastname: [
+                  "The lastname field is required.",
+                ]
+              }
             },
           },
         },
@@ -192,9 +202,11 @@ describe("createValidationMiddleware()", function() {
           },
           expectation: {
             ValidationError: {
-              lastname: [
-                "The lastname field is required.",
-              ]
+              fields: {
+                lastname: [
+                  "The lastname field is required.",
+                ]
+              }
             },
           },
         },
@@ -268,16 +280,18 @@ describe("createValidationMiddleware()", function() {
         req.get = () => "json";
         const errorName = "ValidationError";
         const validationError = {
-          firstname: [
-            "The firstname must consist of only numbers.",
-          ],
-          id: [
-            "The id must consist of only alphabets, underscores, and dashes.",
-            "The id must be at least 6 characters long.",
-          ],
-          route: [
-            "The route must consist of only uppercase characters.",
-          ],
+          fields: {
+            firstname: [
+              "The firstname must consist of only numbers.",
+            ],
+            id: [
+              "The id must consist of only alphabets, underscores, and dashes.",
+              "The id must be at least 6 characters long.",
+            ],
+            route: [
+              "The route must consist of only uppercase characters.",
+            ],
+          }
         };
 
         const validated = req.validate({
@@ -302,14 +316,14 @@ describe("createValidationMiddleware()", function() {
           expect(false).to.equal(true); // demonstrate that execution does not get here
         } catch(err) {
           expect(err.name).to.equal(errorName);
-          assertThrownError(validationError, err.errors);
+          assertThrownError(validationError, err);
         }
 
         try {
           validated.get("route");
         } catch(err) {
           expect(err.name).to.equal(errorName);
-          assertThrownError(validationError, err.errors);
+          assertThrownError(validationError, err);
         }
 
         done();

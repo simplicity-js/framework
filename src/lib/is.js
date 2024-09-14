@@ -1,5 +1,6 @@
 module.exports = {
   array      : isArray,
+  boolean    : isBoolean,
   empty      : isEmpty,
   falsy      : isFalsy,
   "function" : isFunction,
@@ -18,6 +19,10 @@ function isArray(data) {
   );
 }
 
+function isBoolean(data) {
+  return typeof data === "boolean";
+}
+
 function isEmpty(data) {
   if(isArray(data)) {
     return (data.length === 0);
@@ -31,7 +36,7 @@ function isEmpty(data) {
 }
 
 function isFalsy(val) {
-  return [0, "0", false, "false", NaN, null, undefined, ""].includes(val);
+  return [0, false, NaN, null, undefined, ""].includes(val);
 }
 
 function isFunction(fn) {

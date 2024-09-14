@@ -2,6 +2,7 @@ module.exports = {
   buildQueryString,
   getClientInfo,
   getClientIp,
+  getRequestType,
 };
 
 function buildQueryString(obj) {
@@ -29,7 +30,7 @@ function getClientInfo(req) {
     ipAddress: getClientIp(req),
     userAgent: req.headers["user-agent"],
   };
-};
+}
 
 function getClientIp (req) {
   return (
@@ -38,4 +39,36 @@ function getClientIp (req) {
     (req.connection && req.connection.remoteAddress) ||
     undefined
   );
+}
+
+function getRequestType(req) {
+  let type;
+  const contentType = req.get("Content-Type") || "";
+
+  switch(contentType) {
+  case "application/javascript":
+    type = "javascript";
+    break;
+
+  case "application/json":
+    type = "json";
+    break;
+
+  case "text/plain":
+    type = "text";
+    break;
+
+  case "application/x-www-form-urlencoded":
+    type = "form";
+    break;
+
+  default:
+    type = "unknown";
+  }
+
+  if(contentType.startsWith("multipart/form-data; boundary=")) {
+    type = "upload";
+  }
+
+  return type;
 }

@@ -8,6 +8,7 @@ const express = require("express");
 const createError = require("http-errors");
 const { Container } = require("../../component/container");
 const compression = require("../../component/middleware/compression");
+const csrf = require("../../component/middleware/csrf");
 const maintenanceMode = require("../../component/middleware/maintenance-mode");
 const requestLogger = require("../../component/middleware/request-logger");
 const session = require("../../component/middleware/session");
@@ -87,7 +88,7 @@ module.exports = function createApp(options) {
   const corsOptions = {
     credentials: corsConfig.credentials,
     methods: corsConfig.allowedMethods,
-    allowedHeaders: corsConfig.allowedHeaders,
+    allowedHeaders: corsConfig.allowedHeaders.concat(["x-csrf-token"]),
     origin: function (origin, callback) {
       if(!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -99,6 +100,7 @@ module.exports = function createApp(options) {
 
   const app = express();
   const router = Router.router();
+  const environment = config.get("app.environment");
 
   let sessionStore;
 
@@ -153,7 +155,7 @@ module.exports = function createApp(options) {
   /*
    * Make the current environment available to template files
    */
-  app.locals.environment = config.get("app.environment");
+  app.locals.environment = environment;
 
   app.use(requestLogger(app));
   app.use(compression(config));
@@ -165,10 +167,19 @@ module.exports = function createApp(options) {
   app.use(cors(corsOptions));
   app.use(validation());
 
+  let webGroupMiddleware = [session(config, sessionStore)];
+
+  // Disable the CSRF middleware for all routes when running tests.
+  if(environment !== "test") {
+    webGroupMiddleware = webGroupMiddleware.concat(csrf({
+      exclude: config.get("csrf.exclude")
+    }));
+  }
+
   /*
    * Setup Routing
    */
-  router.middleware(session(config, sessionStore), (router) => {
+  router.middleware(webGroupMiddleware, (router) => {
     router.group(webRoutes.prefix ?? "/", function setupWebRoutes(router) {
       copyRouter(webRoutes.router, router);
     });
