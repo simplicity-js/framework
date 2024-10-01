@@ -66,9 +66,7 @@ function normalizeRouterHandlers(router) {
   router.routeGroups.forEach(normalizeRouterHandlers);
 }
 
-exports.router = function getAFreshRouterInstance() {
-  let router = createRouter();
-
+function extendRouter(router) {
   /**
    * Redefine the router.route method so that we are able to
    * automatically resolve controller actions from within it.
@@ -89,6 +87,13 @@ exports.router = function getAFreshRouterInstance() {
     normalizeRouterHandlers(router);
 
     return original(options, action);
+  });
+
+  wrap(router, "group", function(original, options, closure) {
+    return original(options, function(newRouter) {
+      extendRouter(newRouter);
+      closure(newRouter);
+    });
   });
 
   router.controller = function controllerGroup(controller, closure) {
@@ -188,6 +193,41 @@ exports.router = function getAFreshRouterInstance() {
 
     return router.get(uri, (req, res) => res.render(template, ...rest));
   };
+
+  /**
+   * Organize a group of routes into a namespace
+   *
+   * @param {String} namespace: The name of the namespace
+   * @param {Function} closure: A function that receives a router as argument.
+   * @return {Object} A router instance.
+   */
+  router.namespace = function namespacedRoute(namespace, closure) {
+    return router.group({ namespace }, closure);
+  };
+
+  /**
+   * Create a named route.
+   *
+   * @param {String} name: The route name
+   * @param {String} method: The request method. Default is "GE".
+   * @param {String} uri: The request uri
+   * @param {Function} handler: The request handler. A function that receives
+   *   the usual arguments of an Express.js request handler ([err,] req, res, next)
+   */
+  router.name = function namedRoute(name, method, uri, handler) {
+    // replace /:param with /{param}
+    // Otherwise, router.name calls with /:param style
+    // will not work properly when nested within router.namespace
+    uri = uri.replace(/\:([^\/]+)/, "{$1}");
+
+    return router[method]({ uri, name }, handler);
+  };
+}
+
+exports.router = function getAFreshRouterInstance() {
+  const router = createRouter();
+
+  extendRouter(router);
 
   return router;
 };

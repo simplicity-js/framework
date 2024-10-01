@@ -24,18 +24,30 @@ const defaultViewTemplatesPath = path.join(
   "component", "view", "templates"
 );
 
+/**
+ * Copy properties and methods from a source router to the current router
+ * @param {Object} srcRouter: The router to copy data from
+ */
 function copyRouter(srcRouter, destRouter) {
-  const { routes = [], routeGroups = [] } = srcRouter;
+  const { names = [], routes = [], routeGroups = [], uris = [] } = srcRouter;
 
-  //destRouter.routes = [...destRouter.routes, ...routes];
+  destRouter.names = dedup(destRouter.names, names);
+  destRouter.uris = dedup(destRouter.uris, uris);
 
-  routes.forEach(({ method, path, handlers }) => {
-    destRouter[method].call(destRouter, path, handlers);
-  });
+  bindRoutesToRouter(destRouter, routes);
 
-  routeGroups.forEach(innerRouter => {
-    copyRouter(innerRouter, destRouter);
-  });
+  destRouter.routeGroups = destRouter.routeGroups.concat(routeGroups);
+  routeGroups.forEach(router => bindRoutesToRouter(destRouter, router.routes));
+
+  function bindRoutesToRouter(router, routes) {
+    routes.forEach(({ method, path, handlers }) => {
+      router[method].call(router, path, handlers);
+    });
+  }
+
+  function dedup(arr1, arr2) {
+    return [... (new Set(arr1.concat(arr2)))];
+  }
 }
 
 /**
@@ -185,8 +197,10 @@ module.exports = function createApp(options) {
     });
   });
 
-  router.group(apiRoutes.prefix ?? "/api", function setupApiRoutes(router) {
-    copyRouter(apiRoutes.router, router);
+  router.namespace("api.", (router) => {
+    router.group(apiRoutes.prefix ?? "/api", function setupApiRoutes(router) {
+      copyRouter(apiRoutes.router, router);
+    });
   });
 
   if(routes.healthCheckRoute) {

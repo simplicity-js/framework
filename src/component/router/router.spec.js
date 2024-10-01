@@ -18,12 +18,12 @@ let restoreConsoleDotLog;
 const methods = METHODS;
 const currDir = path.dirname(__filename).replace(/\\/g, "/");
 
-
 module.exports = {
   Router() {
     describe("Router.router()", function createApp_Spec() {
-      before(async function() {
+      before(function(done) {
         restoreConsoleDotLog = overrideConsoleDotLog(`${currDir}/console.log`);
+        done();
       });
 
       after(function(done) {
@@ -472,6 +472,59 @@ module.exports = {
                 expect(res.text).to.equal(templateFileContents);
                 done();
               });
+          });
+        });
+
+        describe("router.namespace(namespace, closure)", function() {
+          let expect;
+
+          before(async function() {
+            expect = (await chai()).expect;
+          });
+
+          it("creates route groups that can share common uri namespaces", function(done) {
+            const app = express();
+            const router = Router.router();
+
+            router.namespace("api.", (router) => {
+              router.group("/api/v1/", (router) => {
+                router.name("getPost", "get", "posts/{postId}", (req, res) => {
+                  return res.send(`postId: ${req.params.postId}`);
+                });
+
+                router.namespace("users.", (router) => {
+                  router.name("getUser", "get", "users/:userId", (req, res) => {
+                    return res.send(`userId: ${req.params.userId}`);
+                  });
+                });
+              });
+            });
+
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            const getUserUrl = router.url("api.users.getUser", { userId: 2 });
+            const getPostUrl = router.url("api.getPost", { postId: 1 });
+
+            expect(getUserUrl).to.equal("/api/v1/users/2");
+            expect(getPostUrl).to.equal("/api/v1/posts/1");
+
+            request(app).get(getUserUrl).expect(200, "userId: 2", function() {
+              request(app).get(getPostUrl).expect(200, "postId: 1", done);
+            });
+          });
+        });
+
+        describe("router.name(name, method, uri, handler)", function() {
+          it("allows routes to be named, so that urls can be created later by referencing these names", function(done) {
+            const uri = "/foo";
+            const name = "bar";
+            const app = express();
+            const router = Router.router();
+
+            router.name(name, "get", uri, (req, res) => res.send(router.url(name)));
+            router.apply(route => app[route.method](route.path, route.handlers));
+
+            request(app).get(uri).expect(200, router.url(name), done);
           });
         });
       });
