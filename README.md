@@ -1,6 +1,80 @@
 # Simplicity
 
-The Framework Repository for the Simplicity MVC Framework.
+The Framework Repository for the [Simplicity MVC Framework][simplicity].
+
+## Getting Started
+
+### Installation
+
+```bash
+$ npm install -g @simplicityjs/installer
+```
+
+### Creating a Sample Project
+
+```bash
+$ simplicity new example-app
+```
+
+### Running the Sample Project
+
+```bash
+$ cd example-app
+
+$ node bob start
+```
+
+Your application is now accessible at http://localhost:8800.
+
+## [Features][features]
+
+## [Documentation][documentation]
+
+## How to contribute
+
+- Report Bugs
+- Suggest Enhancements
+- Make changes and create pull Requests
+
+To report bugs or suggest enhancements, please use the [issues][issues] page.
+
+To make pull requests:
+
+- [setup the project](#project-setup) locally.
+- make your changes;
+  Please try to follow the [development](#development) guidelines while making your changes.
+- [commit and push](#committing-and-pushing-changes) the changes.
+- [submit the pull request][pr].
+
+
+## Project setup
+
+1.  [Fork the repo][fork] to your GitHub account.
+2.  Clone the repo: `git clone https://github.com/simplicity-js/framework`.
+3.  Navigate to the repo's directory: `cd simplicity`.
+4.  Run `npm install` to install dependencies.
+5.  Create a branch for your PR with `git checkout -b pr/your-branch-name`.
+
+> Tip: Keep your `main` branch pointing at the original repository while still making
+> pull requests from branches on your fork. To do this, run:
+>
+> ```bash
+> git remote add upstream https://github.com/simplicity-js/framework.git
+> git fetch upstream
+> git branch --set-upstream-to=upstream/main main
+> ```
+>
+> This does the following:
+> 1. adds the original repository as a "remote" called "upstream"
+>
+> 2. fetches the git information from that remote
+>
+> 3. sets your local `main` branch to pull the latest changes from the upstream main branch whenever you run `git pull`.
+>
+> Now you can make all of your pull request branches based on this local `main` branch.
+>
+> Whenever you want to update your local `main` branch, do a regular `git pull`.
+> You can push the updated changes to your remote origin master by running `git push`.
 
 
 ## Development
@@ -106,3 +180,21 @@ When you are ready to have your changes merged, you can then [open a pull reques
     - :boom: `:boom:` when making breaking changes
     - :ok_hand: `:ok_hand:` code-review: okay
     - :hankey: `:hankey:` code-review: needs improvement
+
+
+
+
+
+
+[bug]: https://github.com/simplicity-js/framework/labels/bug
+[changelog]: https://npm.im/cz-conventional-changelog
+[commitizen]: https://npm.im/commitizen
+[documentation]: https://github.com/simplicity-js/simplicity/blob/main/.github/DOCUMENTATION.md
+[commits]: https://conventionalcommits.org/
+[eslint]: https://eslint.org/
+[features]: https://github.com/simplicity-js/simplicity/blob/main/README.md#features
+[fork]: https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo
+[fr]: https://github.com/simplicity-js/simplicity/labels/feature%20request
+[issues]: https://github.com/simplicity-js/framework/issues
+[pr]: https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request
+[simplicity]: https://github.com/simplicity-js/simplicity
