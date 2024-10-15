@@ -172,7 +172,7 @@ async function publish({ version, preview }) {
     /*
      * Tag Framework
      */
-    await execInherit(`git tag -a ${VERSION} -m :bookmark: create release tag ${VERSION}`);
+    await execInherit(`git tag -a ${VERSION} -m ":bookmark: create release tag ${VERSION}"`);
 
     if(!preview) {
       await execInherit(`git push origin ${VERSION}`);
