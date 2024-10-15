@@ -1,3 +1,20 @@
+# 1.2.0 (2024-10-15)
+
+### New Features
+
+* **router:**  :sparkles: New router (convenience) methods `router.name` and `router.namespace` ([62099bd5](https://github.com/simplicity-js/framework/commit/62099bd5690865efaa69425d688cb38fef13d642))
+* **csrf:**  :sparkles: Automatic CSRF protection for web routes ([ce290144](https://github.com/simplicity-js/framework/commit/ce290144cbb8cdeb5dba2611d60085acbd201532))
+* **compression:**  :sparkles: Compress static assets ([2187c726](https://github.com/simplicity-js/framework/commit/2187c72625dbbd85f772892ab42fb9cedff26316))
+
+### Bug Fixes
+
+* **router:**  :bug: Resolve controller classes in resource controllers ([98acdb8a](https://github.com/simplicity-js/framework/commit/98acdb8a2be8873f67c4c4789b7134182b5360a1))
+* **views:**  :bug: Properly render nested view files ([96d48b1c](https://github.com/simplicity-js/framework/commit/96d48b1cfa950875fd6b115d61024475379012a1))
+
+### Other Changes
+
+*  Session support is now only for web (non-API) routes ([3bee725a](https://github.com/simplicity-js/framework/commit/3bee725a3aa6cbe4ac0a5448d85ebe68cd964825))
+
 # 1.1.0 (2024-09-11)
 
 ### New Features
