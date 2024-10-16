@@ -9,6 +9,7 @@
   "author": "simplymichael <simplymichaelorji@gmail.com> (https://github.com/simplymichael)",
   "license": "MIT",
   "dependencies": {
+    "colors": "1.4.0",
     "replace-in-file": "8.1.0",
     "umzug": "3.8.1"
   },
