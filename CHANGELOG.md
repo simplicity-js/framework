@@ -1,3 +1,9 @@
+# 1.2.1 (2024-10-16)
+
+### Bug Fixes
+
+*  Fix for "Error: Cannot find module 'colors'" in console component ([14ccaea3](https://github.com/simplicity-js/framework/commit/14ccaea39c7ccbf7f16f5075f61bf3d2fd0bb5e6))
+
 # 1.2.0 (2024-10-15)
 
 ### New Features
