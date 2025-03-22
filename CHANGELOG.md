@@ -1,3 +1,9 @@
+# 1.3.0 (2025-03-22)
+
+### New Features
+
+*  **express.json:** :sparkles: Add the ability to configure the `express.json` middleware ([3ecd1f5a](https://github.com/simplicity-js/framework/commit/3ecd1f5ab7e631c167da048afa99a5c665e8d7a4))
+
 # 1.2.1 (2024-10-16)
 
 ### Bug Fixes
