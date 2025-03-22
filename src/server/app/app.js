@@ -95,6 +95,7 @@ module.exports = function createApp(options) {
   process.env.TZ = config.get("app.timezone", "UTC");
 
   const corsConfig = config.get("cors");
+  const jsonConfig = config.get("json");
   const allowedOrigins = corsConfig.allowedOrigins;
   const allowAllOrigins = allowedOrigins.includes("*");
   const corsOptions = {
@@ -171,7 +172,7 @@ module.exports = function createApp(options) {
 
   app.use(requestLogger(app));
   app.use(compression(config));
-  app.use(express.json());
+  app.use(express.json(jsonConfig));
   app.use(view(config));
   app.use(express.static(path.join(appRoot, "src", "public")));
   app.use(express.urlencoded({ extended: true }));
