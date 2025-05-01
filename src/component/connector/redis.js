@@ -151,7 +151,11 @@ module.exports = class RedisStore {
       }
 
       if(host) {
-        connString += host.trim();
+        if(port) {
+          connString += host.replace(`:${port}`, "").trim();
+        } else {
+          connString += host.trim();
+        }
       }
 
       if(port) {
@@ -195,6 +199,6 @@ module.exports = class RedisStore {
 
     debug("Redis connection options validated.");
 
-    return validatedOptions;
+    return { ...validatedOptions, url: options?.url };
   }
 };
