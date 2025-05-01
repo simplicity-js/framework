@@ -1,6 +1,7 @@
 const redis  = require("redis");
 const util = require("node:util");
 const debug = require("../../lib/debug");
+const { sleep } = require("../../lib/util");
 const validateConnectionOptions = require("./connection-validator");
 
 
@@ -45,14 +46,30 @@ module.exports = class RedisStore {
       );
     }
 
-    try {
-      debug("Connecting to Redis...");
+    let attempts = 0;
+    const client = this.getClient();
+    const maxAttempts = this.#options.maxConnectionAttempts || 5;
 
-      await this.getClient()?.connect();
+    while(attempts < maxAttempts) {
+      try {
+        debug("Connecting to Redis...");
 
-      debug("Redis connection established.");
-    } catch(e) {
-      debug(`Redis connection error: ${util.inspect(e)}`);
+        await client.connect();
+
+        debug("Redis connection established.");
+      } catch(e) {
+        attempts++;
+
+        debug(`Redis connection error: ${util.inspect(e)}`);
+        debug(`Retrying connection to Redis (${attempts}/${maxAttempts}) attempts`);
+
+        if(attempts === maxAttempts) {
+          debug(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
+          process.exit(1);
+        }
+
+        await sleep(1000 * attempts); // Exponential backoff
+      }
     }
   }
 
@@ -199,6 +216,10 @@ module.exports = class RedisStore {
 
     debug("Redis connection options validated.");
 
-    return { ...validatedOptions, url: options?.url };
+    return {
+      ...validatedOptions,
+      url: options?.url,
+      maxConnectionAttempts: options?.maxConnectionAttempts,
+    };
   }
 };

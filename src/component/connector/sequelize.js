@@ -1,6 +1,7 @@
 const util = require("node:util");
 const { Sequelize } = require("sequelize");
 const debug = require("../../lib/debug");
+const { sleep } = require("../../lib/util");
 const validateConnectionOptions = require("./connection-validator");
 
 
@@ -110,18 +111,32 @@ module.exports = class SequelizeStore {
    * @return {resource} a (mongoose) connection instance
    */
   async connect() {
+    let attempts = 0;
+    const maxAttempts = this.#options.maxConnectionAttempts || 5;
     const dbEngine = this.#dbEngine;
 
-    try {
-      this.#debug(`Connecting to ${dbEngine}...`);
+    while(attempts < maxAttempts) {
+      try {
+        this.#debug(`Connecting to ${dbEngine}...`);
 
-      await this.#db.authenticate();
+        await this.#db.authenticate();
 
-      this.#connected = true;
+        this.#connected = true;
 
-      this.#debug(`${dbEngine} connection established`);
-    } catch(e) {
-      this.#debug(`Sequelize connection error: ${util.inspect(e)}`);
+        this.#debug(`${dbEngine} connection established`);
+      } catch(e) {
+        attempts++;
+
+        this.#debug(`Sequelize connection error: ${util.inspect(e)}`);
+        this.#debug(`Retrying connection to ${dbEngine} (${attempts}/${maxAttempts}) attempts`);
+
+        if(attempts === maxAttempts) {
+          this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts. Exiting...`);
+          process.exit(1);
+        }
+
+        await sleep(1000 * attempts); // Exponential backoff
+      }
     }
 
     return this.#db;
@@ -187,7 +202,11 @@ module.exports = class SequelizeStore {
 
     this.#debug("Sequelize connection options validated.");
 
-    return validatedOptions;
+    return {
+      ...validatedOptions,
+      url: options.url,
+      maxConnectionAttempts: options.maxConnectionAttempts
+    };
   }
 
   #debug(message) {

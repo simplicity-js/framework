@@ -20,6 +20,8 @@ const RedisStore = require("../../component/connector/redis");
  * @param {String} [options.credentials.url]: full DSN of the Redis server
  *   If the [options.credentials.url] is set, it is used instead
  *   and the other credential options are ignored.
+ * @param {Number} [options.maxConnectionAttempts]: The maximum number of times
+ *   to attempt connecting before exiting.
  * @return {Object} with methods: set(), get(), unset(), contains(), and client().
  */
 module.exports = function createRedisStore(options) {

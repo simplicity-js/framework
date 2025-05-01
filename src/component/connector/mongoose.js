@@ -1,6 +1,7 @@
 const util = require("node:util");
 const mongoose = require("mongoose");
 const debug = require("../../lib/debug");
+const { sleep } = require("../../lib/util");
 const validateConnectionOptions = require("./connection-validator");
 
 
@@ -44,10 +45,11 @@ module.exports = class MongooseStore {
    * @return {resource} a (mongoose) connection instance
    */
   async connect() {
-    const options = this.#options;
-    const { host, port, username, password, dbName, enableDebugging } = options;
-
     let dsn;
+    let attempts = 0;
+    const options = this.#options;
+    const maxAttempts = this.#options.maxConnectionAttempts || 5;
+    const { host, port, username, password, dbName, enableDebugging } = options;
 
     if(options.url?.trim()?.length > 0) {
       dsn = options.url;
@@ -67,16 +69,28 @@ module.exports = class MongooseStore {
 
     mongoose.set("debug", enableDebugging);
 
-    try {
-      debug("Connecting to MongoDB...");
+    while(attempts < maxAttempts) {
+      try {
+        debug("Connecting to MongoDB...");
 
-      this.#db = mongoose.createConnection(dsn, {});
+        this.#db = mongoose.createConnection(dsn, {});
 
-      debug("MongoDB connection established");
+        debug("MongoDB connection established");
 
-      return this.#db;
-    } catch(e) {
-      debug(`Mongoose connection error: ${util.inspect(e)}`);
+        return this.#db;
+      } catch(e) {
+        attempts++;
+
+        debug(`Mongoose connection error: ${util.inspect(e)}`);
+        debug(`Retrying connection to MongoDB (${attempts}/${maxAttempts}) attempts`);
+
+        if(attempts === maxAttempts) {
+          debug(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
+          process.exit(1);
+        }
+
+        await sleep(1000 * attempts); // Exponential backoff
+      }
     }
   }
 
@@ -145,6 +159,10 @@ module.exports = class MongooseStore {
 
     debug("Mongoose connection options validated.");
 
-    return { ...validatedOptions, url: options?.url };
+    return {
+      ...validatedOptions,
+      url: options?.url,
+      maxConnectionAttempts: options?.maxConnectionAttempts,
+    };
   }
 };
