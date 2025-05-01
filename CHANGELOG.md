@@ -1,3 +1,9 @@
+# 1.4.0 (2025-05-01)
+
+### New Features :sparkles:
+
+*  **connection retries:** support connection retries with exponential back-off for redis and databases ([3184eeca](https://github.com/simplicity-js/framework/commit/3184eecae638bc1747237b5563801bc0ced4682a))
+
 # 1.3.3 (2025-05-01)
 
 ### Bug Fixes
