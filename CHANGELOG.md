@@ -1,3 +1,9 @@
+# 1.3.3 (2025-05-01)
+
+### Bug Fixes
+
+*  **connection-validator:** fix port repetition when redis connection params is specified as a URL string ([84bdbd18](https://github.com/simplicity-js/framework/commit/84bdbd1877b3049c9d2f6a8ae0243bfabd28f785))
+
 # 1.3.2 (2025-05-01)
 
 ### Bug Fixes
