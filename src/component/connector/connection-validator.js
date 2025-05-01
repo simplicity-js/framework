@@ -27,11 +27,11 @@ module.exports = function validateConnectionOptions(options, { driver, defaults,
     const o = url.parse(options);
 
     if(o.protocol === `${driver}:`) {
-      for(const prop of Object.entries(defaults)) {
+      for(const prop of Object.keys(defaults)) {
         config[prop] = o[prop] || defaults[prop];
       }
     } else {
-      throw new TypeError(`Unable to parse ${o} as ${protocol} connection string!`);
+      throw new TypeError(`Unable to parse ${o} as ${o.protocol} connection string!`);
     }
   } else {
     for(const prop of Object.keys(options)) {
