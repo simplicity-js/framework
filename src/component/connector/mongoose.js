@@ -145,6 +145,6 @@ module.exports = class MongooseStore {
 
     debug("Mongoose connection options validated.");
 
-    return validatedOptions;
+    return { ...validatedOptions, url: options?.url };
   }
 };

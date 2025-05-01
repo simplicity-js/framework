@@ -1,4 +1,5 @@
 const url = require("node:url");
+const util = require("node:util");
 
 
 /**
@@ -25,13 +26,16 @@ module.exports = function validateConnectionOptions(options, { driver, defaults,
 
   if(typeof options === "string") {
     const o = url.parse(options);
+    const protocol = o.protocol;
 
-    if(o.protocol === `${driver}:`) {
+    if(protocol === `${driver}:` || /^mongodb\+srv\:$/.test(protocol)) {
       for(const prop of Object.keys(defaults)) {
         config[prop] = o[prop] || defaults[prop];
       }
     } else {
-      throw new TypeError(`Unable to parse ${o} as ${o.protocol} connection string!`);
+      throw new TypeError(
+        `Unable to parse ${util.inspect(o, { depth: 12 })} as ${protocol} connection string!`
+      );
     }
   } else {
     for(const prop of Object.keys(options)) {
