@@ -1,6 +1,6 @@
 {
   "name": "@simplicityjs/framework",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Simplicity Framework",
   "main": "src/application/index.js",
   "exports": {
