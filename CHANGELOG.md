@@ -1,3 +1,9 @@
+# 1.3.2 (2025-05-01)
+
+### Bug Fixes
+
+*  **connection-validator:** fix connection error when mongodb uses the "mongodb+srv" url scheme ([7f61fb1b](https://github.com/simplicity-js/framework/commit/7f61fb1b0801d950df6254c9f4a0d8b5d1ccf0f1))
+
 # 1.3.1 (2025-05-01)
 
 ### Bug Fixes
