@@ -1,3 +1,9 @@
+# 1.3.1 (2025-05-01)
+
+### Bug Fixes
+
+*  **connection-validator:** fix error when a URL string is specified for database and/or cache connections ([7016efd5](https://github.com/simplicity-js/framework/commit/7016efd5b8c1e017ddedb50e580951d63f9a3db6))
+
 # 1.3.0 (2025-03-22)
 
 ### New Features
