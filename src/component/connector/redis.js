@@ -49,6 +49,7 @@ module.exports = class RedisStore {
     let attempts = 0;
     const client = this.getClient();
     const maxAttempts = this.#options.maxConnectionAttempts || 5;
+    const exitOnConnectionFailure = this.#options.exitOnConnectionFailure;
 
     while(attempts < maxAttempts) {
       try {
@@ -63,7 +64,7 @@ module.exports = class RedisStore {
         debug(`Redis connection error: ${util.inspect(e)}`);
         debug(`Retrying connection to Redis (${attempts}/${maxAttempts}) attempts`);
 
-        if(attempts === maxAttempts) {
+        if((attempts === maxAttempts) && exitOnConnectionFailure) {
           debug(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
           process.exit(1);
         }
@@ -128,7 +129,9 @@ module.exports = class RedisStore {
    * @param {String} [options.url]: full DSN of the Redis server
    *   If the [options.url] is set, it is used instead
    *   and the other options are ignored.
+   * @param {Number} [options.maxConnectionAttempts]
    * @param {Boolean} [options.autoConnect]: whether (true) or not (false) to
+   * @param {Boolean} [options.legacyMode]
    *   automatically connect to the Redis server. Default is true.
    */
   setOptions(options) {
@@ -145,7 +148,7 @@ module.exports = class RedisStore {
     debug("Creating Redis client...");
 
     const options = this.#options;
-    const { url, host, port, username, password, db } = options;
+    const { url, host, port, username, password, db, legacyMode } = options;
 
     let connString;
     const driverStr = "redis://";
@@ -187,8 +190,8 @@ module.exports = class RedisStore {
     connString = connString.trim();
 
     const client = (connString === driverStr
-      ? redis.createClient() // If no credentials given, connect with default Redis credentials
-      : redis.createClient({ url: connString }) // else, connect with supplied credentials
+      ? redis.createClient({ legacyMode }) // If no credentials given, connect with default Redis credentials
+      : redis.createClient({ url: connString, legacyMode }) // else, connect with supplied credentials
     );
 
     client.on("error", (e) => debug("Redis error", util.inspect(e)));
@@ -219,7 +222,10 @@ module.exports = class RedisStore {
     return {
       ...validatedOptions,
       url: options?.url,
+      autoConnect: options?.autoConnect,
+      legacyMode: options?.legacyMode,
       maxConnectionAttempts: options?.maxConnectionAttempts,
+      exitOnConnectionFailure: options?.exitOnConnectionFailure,
     };
   }
 };

@@ -49,6 +49,7 @@ module.exports = class MongooseStore {
     let attempts = 0;
     const options = this.#options;
     const maxAttempts = this.#options.maxConnectionAttempts || 5;
+    const exitOnConnectionFailure = this.#options.exitOnConnectionFailure;
     const { host, port, username, password, dbName, enableDebugging } = options;
 
     if(options.url?.trim()?.length > 0) {
@@ -84,7 +85,7 @@ module.exports = class MongooseStore {
         debug(`Mongoose connection error: ${util.inspect(e)}`);
         debug(`Retrying connection to MongoDB (${attempts}/${maxAttempts}) attempts`);
 
-        if(attempts === maxAttempts) {
+        if((attempts === maxAttempts) && exitOnConnectionFailure) {
           debug(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
           process.exit(1);
         }
@@ -127,12 +128,12 @@ module.exports = class MongooseStore {
 
     const {
       url, host, port, username, password, dbName,
-      debug: enableDebugging, exitOnConnectFail,
+      debug: enableDebugging, exitOnConnectionFailure,
     } = options;
 
     this.#options = {
       url, host, port, username, password, dbName,
-      enableDebugging, exitOnConnectFail
+      enableDebugging, exitOnConnectionFailure
     };
 
     debug("Mongoose connection options set.");
@@ -146,7 +147,7 @@ module.exports = class MongooseStore {
       driver: "mongodb",
       defaults: {
         host: "0.0.0.0", port: 27017, username: "", password: "",
-        dbName: "frameworkDb", debug: false, exitOnConnectFail: false,
+        dbName: "frameworkDb", debug: false, exitOnConnectionFailure: false,
       },
       required: ["host", "port", "dbName"],
     };
@@ -162,6 +163,7 @@ module.exports = class MongooseStore {
     return {
       ...validatedOptions,
       url: options?.url,
+      exitOnConnectionFailure: options?.exitOnConnectionFailure,
       maxConnectionAttempts: options?.maxConnectionAttempts,
     };
   }
