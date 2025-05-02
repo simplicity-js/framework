@@ -48,9 +48,9 @@ module.exports = class MongooseStore {
     let dsn;
     let attempts = 0;
     const options = this.#options;
-    const maxAttempts = this.#options.maxConnectionAttempts || 5;
-    const exitOnConnectionFailure = this.#options.exitOnConnectionFailure;
-    const { host, port, username, password, dbName, enableDebugging } = options;
+    const maxAttempts = options.maxConnectionAttempts || 5;
+    const exitOnConnectionFailure = options.exitOnConnectionFailure;
+    const { host, port, username, password, dbName, debug: enableDebugging } = options;
 
     if(options.url?.trim()?.length > 0) {
       dsn = options.url;
@@ -74,7 +74,7 @@ module.exports = class MongooseStore {
       try {
         debug("Connecting to MongoDB...");
 
-        this.#db = mongoose.createConnection(dsn, {});
+        this.#db = await mongoose.createConnection(dsn, {}).asPromise();
 
         debug("MongoDB connection established");
 
@@ -85,9 +85,13 @@ module.exports = class MongooseStore {
         debug(`Mongoose connection error: ${util.inspect(e)}`);
         debug(`Retrying connection to MongoDB (${attempts}/${maxAttempts}) attempts`);
 
-        if((attempts === maxAttempts) && exitOnConnectionFailure) {
-          debug(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
-          process.exit(1);
+        if(attempts === maxAttempts) {
+          if(exitOnConnectionFailure) {
+            debug(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
+            process.exit(1);
+          } else {
+            debug(`Failed to connect to MongoDB after ${maxAttempts} attempts.`);
+          }
         }
 
         await sleep(1000 * attempts); // Exponential backoff
@@ -109,14 +113,16 @@ module.exports = class MongooseStore {
   }
 
   connected() {
-    return mongoose.connection.readyState === MongooseStore.readyStates.connected;
+    return this.#db?.readyState === MongooseStore.readyStates.connected;
+    //return mongoose.connection.readyState === MongooseStore.readyStates.connected;
 
     // Ready states:
     // eady states being: 0: disconnected 1: connected 2: connecting 3: disconnecting
   }
 
   connecting() {
-    return mongoose.connection.readyState === MongooseStore.readyStates.disconnected;
+    return this.#db?.readyState === MongooseStore.readyStates.connecting;
+    //return mongoose.connection.readyState === MongooseStore.readyStates.connecting;
   }
 
   getClient() {
@@ -126,15 +132,7 @@ module.exports = class MongooseStore {
   setOptions(options) {
     debug("Setting Mongoose connection options...");
 
-    const {
-      url, host, port, username, password, dbName,
-      debug: enableDebugging, exitOnConnectionFailure,
-    } = options;
-
-    this.#options = {
-      url, host, port, username, password, dbName,
-      enableDebugging, exitOnConnectionFailure
-    };
+    this.#options = options;
 
     debug("Mongoose connection options set.");
   }
@@ -164,7 +162,7 @@ module.exports = class MongooseStore {
       ...validatedOptions,
       url: options?.url,
       exitOnConnectionFailure: options?.exitOnConnectionFailure,
-      maxConnectionAttempts: options?.maxConnectionAttempts,
+      maxConnectionAttempts: parseInt(options?.maxConnectionAttempts, 10),
     };
   }
 };

@@ -48,7 +48,7 @@ module.exports = class RedisStore {
 
     let attempts = 0;
     const client = this.getClient();
-    const maxAttempts = this.#options.maxConnectionAttempts || 5;
+    const maxAttempts = this.#options.maxConnectionAttempts;
     const exitOnConnectionFailure = this.#options.exitOnConnectionFailure;
 
     while(attempts < maxAttempts) {
@@ -59,14 +59,31 @@ module.exports = class RedisStore {
 
         debug("Redis connection established.");
       } catch(e) {
+        if(e.message === "Socket already opened") {
+          // A connection already exists
+          debug("Redis connection already established.");
+          return;
+        }
+
         attempts++;
 
         debug(`Redis connection error: ${util.inspect(e)}`);
         debug(`Retrying connection to Redis (${attempts}/${maxAttempts}) attempts`);
 
-        if((attempts === maxAttempts) && exitOnConnectionFailure) {
-          debug(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
-          process.exit(1);
+        if(e.code === "ECONNREFUSED") {
+          // Disconnect so that the next call to client.connect() will work.
+          // Otherwise, after the first failure due to ECONNREFUSED,
+          // we'll be stuck and no more calls to client.connect() will happen.
+          await client.disconnect();
+        }
+
+        if((attempts === maxAttempts)) {
+          if(exitOnConnectionFailure) {
+            debug(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
+            process.exit(1);
+          } else {
+            debug(`Failed to connect to Redis after ${maxAttempts} attempts.`);
+          }
         }
 
         await sleep(1000 * attempts); // Exponential backoff
@@ -137,9 +154,7 @@ module.exports = class RedisStore {
   setOptions(options) {
     debug("Setting Redis connection options...");
 
-    const { url, host, port, username, password, db, autoConnect } = options;
-
-    this.#options = { url, host, port, username, password, db, autoConnect };
+    this.#options = options;
 
     debug("Redis connection options set.");
   }
@@ -194,7 +209,15 @@ module.exports = class RedisStore {
       : redis.createClient({ url: connString, legacyMode }) // else, connect with supplied credentials
     );
 
-    client.on("error", (e) => debug("Redis error", util.inspect(e)));
+    client.on("error", (e) => {
+      // This happens during the connection phase.
+      // Throw it so the connect() method can handle it as appropriate.
+      if(e.code === "ECONNREFUSED") {
+        throw e;
+      } else {
+        debug("Redis client error", util.inspect(e));
+      }
+    });
 
     this.#client = client;
 
@@ -224,7 +247,7 @@ module.exports = class RedisStore {
       url: options?.url,
       autoConnect: options?.autoConnect,
       legacyMode: options?.legacyMode,
-      maxConnectionAttempts: options?.maxConnectionAttempts,
+      maxConnectionAttempts: parseInt(options?.maxConnectionAttempts, 10) || 5,
       exitOnConnectionFailure: options?.exitOnConnectionFailure,
     };
   }

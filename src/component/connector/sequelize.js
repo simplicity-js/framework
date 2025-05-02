@@ -33,19 +33,9 @@ module.exports = class SequelizeStore {
     this.#debug("Creating SequelizeStore Instance...");
 
     const validatedOptions = this.#validate(options);
-    const {
-      url, host, port, username, password,
-      dbEngine, storagePath, dbName, logging,
-      maxConnectionAttempts, exitOnConnectionFailure
-    } = validatedOptions;
 
-    this.#options = {
-      url, host, port, username, password,
-      dbEngine, storagePath, dbName, logging,
-      maxConnectionAttempts, exitOnConnectionFailure
-    };
-
-    this.#dbEngine = dbEngine;
+    this.#options = validatedOptions;
+    this.#dbEngine = validatedOptions.dbEngine;
 
     this.createDbObject();
     this.connect();
@@ -133,9 +123,13 @@ module.exports = class SequelizeStore {
         this.#debug(`Sequelize connection error: ${util.inspect(e)}`);
         this.#debug(`Retrying connection to ${dbEngine} (${attempts}/${maxAttempts}) attempts`);
 
-        if((attempts === maxAttempts) && exitOnConnectionFailure) {
-          this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts. Exiting...`);
-          process.exit(1);
+        if(attempts === maxAttempts) {
+          if(exitOnConnectionFailure) {
+            this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts. Exiting...`);
+            process.exit(1);
+          } else {
+            this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts.`);
+          }
         }
 
         await sleep(1000 * attempts); // Exponential backoff
@@ -208,7 +202,7 @@ module.exports = class SequelizeStore {
     return {
       ...validatedOptions,
       url: options?.url,
-      maxConnectionAttempts: options?.maxConnectionAttempts,
+      maxConnectionAttempts: parseInt(options?.maxConnectionAttempts, 10),
       exitOnConnectionFailure: options?.exitOnConnectionFailure,
     };
   }
