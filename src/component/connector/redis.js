@@ -67,8 +67,8 @@ module.exports = class RedisStore {
 
         attempts++;
 
-        debug(`Redis connection error: ${util.inspect(e)}`);
-        debug(`Retrying connection to Redis (${attempts}/${maxAttempts}) attempts`);
+        console.warn(`Redis connection error: ${util.inspect(e)}`);
+        console.log(`Retrying connection to Redis (${attempts}/${maxAttempts}) attempts`);
 
         if(e.code === "ECONNREFUSED") {
           // Disconnect so that the next call to client.connect() will work.
@@ -79,10 +79,10 @@ module.exports = class RedisStore {
 
         if((attempts === maxAttempts)) {
           if(exitOnConnectionFailure) {
-            debug(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
+            console.error(`Failed to connect to Redis after ${maxAttempts} attempts. Exiting...`);
             process.exit(1);
           } else {
-            debug(`Failed to connect to Redis after ${maxAttempts} attempts.`);
+            console.warn(`Failed to connect to Redis after ${maxAttempts} attempts.`);
           }
         }
 

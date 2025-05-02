@@ -120,15 +120,15 @@ module.exports = class SequelizeStore {
       } catch(e) {
         attempts++;
 
-        this.#debug(`Sequelize connection error: ${util.inspect(e)}`);
-        this.#debug(`Retrying connection to ${dbEngine} (${attempts}/${maxAttempts}) attempts`);
+        console.warn(`Sequelize connection error: ${util.inspect(e)}`);
+        console.log(`Retrying connection to ${dbEngine} (${attempts}/${maxAttempts}) attempts`);
 
         if(attempts === maxAttempts) {
           if(exitOnConnectionFailure) {
-            this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts. Exiting...`);
+            console.error(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts. Exiting...`);
             process.exit(1);
           } else {
-            this.#debug(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts.`);
+            console.warn(`Failed to connect to ${dbEngine} after ${maxAttempts} attempts.`);
           }
         }
 

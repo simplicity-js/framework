@@ -82,15 +82,15 @@ module.exports = class MongooseStore {
       } catch(e) {
         attempts++;
 
-        debug(`Mongoose connection error: ${util.inspect(e)}`);
-        debug(`Retrying connection to MongoDB (${attempts}/${maxAttempts}) attempts`);
+        console.warn(`Mongoose connection error: ${util.inspect(e)}`);
+        console.log(`Retrying connection to MongoDB (${attempts}/${maxAttempts}) attempts`);
 
         if(attempts === maxAttempts) {
           if(exitOnConnectionFailure) {
-            debug(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
+            console.error(`Failed to connect to MongoDB after ${maxAttempts} attempts. Exiting...`);
             process.exit(1);
           } else {
-            debug(`Failed to connect to MongoDB after ${maxAttempts} attempts.`);
+            console.warn(`Failed to connect to MongoDB after ${maxAttempts} attempts.`);
           }
         }
 
