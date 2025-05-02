@@ -9,30 +9,33 @@ const RedisStore = require("../../component/connector/redis");
  *    An existing connection to a redis instance.
  *    If this passed, it is used to connect to the Redis server.
  *    Otherwise, we try to connect to a Redis server using the
- *    options.credentials.
+ *    other options.
  * @param {Object} [options.credentials] (optional):
  *    Credentials for establishing a connection to a Redis server.
- * @param {String} [options.credentials.host]: the server host
- * @param {Number} [options.credentials.port]: the server port
- * @param {String} [options.credentials.username]: the server username
- * @param {String} [options.credentials.password]: the server user password
- * @param {String} [options.credentials.db]: the database to connect to
- * @param {String} [options.credentials.url]: full DSN of the Redis server
- *   If the [options.credentials.url] is set, it is used instead
+ * @param {String} [options.host]: the server host
+ * @param {Number} [options.port]: the server port
+ * @param {String} [options.username]: the server username
+ * @param {String} [options.password]: the server user password
+ * @param {String} [options.db]: the database to connect to
+ * @param {String} [options.url]: full DSN of the Redis server
+ *   If the [options.url] is set, it is used instead
  *   and the other credential options are ignored.
+ * @param {Boolean} [options.autoConnect]
+ * @param {Boolean} [options.legacyMode]
+ * @param {Boolean} [options.exitOnConnectionFailure]
  * @param {Number} [options.maxConnectionAttempts]: The maximum number of times
  *   to attempt connecting before exiting.
  * @return {Object} with methods: set(), get(), unset(), contains(), and client().
  */
 module.exports = function createRedisStore(options) {
-  const { connection, credentials } = options || {};
+  const { connection, ...rest } = options || {};
 
   let store;
 
   if(connection && typeof connection === "object") {
     store = connection;
-  } else if(credentials && typeof credentials === "object") {
-    const redisStore = new RedisStore(credentials);
+  } else {
+    const redisStore = new RedisStore({ ...rest });
     store = redisStore.getClient();
 
     setTimeout(async function() {

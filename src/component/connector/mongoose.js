@@ -74,7 +74,7 @@ module.exports = class MongooseStore {
       try {
         debug("Connecting to MongoDB...");
 
-        this.#db = await mongoose.createConnection(dsn, {}).asPromise();
+        this.#db = mongoose.createConnection(dsn, {});
 
         debug("MongoDB connection established");
 
@@ -113,16 +113,14 @@ module.exports = class MongooseStore {
   }
 
   connected() {
-    return this.#db?.readyState === MongooseStore.readyStates.connected;
-    //return mongoose.connection.readyState === MongooseStore.readyStates.connected;
+    return mongoose.connection.readyState === MongooseStore.readyStates.connected;
 
     // Ready states:
     // eady states being: 0: disconnected 1: connected 2: connecting 3: disconnecting
   }
 
   connecting() {
-    return this.#db?.readyState === MongooseStore.readyStates.connecting;
-    //return mongoose.connection.readyState === MongooseStore.readyStates.connecting;
+    return mongoose.connection.readyState === MongooseStore.readyStates.connecting;
   }
 
   getClient() {

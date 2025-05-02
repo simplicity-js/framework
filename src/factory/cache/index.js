@@ -36,7 +36,15 @@ module.exports = class CacheFactory {
       );
     }
 
-    if(driver === "redis") {
+    // We no longer test for redis config because we no longer use the
+    // config.credentials for redis. Instead, we have flattened everything in
+    // config.credentials into the config object itself.
+    // We don't test for host and/or port because redis tries to connect to
+    // localhost and default port (6379) when these are not specified.
+    // Also, since the default max attempts is 5,
+    // the connection will stop attempting to connect to the localhost redis server
+    // after 5 attempts if the user has not passed any config for the "redis" driver.
+    /*if(driver === "redis") {
       if(!is.object(config.connection) && !is.object(config.credentials)) {
         const expectedProps = [
           "connection",
@@ -49,7 +57,9 @@ module.exports = class CacheFactory {
           `one of either properties: ${expectedProps.join(", ")}.`
         );
       }
-    } else if(driver === "file" && !config.storagePath) {
+    } else*/
+
+    if(driver === "file" && !config.storagePath) {
       throw new Error(
         errorPrefix +
         "The `config` parameter for the 'file' driver expects an object with a " +
